@@ -1,0 +1,581 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useStore } from "../lib/store";
+import { gradeLot, CONFIDENCE_THRESHOLD, sha256Placeholder } from "../lib/grading";
+import { demoOnions } from "../lib/mockData";
+
+/* Guided 12-step wizard covering PRD §13-51 */
+const STEPS = [
+  "Lot Info","Sampling","Capture","Quality Gate","Detection","Size","Defects","Confidence","Human Review","Policy & Grading","Farmer Review","Report & Evidence"
+];
+
+export default function NewAssessment(){
+  const { activePolicy, policies, addAssessment, offline, setOffline } = useStore();
+  const nav = useNavigate();
+  const [step, setStep] = useState(0);
+  const [lot, setLot] = useState({
+    lotId:"LOT-0245", farmer:"Ramesh Patil", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH", assessor:"S. Kulkarni (Grader)", date:new Date().toISOString().slice(0,16)
+  });
+  const [captures, setCaptures] = useState([null,null,null]); // 3 views
+  const [quality, setQuality] = useState(null); // pass/fail per view
+  const [onions, setOnions] = useState(demoOnions.slice(0,5));
+  const [reviewDecisions, setReviewDecisions] = useState({}); // id -> corrected defect
+  const [policyVersion, setPolicyVersion] = useState(activePolicy.version);
+  const policy = useMemo(()=> policies.find(p=>p.version===policyVersion) || activePolicy, [policyVersion, policies, activePolicy]);
+  const grading = useMemo(()=> gradeLot(onions.map(o=> ({...o, defect: reviewDecisions[o.id] || o.defect })), policy), [onions, reviewDecisions, policy]);
+  const lowConfidence = onions.filter(o=> o.confidence < CONFIDENCE_THRESHOLD);
+  const [processing, setProcessing] = useState(false);
+  const [farmerAccepted, setFarmerAccepted] = useState(false);
+  const [graderAccepted, setGraderAccepted] = useState(false);
+  const fileRefs = [useRef(),useRef(),useRef()];
+
+  function next(){ setStep(s=> Math.min(STEPS.length-1, s+1)); }
+  function prev(){ setStep(s=> Math.max(0, s-1)); }
+
+  // capture helpers
+  function useDemoImages(){
+    setCaptures(["demo1","demo2","demo3"]);
+    setQuality({ pass:true, issues:[] });
+  }
+  function handleFile(idx, e){
+    const f=e.target.files?.[0];
+    if(!f) return;
+    const url = URL.createObjectURL(f);
+    setCaptures(prev=> { const n=[...prev]; n[idx]=url; return n; });
+  }
+  function runQualityCheck(){
+    setProcessing(true);
+    setTimeout(()=>{
+      // simulate: if at least 2 captures => pass, else retake
+      const filled = captures.filter(Boolean).length;
+      if(filled<2){
+        setQuality({ pass:false, issues:["Capture at least 2 views. Representative sampling requires multi-view coverage."] });
+      } else if(captures[1]==="demo2" || captures[0]?.includes("demo")){
+        setQuality({ pass:true, issues:[] });
+      } else {
+        // 85% pass randomly but deterministic for demo
+        setQuality({ pass:true, issues:[] });
+      }
+      setProcessing(false);
+    }, 900);
+  }
+  function simulateProcessingPipeline(){
+    setProcessing(true);
+    setTimeout(()=> setProcessing(false), 1200);
+  }
+  useEffect(()=>{ if(step===4 || step===5 || step===6){ simulateProcessingPipeline(); } },[step]);
+
+  function finalize(){
+    const hash = sha256Placeholder(lot.lotId + Date.now());
+    const entry = addAssessment({
+      lotId: lot.lotId, farmer: lot.farmer, center: lot.center, location: lot.location, assessor: lot.assessor,
+      onions: grading.details, policyVersion: policy.version, hash,
+      sampleSize: grading.total, gradeA: grading.gradeA, urs: grading.urs,
+      confidence: Math.round(onions.reduce((a,b)=>a+b.confidence,0)/onions.length),
+      humanReviews: Object.keys(reviewDecisions).length + lowConfidence.length,
+      status: farmerAccepted && graderAccepted ? "Completed" : "Completed",
+      sync: offline ? "Offline" : "Synced",
+    });
+    nav(`/reports/${entry.id}`, { replace:true });
+  }
+
+  return (
+    <div style={{display:"grid", gap:16}}>
+      <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"center"}}>
+        <div>
+          <h1 className="h-display" style={{fontSize:28, margin:0}}>New Assessment</h1>
+          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Farmer + Grader joint session · AI assists, human decides · Offline-capable</p>
+        </div>
+        <div style={{display:"flex", gap:8, alignItems:"center"}}>
+          <span className="badge badge-maroon">{policy.version} · {policy.sizeBand.min}–{policy.sizeBand.max} mm</span>
+          <span className={offline ? "badge badge-offline":"badge badge-success"}>{offline ? "Offline — queued" : "Online"}</span>
+        </div>
+      </div>
+
+      {/* Stepper */}
+      <div className="card card-pad" style={{overflow:"auto"}}>
+        <div className="steps" style={{minWidth:720}}>
+          {STEPS.map((s,i)=>(
+            <div key={s} style={{display:"flex", alignItems:"center", gap:8}}>
+              <div className={`step-dot ${i===step?"active": i<step?"done":""}`} style={{flexShrink:0}}>{i<step?"✓":i+1}</div>
+              <span style={{fontSize:11, fontWeight:700, color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74", whiteSpace:"nowrap"}}>{s}</span>
+              {i<STEPS.length-1 && <div className={`step-line ${i<step?"done":""}`} />}
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:10, height:6, background:"#F3EAE2", borderRadius:999, overflow:"hidden"}}>
+          <div style={{width:`${((step+1)/STEPS.length)*100}%`, height:"100%", background:"#7A263A", transition:"width .3s"}} />
+        </div>
+      </div>
+
+      {/* Step contents */}
+      <div className="card card-pad" style={{minHeight:420}}>
+        {step===0 && <StepLot lot={lot} setLot={setLot} onNext={next} />}
+        {step===1 && <StepSampling onNext={next} onPrev={prev} />}
+        {step===2 && <StepCapture captures={captures} setCaptures={setCaptures} fileRefs={fileRefs} handleFile={handleFile} useDemo={useDemoImages} onNext={next} onPrev={prev} />}
+        {step===3 && <StepQuality captures={captures} quality={quality} processing={processing} run={runQualityCheck} onNext={next} onPrev={prev} />}
+        {step===4 && <StepDetection processing={processing} onions={onions} onNext={next} onPrev={prev} />}
+        {step===5 && <StepSize onions={onions} processing={processing} onNext={next} onPrev={prev} />}
+        {step===6 && <StepDefects onions={onions} processing={processing} onNext={next} onPrev={prev} />}
+        {step===7 && <StepConfidence onions={onions} low={lowConfidence} onNext={next} onPrev={prev} />}
+        {step===8 && <StepHumanReview onions={onions} low={lowConfidence} decisions={reviewDecisions} setDecisions={setReviewDecisions} onNext={next} onPrev={prev} />}
+        {step===9 && <StepPolicy policy={policy} policies={policies} policyVersion={policyVersion} setPolicyVersion={setPolicyVersion} grading={grading} onions={onions} onNext={next} onPrev={prev} />}
+        {step===10 && <StepFarmerReview grading={grading} lot={lot} policy={policy} farmerAccepted={farmerAccepted} setFarmerAccepted={setFarmerAccepted} graderAccepted={graderAccepted} setGraderAccepted={setGraderAccepted} onNext={next} onPrev={prev} />}
+        {step===11 && <StepReport grading={grading} lot={lot} policy={policy} onions={onions} reviewDecisions={reviewDecisions} farmerAccepted={farmerAccepted} graderAccepted={graderAccepted} offline={offline} setOffline={setOffline} finalize={finalize} onPrev={prev} />}
+      </div>
+
+      <div style={{display:"flex", justifyContent:"space-between", gap:10}}>
+        <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← Back</button>
+        {step<11 && <button className="btn btn-primary" onClick={next}>Continue →</button>}
+      </div>
+      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Demo pipeline — AI inference is simulated for prototype. Architecture supports swapping to real TensorFlow Lite + OpenCV.</p>
+    </div>
+  );
+}
+
+function StepLot({lot,setLot,onNext}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 1 — Lot Information</h3>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px,1fr))", gap:12}}>
+        <Field label="Lot ID"><input className="input" value={lot.lotId} onChange={e=>setLot({...lot, lotId:e.target.value})} placeholder="LOT-0245" /></Field>
+        <Field label="Farmer / Supplier"><input className="input" value={lot.farmer} onChange={e=>setLot({...lot, farmer:e.target.value})} /></Field>
+        <Field label="Procurement Center"><input className="input" value={lot.center} onChange={e=>setLot({...lot, center:e.target.value})} /></Field>
+        <Field label="Location"><input className="input" value={lot.location} onChange={e=>setLot({...lot, location:e.target.value})} /></Field>
+        <Field label="Date / Time"><input className="input" type="datetime-local" value={lot.date} onChange={e=>setLot({...lot, date:e.target.value})} /></Field>
+        <Field label="Assessor (Grader)"><input className="input" value={lot.assessor} onChange={e=>setLot({...lot, assessor:e.target.value})} /></Field>
+      </div>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-primary" onClick={onNext}>Continue to sampling →</button>
+      </div>
+    </div>
+  );
+}
+function StepSampling({onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Representative Sampling</h3>
+      <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:12, padding:16, display:"grid", gap:12}}>
+        <div style={{display:"flex", flexWrap:"wrap", alignItems:"center", gap:12, justifyContent:"center", fontWeight:700}}>
+          <span className="badge">LOT</span> <span>↓</span> <span className="badge badge-maroon">REPRESENTATIVE SAMPLE</span> <span>↓</span> <span className="badge badge-success">MULTI-VIEW CAPTURE</span>
+        </div>
+        <p style={{margin:0, textAlign:"center", color:"#6B5A54", fontSize:13}}>The system does not need to inspect every onion individually. A defined sample from the lot is jointly selected by farmer + grader to reduce bias.</p>
+        <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, fontSize:12, textAlign:"center"}}>
+          <div className="card card-pad" style={{padding:12}}><b>Step 1</b><br/>Spread sample on mat</div>
+          <div className="card card-pad" style={{padding:12}}><b>Step 2</b><br/>Place 25 mm reference</div>
+          <div className="card card-pad" style={{padding:12}}><b>Step 3</b><br/>Capture 3 views</div>
+        </div>
+        <p style={{margin:0, fontSize:12, color:"#8a7a74", textAlign:"center", fontStyle:"italic"}}>“Representative sampling makes the workflow practical for large-scale procurement.”</p>
+      </div>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={onNext}>Continue →</button>
+      </div>
+    </div>
+  );
+}
+function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
+  const filled = captures.filter(Boolean).length;
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 3 — Multi-View Capture <span style={{color:"#8a7a74", fontWeight:500, fontSize:12}}>· smartphone simulation</span></h3>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
+        {[0,1,2].map(i=>(
+          <div key={i} className="card" style={{overflow:"hidden"}}>
+            <div style={{padding:"10px 12px", fontSize:12, fontWeight:700, background:"#FBF6F0", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between"}}>
+              <span>VIEW {i+1} OF 3</span><span style={{color: captures[i] ? "#3F7D4A" : "#8a7a74"}}>{captures[i] ? "Captured" : "Pending"}</span>
+            </div>
+            <div style={{height:160, background:"#F3EAE2", display:"grid", placeItems:"center", position:"relative", overflow:"hidden"}}>
+              {captures[i] ? (
+                // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                <img src={captures[i].startsWith("demo") ? "https://images.unsplash.com/photo-1508747703725-719777637510?w=400&h=300&fit=crop" : captures[i]} alt={`View ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+              ) : (
+                <div style={{textAlign:"center", color:"#8a7a74", fontSize:12}}>No image yet<br/>Use camera or upload</div>
+              )}
+              {i===0 && captures[i] && <span style={{position:"absolute", bottom:8, right:8, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"3px 8px", fontSize:10, fontWeight:700}}>⦿ 25 mm ref visible</span>}
+            </div>
+            <div style={{padding:10, display:"grid", gap:8}}>
+              <input ref={fileRefs[i]} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>handleFile(i,e)} />
+              <button className="btn btn-secondary" style={{width:"100%", fontSize:13}} onClick={()=> fileRefs[i].current.click()}>📷 Camera / Upload</button>
+              {captures[i] && <button className="btn btn-ghost" style={{width:"100%", fontSize:12}} onClick={()=>{
+                // retake
+                const el=fileRefs[i].current; if(el) el.click();
+              }}>Retake</button>}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="card" style={{padding:12, background:"#FFFEFD"}}>
+        <div style={{fontSize:12, fontWeight:700}}>Capture guidance</div>
+        <div style={{display:"flex", flexWrap:"wrap", gap:6, marginTop:8}}>
+          {["Even lighting","Include 25 mm reference in View 1","Fill frame — avoid overlap","Onions fully visible"].map(t=> <span key={t} className="badge" style={{fontSize:11}}>{t}</span>)}
+        </div>
+      </div>
+      <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-ghost" onClick={useDemo}>Use demo images</button>
+        <button className="btn btn-primary" onClick={onNext} disabled={filled<1}>Check Quality →</button>
+      </div>
+      {filled<1 && <p style={{margin:0, color:"#B33A3A", fontSize:12}}>Capture at least one view to continue (demo images available).</p>}
+    </div>
+  );
+}
+function StepQuality({quality,processing,run,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 4 — Image Quality Gate</h3>
+      <p style={{margin:0, color:"#6B5A54", fontSize:13}}>Prevents poor input from entering the analysis pipeline. Checks sharpness, lighting, reference visibility, occlusion, framing.</p>
+      {!quality ? (
+        <div style={{display:"grid", gap:10}}>
+          <button className="btn btn-primary" onClick={run} disabled={processing}>{processing ? "Checking..." : "Run Quality Check"}</button>
+          {processing && <div className="card" style={{padding:14}}><div className="shimmer" style={{height:14, borderRadius:999}} /><p style={{fontSize:12, color:"#8a7a74", marginTop:8}}>Analyzing blur · lighting · reference object · framing…</p></div>}
+        </div>
+      ) : quality.pass ? (
+        <div className="card" style={{borderColor:"#C8E4CC", background:"#EDF5EF", padding:16}}>
+          <div style={{display:"flex", gap:10, alignItems:"center"}}>
+            <span style={{width:32,height:32, borderRadius:"50%", background:"#3F7D4A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}>✓</span>
+            <div><div style={{fontWeight:700, color:"#3F7D4A"}}>PASS — Image quality accepted</div><div style={{fontSize:12, color:"#6B5A54"}}>Sharpness OK · Lighting OK · Reference visible · Framing OK</div></div>
+          </div>
+          <button className="btn btn-primary" style={{marginTop:12}} onClick={onNext}>Continue to detection →</button>
+        </div>
+      ) : (
+        <div className="card" style={{borderColor:"#F5C2C2", background:"#FDECEC", padding:16}}>
+          <div style={{fontWeight:700, color:"#B33A3A"}}>RETAKE REQUIRED</div>
+          <ul style={{margin:"8px 0 0", paddingLeft:18, fontSize:13, color:"#6B5A54"}}>
+            {quality.issues.map((iss,i)=> <li key={i}>{iss}</li>)}
+          </ul>
+          <div style={{display:"flex", gap:8, marginTop:12}}>
+            <button className="btn btn-secondary" onClick={onPrev}>Retake Image</button>
+            <button className="btn btn-ghost" onClick={run}>Re-check</button>
+          </div>
+          <p style={{margin:"8px 0 0", fontSize:12, color:"#8a7a74"}}>Example failures: “Image is too dark.” · “Reference object is not visible.” · “Onions are overlapping.” · “Image is blurry.”</p>
+        </div>
+      )}
+      {!quality?.pass && quality && null}
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        {quality?.pass && <button className="btn btn-primary" onClick={onNext}>Continue →</button>}
+      </div>
+    </div>
+  );
+}
+function StepDetection({processing,onions,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Onion Detection / Segmentation</h3>
+      {processing ? (
+        <div className="card" style={{padding:16, display:"grid", gap:10}}>
+          <div className="shimmer" style={{height:180, borderRadius:12}} />
+          <p style={{fontSize:12, color:"#6B5A54", margin:0}}>Detecting onions · segmenting crops for downstream analysis…</p>
+        </div>
+      ) : (
+        <>
+          <div style={{position:"relative", borderRadius:12, overflow:"hidden", border:"1px solid #EDE3DC", height:260, background:"linear-gradient(180deg,#FDFBF9,#F3EAE2)"}}>
+            <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop" alt="Onion detection" style={{width:"100%",height:"100%",objectFit:"cover", opacity:.88}} />
+            {onions.slice(0,5).map(o=>(
+              <div key={o.id} style={{position:"absolute", left:`${o.box.x}%`, top:`${o.box.y}%`, width:`${o.box.w}%`, height:`${o.box.h}%`, border:"2px solid #F2B84B", borderRadius:12, boxShadow:"0 2px 8px rgba(0,0,0,.18)", background:"rgba(242,184,75,.08)"}}>
+                <span style={{position:"absolute", top:-8, left:8, background:"#F2B84B", color:"#17110F", fontSize:10, fontWeight:800, padding:"2px 6px", borderRadius:999}}>{o.id}</span>
+              </div>
+            ))}
+            <span style={{position:"absolute", bottom:10, left:10, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"5px 10px", fontSize:12, fontWeight:700}}>{onions.length} onions detected</span>
+          </div>
+          <p style={{margin:0, fontSize:12, color:"#8a7a74"}}>Prototype simulation — detector crops each onion for size + defect analysis. Replaceable with on-device segmentation model.</p>
+          <div style={{display:"flex", gap:8}}>
+            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-primary" onClick={onNext}>Continue to size →</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+function StepSize({onions,processing,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Size Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· OpenCV + 25 mm reference</span></h3>
+      {processing ? <div className="shimmer" style={{height:120, borderRadius:12}} /> : (
+        <>
+          <div className="card" style={{padding:14, background:"#FFFEFD"}}>
+            <div style={{display:"flex", flexWrap:"wrap", gap:8, alignItems:"center", fontSize:12}}>
+              <span className="badge">Reference: 25 mm</span> <span>→</span> <span className="badge badge-maroon">Pixels → Millimeters</span> <span>→</span> <span className="badge badge-success">Diameter (mm)</span>
+            </div>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(120px,1fr))", gap:10, marginTop:12}}>
+              {onions.map(o=>(
+                <div key={o.id} className="card" style={{padding:10, textAlign:"center"}}>
+                  <div style={{fontWeight:800, color:"#7A263A"}}>{o.id}</div>
+                  <div style={{fontFamily:"Fraunces, serif", fontSize:20, fontWeight:700}}>{o.sizeMm} <span style={{fontSize:12, color:"#8a7a74"}}>mm</span></div>
+                  <div style={{fontSize:11, color:"#6B5A54"}}>{o.sizeMm>=35 && o.sizeMm<=70 ? "In band" : "Out of band"}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Example: O1 — 72 mm · O2 — 65 mm · O3 — 58 mm · O4 — 69 mm · O5 — 61 mm. No depth sensor used.</p>
+          </div>
+          <div style={{display:"flex", gap:8}}>
+            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-primary" onClick={onNext}>Continue to defects →</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+function StepDefects({onions,processing,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· TensorFlow Lite · MobileNetV2 / EfficientNet-Lite (simulated)</span></h3>
+      {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
+        <>
+          <div className="card" style={{padding:14}}>
+            <div style={{display:"grid", gap:8}}>
+              {onions.map(o=>(
+                <div key={o.id} style={{display:"flex", alignItems:"center", gap:12, padding:10, border:"1px solid #EDE3DC", borderRadius:10, background: o.defect==="Healthy" ? "#EDF5EF" : o.defect==="Rotten" ? "#FDECEC" : "#FEF3D8"}}>
+                  <span style={{width:36, height:36, borderRadius:8, display:"grid", placeItems:"center", background:"white", border:"1px solid #EDE3DC", fontWeight:800, color:"#7A263A"}}>{o.id}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700, fontSize:13}}>{o.defect} <span style={{fontWeight:500, color:"#6B5A54"}}>· {o.confidence}% confidence</span></div>
+                    <div style={{height:6, background:"white", border:"1px solid #EDE3DC", borderRadius:999, overflow:"hidden", marginTop:4}}>
+                      <div style={{width:`${o.confidence}%`, height:"100%", background: o.confidence>=60 ? "#3F7D4A" : "#D99024"}} />
+                    </div>
+                  </div>
+                  <span className={`badge ${o.defect==="Healthy"?"badge-success": o.defect==="Rotten"?"badge-error":"badge-warning"}`} style={{fontSize:10}}>{o.confidence>=60?"Demo":"Review"}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Demo values — never presented as validated real-world accuracy. Classes: Healthy / Damaged / Rotten / Sprouted.</p>
+          </div>
+          <div style={{display:"flex", gap:8}}>
+            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-primary" onClick={onNext}>Confidence gate →</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+function StepConfidence({onions,low,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Confidence Gate <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· {CONFIDENCE_THRESHOLD}% threshold (configurable prototype)</span></h3>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
+        {onions.slice(0,4).map(o=>(
+          <div key={o.id} className="card" style={{padding:14, textAlign:"center", borderColor: o.confidence>=CONFIDENCE_THRESHOLD ? "#C8E4CC" : "#FBE2A8", background: o.confidence>=CONFIDENCE_THRESHOLD ? "#EDF5EF" : "#FEF3D8"}}>
+            <div style={{fontWeight:800, color:"#7A263A"}}>{o.id}</div>
+            <div style={{fontFamily:"Fraunces, serif", fontSize:28, fontWeight:700, color: o.confidence>=60 ? "#3F7D4A" : "#B33A3A"}}>{o.confidence}%</div>
+            <div className={`badge ${o.confidence>=CONFIDENCE_THRESHOLD ? "badge-success":"badge-error"}`} style={{marginTop:6}}>{o.confidence>=CONFIDENCE_THRESHOLD?"AUTO-PROCESSED":"HUMAN REVIEW REQUIRED"}</div>
+            <div style={{fontSize:11, color:"#6B5A54", marginTop:6}}>{o.confidence>=60 ? "≥ 60% → automatic continuation" : "< 60% → flagged for review"}</div>
+          </div>
+        ))}
+      </div>
+      {low.length>0 ? (
+        <div className="card" style={{padding:12, background:"#FEF3D8", borderColor:"#FBE2A8"}}>
+          <div style={{fontWeight:700, color:"#8a5a0a"}}>⚠ {low.length} onion{low.length>1?"s":""} below {CONFIDENCE_THRESHOLD}% — will require human review.</div>
+          <div style={{fontSize:12, color:"#6B5A54"}}>AI confidence is below the configured threshold. Human review is required before finalizing.</div>
+        </div>
+      ) : (
+        <div className="card" style={{padding:12, background:"#EDF5EF", borderColor:"#C8E4CC"}}>
+          <div style={{fontWeight:700, color:"#3F7D4A"}}>All onions above threshold — can auto-continue.</div>
+        </div>
+      )}
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={onNext}>Go to human review →</button>
+      </div>
+    </div>
+  );
+}
+function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
+  if(low.length===0){
+    return (
+      <div style={{display:"grid", gap:14}}>
+        <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Human Review</h3>
+        <div className="card" style={{padding:16, background:"#EDF5EF", borderColor:"#C8E4CC"}}>
+          <div style={{fontWeight:700, color:"#3F7D4A"}}>No low-confidence onions — review not required.</div>
+          <p style={{margin:"6px 0 0", fontSize:13, color:"#6B5A54"}}>This is a human-in-the-loop system. High-confidence lots continue automatically; only uncertain cases are shown here.</p>
+        </div>
+        <div style={{display:"flex", gap:8}}>
+          <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+          <button className="btn btn-primary" onClick={onNext}>Continue →</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Human Review <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· low-confidence cases</span></h3>
+      <div style={{display:"grid", gap:10}}>
+        {low.map(o=>(
+          <div key={o.id} className="card" style={{padding:14, display:"grid", gap:10}}>
+            <div style={{display:"flex", gap:12, alignItems:"center", flexWrap:"wrap"}}>
+              <span style={{width:40,height:40, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}>{o.id}</span>
+              <div>
+                <div style={{fontWeight:700}}>{o.defect} · {o.confidence}% <span style={{color:"#B33A3A", fontWeight:600}}>— Below threshold</span></div>
+                <div style={{fontSize:12, color:"#6B5A54"}}>Size {o.sizeMm} mm · AI classification shown for reference · Human decides.</div>
+              </div>
+              <span className="badge badge-warning" style={{marginLeft:"auto"}}>REVIEW REQUIRED</span>
+            </div>
+            <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+              <button className={`btn ${!decisions[o.id] ? "btn-primary":"btn-secondary"}`} style={{fontSize:13}} onClick={()=> setDecisions(prev=>{ const n={...prev}; delete n[o.id]; return n; })}>Accept AI: {o.defect}</button>
+              <select className="select" style={{maxWidth:200}} value={decisions[o.id] || ""} onChange={e=> setDecisions(prev=> ({...prev, [o.id]: e.target.value || undefined}))}>
+                <option value="">— Change result —</option>
+                <option value="Healthy">Healthy</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Rotten">Rotten</option>
+                <option value="Sprouted">Sprouted</option>
+              </select>
+              {decisions[o.id] && <span className="badge badge-success">Changed → {decisions[o.id]}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={onNext}>Continue to policy →</button>
+      </div>
+    </div>
+  );
+}
+function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Versioned Policy & Grading</h3>
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
+        <div className="card card-pad">
+          <label className="label">Active policy version</label>
+          <select className="select" value={policyVersion} onChange={e=> setPolicyVersion(e.target.value)}>
+            {policies.map(p=> <option key={p.version} value={p.version}>{p.version} — {p.label} ({p.sizeBand.min}–{p.sizeBand.max} mm)</option>)}
+          </select>
+          <div style={{marginTop:10, fontSize:12, color:"#6B5A54"}}>{policy.description}</div>
+          <div style={{marginTop:10, display:"grid", gap:6, fontSize:12}}>
+            <div><b>Size band:</b> {policy.sizeBand.min}–{policy.sizeBand.max} mm</div>
+            <div><b>Max rotten:</b> {policy.tolerances.rotten}% · <b>sprouted:</b> {policy.tolerances.sprouted}% · <b>damaged:</b> {policy.tolerances.damaged}%</div>
+          </div>
+          <div style={{marginTop:10, padding:8, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:8, fontSize:11, color:"#8a7a74"}}>
+            Policies can be changed without redeploying the application. Current policy is recorded in the report.
+          </div>
+        </div>
+        <div className="card card-pad" style={{textAlign:"center"}}>
+          <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Lot result</div>
+          <div style={{fontFamily:"Fraunces, serif", fontSize:36, fontWeight:700, color:"#7A263A", marginTop:6}}>{grading.gradeA}% <span style={{fontSize:16, color:"#6B5A54"}}>GRADE A</span></div>
+          <div style={{fontFamily:"Fraunces, serif", fontSize:22, fontWeight:700, color:"#17110F"}}>{grading.urs}% URS</div>
+          <div style={{fontSize:12, color:"#6B5A54"}}>Total sample: {grading.total} onions · Policy {policy.version}</div>
+          <div style={{display:"flex", gap:6, justifyContent:"center", marginTop:10, flexWrap:"wrap"}}>
+            <span className="badge badge-success">{grading.gradeA}% Grade A</span><span className="badge">{grading.urs}% URS</span>
+          </div>
+          <p style={{fontSize:11, color:"#8a7a74", marginTop:10}}>Explanation: Grade A = in-size band + healthy; URS = out-of-size or visible defect (rotten/sprouted/damaged) per active policy + human review decisions.</p>
+        </div>
+      </div>
+      <div className="card" style={{padding:12}}>
+        <div style={{fontSize:12, fontWeight:700}}>Per-onion grading (policy {policy.version})</div>
+        <div style={{display:"grid", gap:6, marginTop:8}}>
+          {grading.details.map(d=>(
+            <div key={d.id} style={{display:"flex", gap:10, alignItems:"center", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background: d.grade==="Grade A" ? "#EDF5EF" : "#FEF3D8"}}>
+              <b style={{minWidth:28}}>{d.id}</b><span>{d.sizeMm} mm</span><span>·</span><span>{d.defect}</span><span>·</span><span>{d.confidence}%</span><span style={{marginLeft:"auto"}} className={`badge ${d.grade==="Grade A"?"badge-success":"badge-warning"}`} style={{fontSize:10}}>{d.grade}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={onNext}>Farmer / Grader review →</button>
+      </div>
+      <style>{`@media(max-width:700px){ .policy-grid{grid-template-columns:1fr !important} }`}</style>
+    </div>
+  );
+}
+function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,graderAccepted,setGraderAccepted,onNext,onPrev}){
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Farmer / Grader Review</h3>
+      <p style={{margin:0, color:"#6B5A54", fontSize:13}}>The result is transparent to both parties. Never silently overwrite the original assessment — disputes create linked records.</p>
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
+        <div className="card card-pad">
+          <div style={{fontWeight:700}}>Grader</div>
+          <div style={{fontSize:13, color:"#6B5A54"}}>{lot.assessor} · Review · Confirm · Finalize</div>
+          <label style={{display:"flex", gap:8, alignItems:"center", marginTop:12, fontSize:13, cursor:"pointer"}}>
+            <input type="checkbox" checked={graderAccepted} onChange={e=>setGraderAccepted(e.target.checked)} /> I have reviewed the evidence and grading against <b>{policy.version}</b>
+          </label>
+          <div style={{marginTop:10, display:"flex", gap:8}}>
+            <button className="btn btn-secondary" style={{fontSize:12}} onClick={()=> setGraderAccepted(true)}>Confirm</button>
+            <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=> setGraderAccepted(false)}>Request second review</button>
+          </div>
+        </div>
+        <div className="card card-pad">
+          <div style={{fontWeight:700}}>Farmer</div>
+          <div style={{fontSize:13, color:"#6B5A54"}}>{lot.farmer} · View result · View evidence · Request second review if dissatisfied</div>
+          <label style={{display:"flex", gap:8, alignItems:"center", marginTop:12, fontSize:13, cursor:"pointer"}}>
+            <input type="checkbox" checked={farmerAccepted} onChange={e=>setFarmerAccepted(e.target.checked)} /> I have seen the report and evidence
+          </label>
+          <div style={{marginTop:10}}>
+            <button className="btn btn-ghost" style={{fontSize:12, color:"#B33A3A", borderColor:"#F5C2C2"}} onClick={()=> alert("Dispute flow: creates linked review record, preserves original. Demonstrated in Reports → Disputed.")}>Request Second Review</button>
+          </div>
+        </div>
+      </div>
+      <div className="card" style={{padding:14, textAlign:"center", background:"#FBF6F0"}}>
+        <div style={{fontFamily:"Fraunces, serif", fontSize:22, fontWeight:700}}>{grading.gradeA}% GRADE A · {grading.urs}% URS</div>
+        <div style={{fontSize:12, color:"#6B5A54"}}>Lot {lot.lotId} · {lot.farmer} · {policy.version} · {grading.total} onions · Human reviews: {Object.keys(grading.details.filter(d=>d.confidence<60)).length}</div>
+      </div>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={onNext}>Generate report →</button>
+      </div>
+    </div>
+  );
+}
+function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,graderAccepted,offline,setOffline,finalize,onPrev}){
+  const hash = sha256Placeholder(lot.lotId);
+  return (
+    <div style={{display:"grid", gap:14}}>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Quality Report · Evidence · Sync</h3>
+      <div className="card card-pad" style={{border:"1px solid #EDE3DC"}}>
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"start", gap:12, flexWrap:"wrap"}}>
+          <div>
+            <div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18, color:"#7A263A"}}>ONIONSETU</div>
+            <div style={{fontSize:11, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Quality Assessment Report</div>
+          </div>
+          <div style={{textAlign:"right", fontSize:11, color:"#6B5A54"}}>
+            <div>Report ID: <span className="mono">{lot.lotId.replace("LOT","OG")}</span></div>
+            <div>Policy: {policy.version} · Model: onion-grade-v1.1</div>
+            <div>{new Date().toLocaleString()}</div>
+          </div>
+        </div>
+        <div className="divider" />
+        <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:10, fontSize:12}}>
+          <div><b>Lot ID:</b> {lot.lotId}</div><div><b>Farmer:</b> {lot.farmer}</div><div><b>Center:</b> {lot.center}</div><div><b>Sample:</b> {grading.total} onions</div><div><b>Grade A:</b> {grading.gradeA}%</div><div><b>URS:</b> {grading.urs}%</div>
+        </div>
+        <div style={{marginTop:10, display:"flex", gap:6, flexWrap:"wrap"}}>
+          <span className="badge badge-success">Grade A {grading.gradeA}%</span><span className="badge">URS {grading.urs}%</span><span className="badge badge-maroon">{policy.version}</span>
+          <span className="badge" style={{fontFamily:"JetBrains Mono, monospace", fontSize:10}}>SHA-256: {hash.slice(0,24)}…</span>
+        </div>
+        <div style={{marginTop:12, background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:10, padding:12}}>
+          <div style={{fontSize:12, fontWeight:700}}>Evidence included</div>
+          <ul style={{margin:"6px 0 0", paddingLeft:18, fontSize:12, color:"#6B5A54"}}>
+            <li>Capture photos (3 views) · per-onion size + defect + confidence</li>
+            <li>Human review decisions ({Object.keys(reviewDecisions).length || "0"} corrections) · timestamp & location</li>
+            <li>Policy version {policy.version} · model version · assessor sign-off</li>
+            <li>SHA-256 photo-set hash stored alongside report for tamper evidence</li>
+          </ul>
+        </div>
+        <div style={{marginTop:12, display:"flex", gap:8, alignItems:"center", flexWrap:"wrap"}}>
+          <div style={{width:72,height:72, border:"1px solid #EDE3DC", borderRadius:8, display:"grid", placeItems:"center", background:"white", fontSize:10, textAlign:"center", padding:6}}>QR<br/>Verify<br/>Report</div>
+          <div style={{fontSize:11, color:"#8a7a74"}}>QR links to verification page<br/><span className="mono">/verify/{lot.lotId.replace("LOT","OG")}</span><br/>Shows status · policy · hash</div>
+          <span className="badge" style={{marginLeft:"auto", fontSize:10}}>Farmer: {farmerAccepted?"✓ Ack":"Pending"} · Grader: {graderAccepted?"✓ Ack":"Pending"}</span>
+        </div>
+      </div>
+
+      <div className="card card-pad" style={{background: offline ? "#FFF4E6" : "#EDF5EF", borderColor: offline ? "#FFE1B5" : "#C8E4CC"}}>
+        <div style={{fontWeight:700, color: offline ? "#9A5A00" : "#3F7D4A"}}>{offline ? "OFFLINE — Assessment saved locally" : "SYNCED — Ready for Supabase"}</div>
+        <div style={{fontSize:12, color:"#6B5A54"}}>{offline ? "Assessment saved locally. Will sync when connection returns. (Local encrypted queue → Supabase on reconnect)" : "Assessment successfully synchronized to Supabase (PostgreSQL + Storage + Auth + RLS)."}</div>
+        <div style={{display:"flex", gap:8, marginTop:10}}>
+          <button className="btn btn-secondary" style={{fontSize:12}} onClick={()=> setOffline(v=>!v)}>{offline ? "Simulate: Go online" : "Simulate: Go offline"}</button>
+          {offline && <span className="badge badge-offline">Pending sync</span>}
+        </div>
+      </div>
+      <p style={{margin:0, fontSize:11, color:"#8a7a74"}}>Integrity: SHA-256 provides tamper evidence for the stored photo set. It does not prove physical sample representativeness — stated as a known limitation. No blockchain used.</p>
+      <div style={{display:"flex", gap:8}}>
+        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-primary" onClick={finalize}>Finalize & Generate Report →</button>
+      </div>
+    </div>
+  );
+}
+
+function Field({label, children}){ return <label style={{display:"grid", gap:4}}><span className="label">{label}</span>{children}</label>; }
