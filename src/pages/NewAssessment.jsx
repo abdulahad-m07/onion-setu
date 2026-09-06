@@ -18,8 +18,9 @@ export default function NewAssessment(){
   const [lot, setLot] = useState({
     lotId:"LOT-0245", farmer:"Ramesh Patil", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH", assessor:"S. Kulkarni (Grader)", date:new Date().toISOString().slice(0,16)
   });
-  const [captures, setCaptures] = useState([null,null,null]); // 3 views
-  const [quality, setQuality] = useState(null); // pass/fail per view
+  const [captures, setCaptures] = useState([null,null,null]); // urls for preview
+  const [captureFiles, setCaptureFiles] = useState([null,null,null]); // actual Files for Storage upload
+  const [quality, setQuality] = useState(null);
   const [onions, setOnions] = useState(demoOnions.slice(0,5));
   const [reviewDecisions, setReviewDecisions] = useState({}); // id -> corrected defect
   const [policyVersion, setPolicyVersion] = useState(activePolicy.version);
@@ -37,6 +38,7 @@ export default function NewAssessment(){
   // capture helpers
   function useDemoImages(){
     setCaptures(["demo1","demo2","demo3"]);
+    setCaptureFiles([null,null,null]);
     setQuality({ pass:true, issues:[] });
   }
   function handleFile(idx, e){
@@ -44,6 +46,7 @@ export default function NewAssessment(){
     if(!f) return;
     const url = URL.createObjectURL(f);
     setCaptures(prev=> { const n=[...prev]; n[idx]=url; return n; });
+    setCaptureFiles(prev=> { const n=[...prev]; n[idx]=f; return n; });
   }
   function runQualityCheck(){
     setProcessing(true);
@@ -67,9 +70,11 @@ export default function NewAssessment(){
   }
   useEffect(()=>{ if(step===4 || step===5 || step===6){ simulateProcessingPipeline(); } },[step]);
 
-  function finalize(){
+  async function finalize(){
     const hash = sha256Placeholder(lot.lotId + Date.now());
-    const entry = addAssessment({
+    // collect real files for Storage (filter nulls)
+    const files = captureFiles.filter(Boolean);
+    const entry = await addAssessment({
       lotId: lot.lotId, farmer: lot.farmer, center: lot.center, location: lot.location, assessor: lot.assessor,
       onions: grading.details, policyVersion: policy.version, hash,
       sampleSize: grading.total, gradeA: grading.gradeA, urs: grading.urs,
@@ -77,6 +82,7 @@ export default function NewAssessment(){
       humanReviews: Object.keys(reviewDecisions).length + lowConfidence.length,
       status: farmerAccepted && graderAccepted ? "Completed" : "Completed",
       sync: offline ? "Offline" : "Synced",
+      captures: files,
     });
     nav(`/reports/${entry.id}`, { replace:true });
   }
