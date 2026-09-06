@@ -2,20 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
+import { useI18n } from "../lib/i18n";
 
 const baseNav = [
-  { to:"/", label:"Dashboard", icon: IconDashboard, roles:["farmer","grader"] },
-  { to:"/new", label:"New Assessment", icon: IconPlus, roles:["farmer","grader"] },
-  { to:"/assessments", label:"Assessments", icon: IconClipboard, roles:["farmer","grader"] },
-  { to:"/reviews", label:"Reviews", icon: IconEye, roles:["grader"] },
-  { to:"/reports", label:"Reports", icon: IconFile, roles:["farmer","grader"] },
-  { to:"/policy", label:"Policy", icon: IconScale, roles:["farmer","grader"] },
-  { to:"/settings", label:"Settings", icon: IconGear, roles:["farmer","grader"] },
+  { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
+  { to:"/new", key:"newAssessment", icon: IconPlus, roles:["farmer","grader"] },
+  { to:"/assessments", key:"assessments", icon: IconClipboard, roles:["farmer","grader"] },
+  { to:"/reviews", key:"reviews", icon: IconEye, roles:["grader"] },
+  { to:"/reports", key:"reports", icon: IconFile, roles:["farmer","grader"] },
+  { to:"/policy", key:"policy", icon: IconScale, roles:["farmer","grader"] },
+  { to:"/settings", key:"settings", icon: IconGear, roles:["farmer","grader"] },
 ];
 
 export default function Layout({ children }){
   const { offline, setOffline, pendingCount, syncAll, activePolicy } = useStore();
   const { user, logout } = useAuth();
+  const { t, lang, setLang, languages } = useI18n();
   const loc = useLocation();
   const nav2 = useNavigate();
   const nav = baseNav.filter(n=> !user || n.roles.includes(user.role));
@@ -108,9 +110,15 @@ export default function Layout({ children }){
           {nav.map(item=>(
             <NavLink key={item.to} to={item.to} onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive ? "nav-link active" : "nav-link"}>
               <item.icon />
-              {item.label}
+              {t(item.key)}
             </NavLink>
           ))}
+          <div style={{padding:"8px 10px"}}>
+            <label className="label" style={{marginBottom:6}}>{t("languageSettings")}</label>
+            <select className="select" value={lang} onChange={e=> setLang(e.target.value)} style={{fontSize:12}}>
+              {languages.map(l=> <option key={l.code} value={l.code}>{l.flag} {l.native}</option>)}
+            </select>
+          </div>
           <div className="nav-group-label" style={{marginTop:14}}>System</div>
           <div style={{padding:"8px 10px"}}>
             <div style={{fontSize:12, fontWeight:600}}>Active policy</div>
@@ -191,11 +199,11 @@ export default function Layout({ children }){
       </div>
 
       <nav className="bottom-nav" aria-label="Mobile navigation">
-        <NavLink to="/" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconDashboard/>Dashboard</NavLink>
-        <NavLink to="/new" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconPlus/>New</NavLink>
-        <NavLink to="/assessments" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconClipboard/>Assess</NavLink>
-        <NavLink to="/reviews" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconEye/>Reviews</NavLink>
-        <NavLink to="/reports" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconFile/>Reports</NavLink>
+        <NavLink to="/" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconDashboard/>{t("dashboard")}</NavLink>
+        <NavLink to="/new" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconPlus/>{t("newAssessment").split(" ")[0]}</NavLink>
+        <NavLink to="/assessments" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconClipboard/>{t("assessments")}</NavLink>
+        <NavLink to="/reviews" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconEye/>{t("reviews")}</NavLink>
+        <NavLink to="/reports" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconFile/>{t("reports")}</NavLink>
       </nav>
     </div>
   );

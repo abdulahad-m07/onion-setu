@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useSeo, Breadcrumbs } from "../lib/seo";
+import { useI18n } from "../lib/i18n";
+import { QRCodeSVG } from "qrcode.react";
 
 export function ReportsList(){
   useSeo({ title:"Reports", description:"Evidence-backed quality reports — open tamper-evident PDFs with QR verification, policy version and SHA-256 hash for every assessment.", canonical:"/reports" });
@@ -29,11 +32,23 @@ export function ReportsList(){
 export function ReportDetail(){
   const { id } = useParams();
   const { assessments, updateAssessment } = useStore();
+  const { t, lang, languages } = useI18n();
+  const [printLang, setPrintLang] = useState(null); // null = follow app lang, "en" = force English
+  const effectiveLang = printLang || lang;
+  const effectiveT = (k)=> {
+    // if printLang forced to en, use English; else use current lang via t
+    if(printLang==="en"){
+      const enDict = { reportId:"Report ID", date:"Date", location:"Location", policyVersion:"Policy version", gradeA:"Grade A %", urs:"URS %", confidence:"Confidence", farmerAck:"Farmer acknowledgement", graderAck:"Grader acknowledgement", disputeStatus:"Dispute status" };
+      return enDict[k] || k;
+    }
+    return t(k);
+  };
   const a = assessments.find(x=> x.id===id);
   useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — ${a.gradeA}% Grade A / ${a.urs}% URS at ${a.location}. Policy ${a.policyVersion}, Confidence ${a.confidence}%.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
   if(!a) return <div className="card card-pad">Report not found. <Link to="/reports">Browse reports</Link></div>;
   const hasImages = Array.isArray(a.images) && a.images.length;
   const hasOnions = Array.isArray(a.onions) && a.onions.length;
+  const verifyUrl = `https://onion-setu.vercel.app/verify/${a.id}`;
   return (
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"},{label:a.id, href:`/reports/${a.id}`}]} />
@@ -56,24 +71,24 @@ export function ReportDetail(){
 
         {/* ——— STORAGE FORMAT — exactly as requested, typed ——— */}
         <div style={{background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:12, overflow:"hidden"}}>
-          <div style={{padding:"12px 14px", background:"#FBF6F0", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-            <div style={{fontWeight:700, fontSize:13}}>Stored Report Data</div>
+          <div style={{padding:"12px 14px", background:"#FBF6F0", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8}}>
+            <div style={{fontWeight:700, fontSize:13}}>{effectiveT("storedReportData") || "Stored Report Data"}</div>
             <span className="badge badge-maroon" style={{fontSize:10}}>{a.policyVersion} · {a.modelVersion}</span>
           </div>
           <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px,1fr))", gap:0, fontSize:13}}>
-            <Row label="Report ID" value={a.id} mono />
-            <Row label="Date" value={new Date(a.date).toLocaleString()} />
-            <Row label="Location" value={`${a.location} · ${a.center}`} />
-            <Row label="Policy version" value={a.policyVersion} badge />
-            <Row label="Grade A %" value={`${a.gradeA}%`} strong color="#7A263A" />
-            <Row label="URS %" value={`${a.urs}%`} strong />
-            <Row label="Confidence" value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
-            <Row label="Farmer acknowledgement" value={a.acknowledged?.farmer ? "Acknowledged ✓" : "Pending"} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
-            <Row label="Grader acknowledgement" value={a.acknowledged?.grader ? "Acknowledged ✓" : "Pending"} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
-            <Row label="Dispute status" value={a.status==="Disputed" ? (a.dispute?.reason || "Disputed") : a.status==="Human Review" ? "Under review" : "No dispute"} badgeColor={a.status==="Disputed" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
-            <Row label="Sample size" value={`${a.sampleSize} onions`} />
-            <Row label="Lot ID" value={a.lotId} mono />
-            <Row label="Hash (SHA-256)" value={a.hash} mono small />
+            <Row label={effectiveT("reportId")} value={a.id} mono />
+            <Row label={effectiveT("date")} value={new Date(a.date).toLocaleString()} />
+            <Row label={effectiveT("location")} value={`${a.location} · ${a.center}`} />
+            <Row label={effectiveT("policyVersion")} value={a.policyVersion} badge />
+            <Row label={effectiveT("gradeA")} value={`${a.gradeA}%`} strong color="#7A263A" />
+            <Row label={effectiveT("urs")} value={`${a.urs}%`} strong />
+            <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
+            <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ✓` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
+            <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ✓` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
+            <Row label={effectiveT("disputeStatus")} value={a.status==="Disputed" ? (a.dispute?.reason || effectiveT("disputed")) : a.status==="Human Review" ? effectiveT("underReview") : effectiveT("noDispute")} badgeColor={a.status==="Disputed" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
+            <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
+            <Row label={effectiveT("lotId")} value={a.lotId} mono />
+            <Row label={effectiveT("hash")} value={a.hash} mono small />
           </div>
         </div>
 
@@ -120,19 +135,24 @@ export function ReportDetail(){
           </div>
         )}
 
-        <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center"}}>
-          <div style={{width:48,height:48, borderRadius:8, background:"white", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontSize:10, textAlign:"center"}}>QR<br/>Verify</div>
+        <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
+          <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:8, padding:6}}>
+            <QRCodeSVG value={verifyUrl} size={72} level="M" bgColor="#FFFFFF" fgColor="#7A263A" />
+          </div>
           <div style={{fontSize:11}}>
-            <div style={{fontWeight:700}}>QR Verification</div>
-            <div className="mono" style={{color:"#6B5A54"}}>/verify/{a.id}</div>
-            <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>Open verification →</Link>
+            <div style={{fontWeight:700}}>{t("qrVerify")}</div>
+            <div className="mono" style={{color:"#6B5A54", fontSize:10, wordBreak:"break-all"}}>{verifyUrl}</div>
+            <div style={{fontSize:10, color:"#8a7a74"}}>Scan to open report — data is saved per-user in Supabase</div>
+            <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>{t("openVerification")} →</Link>
           </div>
           <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: disputes create linked <span className="mono" style={{fontSize:10}}>disputes</span> row, original preserved.</div>
         </div>
 
         <div className="divider" />
-        <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
-          <button className="btn btn-primary" onClick={()=> window.print()}>Generate PDF · Print</button>
+        <div style={{display:"flex", gap:8, flexWrap:"wrap", alignItems:"center"}}>
+          <button className="btn btn-primary" onClick={()=> { setPrintLang(null); setTimeout(()=> window.print(), 100); }}>{t("downloadInSelected")} {languages.find(l=>l.code===lang)?.native} →</button>
+          <button className="btn btn-secondary" onClick={()=> { setPrintLang("en"); setTimeout(()=> window.print(), 100); }}>{t("downloadInEnglish")} →</button>
+          {printLang && <span className="badge badge-maroon" style={{fontSize:10}}>{printLang==="en" ? "English" : languages.find(l=>l.code===printLang)?.native} print mode — press Print again to switch</span>}
           <button className="btn btn-secondary" onClick={()=> {
             updateAssessment(a.id, { acknowledged:{ farmer:true, grader:true } });
             alert("Acknowledged — both parties have seen the report.");

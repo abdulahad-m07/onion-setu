@@ -2,8 +2,10 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { StoreProvider } from "./lib/store";
 import { AuthProvider, useAuth } from "./lib/auth";
+import { I18nProvider, useI18n } from "./lib/i18n";
 import Layout from "./components/Layout";
 import { SplashScreen } from "./components/OnionSetuLoader";
+import LanguageGate from "./components/LanguageGate";
 
 const Dashboard = lazy(()=> import("./pages/Dashboard"));
 const NewAssessment = lazy(()=> import("./pages/NewAssessment"));
@@ -40,6 +42,7 @@ function Protected({ children, allow }){
 
 function AppRoutes(){
   const [loading, setLoading] = useState(true);
+  const { hasChosen } = useI18n();
   useEffect(()=>{
     if(sessionStorage.getItem("onionsetu_splash_seen")){
       setLoading(false);
@@ -48,6 +51,9 @@ function AppRoutes(){
   function handleDone(){
     sessionStorage.setItem("onionsetu_splash_seen","1");
     setLoading(false);
+  }
+  if(!hasChosen){
+    return <LanguageGate />;
   }
   return (
     <>
@@ -87,6 +93,7 @@ function AppRoutes(){
 
 export default function App(){
   return (
+    <I18nProvider>
     <StoreProvider>
       <AuthProvider>
         <BrowserRouter>
@@ -94,5 +101,6 @@ export default function App(){
         </BrowserRouter>
       </AuthProvider>
     </StoreProvider>
+    </I18nProvider>
   );
 }
