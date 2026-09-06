@@ -19,8 +19,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <style>
       #google_translate_element{ display:none !important; }
-      .goog-te-banner-frame.skiptranslate{ display:none !important }
-      body{ top:0 !important }
+      .goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, .goog-te-balloon-frame, #goog-gt-tt, .skiptranslate, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .VIpgJd-ZVi9od-aZ2wEe-OiiCO { display:none !important; visibility:hidden !important; height:0 !important; }
+      html, body{ top:0 !important; margin-top:0 !important; }
+      .goog-text-highlight{ background:none !important; box-shadow:none !important; border:none !important; }
+      .goog-logo-link{ display:none !important; }
+      .goog-te-gadget{ height:0 !important; overflow:hidden !important; }
+      /* Prevent Google from adding top margin */
+      body > .skiptranslate{ display:none !important; }
     </style>
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -80,6 +85,18 @@
           autoDisplay: false
         }, 'google_translate_element');
       }
+      // Aggressively hide the "Translated into:" banner forever
+      (function hideBanner(){
+        const hide = () => {
+          document.querySelectorAll('.goog-te-banner-frame, .skiptranslate, #goog-gt-tt, .VIpgJd-ZVi9od-aZ2wEe').forEach(el=>{ el.style.display='none'; el.style.visibility='hidden'; });
+          document.documentElement.style.top='0px';
+          document.body.style.top='0px';
+          document.body.style.marginTop='0px';
+        };
+        setInterval(hide, 300);
+        hide();
+        window.addEventListener('load', hide);
+      })();
     </script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script type="module" src="/src/main.jsx"></script>
