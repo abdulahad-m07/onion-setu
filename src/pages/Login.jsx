@@ -122,13 +122,12 @@ export default function Login(){
             <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title={t("grader")} desc={t("graderDesc")} icon="◉" />
           </div>
           <div style={{fontSize:12, color:"#8a7a74", background:"white", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
-            <b>Demo accounts</b> — click a role above (auto-fills). Password is <span className="mono">123456</span><br/>
-            Farmer: <span className="mono" style={{fontSize:11}}>farmer@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543211</span><br/>
-            Grader: <span className="mono" style={{fontSize:11}}>grader@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543210</span><br/>
-            <span style={{fontSize:11, color:"#7A263A", fontWeight:600}}>OTP is sent to your Gmail or phone — demo code shown below after login.</span>
+            <b>{t("demoAccounts")}</b> — {t("selectLanguageDesc")}<br/>
+            {t("farmer")}: <span className="mono" style={{fontSize:11}}>farmer@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543211</span><br/>
+            {t("grader")}: <span className="mono" style={{fontSize:11}}>grader@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543210</span><br/>
             <div style={{display:"flex", gap:8, marginTop:8, flexWrap:"wrap"}}>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>Quick as Farmer (no OTP)</button>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>Quick as Grader (no OTP)</button>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>{t("quickLogin")} {t("farmer")}</button>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>{t("quickLogin")} {t("grader")}</button>
             </div>
           </div>
         </div>
@@ -146,20 +145,20 @@ export default function Login(){
           </div>
 
           <label style={{display:"grid", gap:6}}>
-            <span className="label">Gmail or Phone number *</span>
+            <span className="label">{t("gmailOrPhone")} *</span>
             <input className="input" type="text" required value={identifier} onChange={e=> setIdentifier(e.target.value)} placeholder="farmer@gmail.com or 9876543211" autoComplete="username" inputMode="email" />
-            <button type="button" className="btn btn-ghost" style={{fontSize:11, padding:"4px 6px", justifySelf:"start"}} onClick={usePhone}>Use phone instead: {role==="grader" ? "9876543210" : "9876543211"}</button>
+            <button type="button" className="btn btn-ghost" style={{fontSize:11, padding:"4px 6px", justifySelf:"start"}} onClick={usePhone}>Use phone: {role==="grader" ? "9876543210" : "9876543211"}</button>
           </label>
-          <label style={{display:"grid", gap:6}}><span className="label">Password {isSupabaseConfigured && <span style={{fontWeight:400, color:"#8a7a74"}}>(not needed for real OTP — leave blank)</span>}</span>
+          <label style={{display:"grid", gap:6}}><span className="label">{t("password")} {isSupabaseConfigured && <span style={{fontWeight:400, color:"#8a7a74"}}>(OTP — leave blank)</span>}</span>
             <input className="input" type="password" required={!isSupabaseConfigured} value={password} onChange={e=> setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
           </label>
           {isSupabaseConfigured && <div style={{fontSize:11, color:"#3F7D4A", background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:8, padding:8}}>✓ Real OTP enabled — Supabase will send a 6-digit code to your Gmail / SMS. {channelFor(identifier)==="sms" && "Requires Twilio configured in Supabase for SMS."}</div>}
 
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
 
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Signing in…" : `Send OTP →`}</button>
+          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? t("loading") : `${t("sendOtp")} →`}</button>
 
-          <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>No account? <Link to="/signup" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>Create one</Link> · <Link to="/landing" style={{color:"#8a7a74"}}>Learn more</Link></div>
+          <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>{t("noAccount")} <Link to="/signup" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>{t("signup")}</Link></div>
           <div style={{fontSize:11, color:"#8a7a74", textAlign:"center", borderTop:"1px solid #F3EAE2", paddingTop:10}}>Lasalgaon APMC · OTP sent via {channelFor(identifier)==="sms" ? "SMS" : "Gmail"} to your contact</div>
         </form>
         ) : (
