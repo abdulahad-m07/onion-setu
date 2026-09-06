@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../lib/auth";
+import { useAuth, isSupabaseConfigured } from "../lib/auth";
 import { useSeo } from "../lib/seo";
 import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Signup(){
-  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — OTP verified via the channel you use.", canonical:"/signup" });
-  const { signup } = useAuth();
+  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — real OTP via Supabase when configured.", canonical:"/signup" });
+  const { signup, loginWithSupabaseOtp, verifySupabaseOtp } = useAuth();
   const nav = useNavigate();
   const [role, setRole] = useState("farmer");
   const [name, setName] = useState("");
@@ -23,7 +23,28 @@ export default function Signup(){
   const [pendingData, setPendingData] = useState(null);
   const [cooldown, setCooldown] = useState(0);
 
-  function startOtp(identifier, channel){
+  async function startOtp(identifier, channel){
+    if(isSupabaseConfigured){
+      // store pending role for Supabase metadata
+      localStorage.setItem("onion-setu-pending-role", role);
+      localStorage.setItem("onion-setu-pending-name", name.trim());
+      const { supabase } = await import("../lib/supabase");
+      const isPhone = /^[6-9]\d{9}$/.test(String(identifier).trim());
+      let res;
+      if(isPhone){
+        res = await supabase.auth.signInWithOtp({ phone: `+91${String(identifier).trim()}` });
+      } else {
+        res = await supabase.auth.signInWithOtp({ email: String(identifier).trim().toLowerCase(), options:{ shouldCreateUser:true, data:{ role, name: name.trim() } } });
+      }
+      if(res.error){
+        setErr(res.error.message + (isPhone ? " — Enable Phone provider in Supabase for SMS." : ""));
+        setStep("form"); return;
+      }
+      setOtpInfo({ channel, masked: maskContact(identifier, channel), identifier, code: null });
+      setOtp(""); setCooldown(30);
+      const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
+      return;
+    }
     const sent = sendOtp(identifier, channel);
     setOtpInfo({ channel, masked: maskContact(identifier, channel), identifier, code: sent.code });
     setOtp(""); setCooldown(30);
@@ -45,10 +66,27 @@ export default function Signup(){
     startOtp(identifier, channel);
     setStep("otp");
   }
-  function verify(e){
+  async function verify(e){
     e.preventDefault();
     setErr("");
     if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    if(isSupabaseConfigured){
+      setBusy(true);
+      const isPhone = /^[6-9]\d{9}$/.test(String(otpInfo.identifier).trim());
+      const { supabase } = await import("../lib/supabase");
+      let res;
+      if(isPhone){
+        res = await supabase.auth.verifyOtp({ phone: `+91${String(otpInfo.identifier).trim()}`, token: String(otp).trim(), type:"sms" });
+      } else {
+        res = await supabase.auth.verifyOtp({ email: String(otpInfo.identifier).trim().toLowerCase(), token: String(otp).trim(), type:"email" });
+      }
+      if(res.error){ setBusy(false); setErr(res.error.message); return; }
+      // also create local profile fallback
+      const r = signup(pendingData);
+      setBusy(false);
+      if(!r.ok && !r.ok){ /* ignore if already exists */ }
+      nav("/", { replace:true }); return;
+    }
     const v = verifyOtp(otpInfo.identifier, otp.trim());
     if(!v.ok){ setErr(v.error); return; }
     setBusy(true);
@@ -58,6 +96,10 @@ export default function Signup(){
     nav("/", { replace:true });
   }
   function resend(){
+    if(isSupabaseConfigured){
+      startOtp(otpInfo.identifier, otpInfo.channel);
+      setErr(""); return;
+    }
     startOtp(otpInfo.identifier, otpInfo.channel);
     setErr("");
   }
@@ -116,10 +158,17 @@ export default function Signup(){
         <form onSubmit={verify} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
           <p style={{margin:0, color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
-          <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
-            <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
-            <div style={{color:"#6B5A54", marginTop:4}}>In production: sent via {otpInfo?.channel==="sms" ? "Twilio SMS" : "Gmail"} — expires in 5 minutes.</div>
-          </div>
+          {isSupabaseConfigured ? (
+            <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+              <b>Real OTP sent via {otpInfo?.channel==="sms" ? "SMS (Supabase + Twilio)" : "Gmail (Supabase)"}.</b>
+              <div style={{color:"#6B5A54", marginTop:4}}>Check your {otpInfo?.channel==="sms" ? "phone" : "Gmail inbox/spam"} for the 6-digit code — expires in 5 minutes.</div>
+            </div>
+          ) : (
+            <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+              <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
+              <div style={{color:"#6B5A54", marginTop:4}}>Mock OTP — expires in 5 minutes. Add Supabase key to send real codes.</div>
+            </div>
+          )}
           <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>
             <input className="input" type="text" inputMode="numeric" maxLength={6} required value={otp} onChange={e=> setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="• • • • • •" style={{letterSpacing:".2em", textAlign:"center", fontSize:18}} autoFocus />
           </label>

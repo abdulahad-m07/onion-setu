@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../lib/auth";
+import { useAuth, isSupabaseConfigured } from "../lib/auth";
 import { useSeo } from "../lib/seo";
 import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Login(){
-  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — OTP verified via SMS or email.", canonical:"/login" });
-  const { login, demoLogin } = useAuth();
+  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — real OTP via Supabase when configured.", canonical:"/login" });
+  const { login, demoLogin, loginWithSupabaseOtp, verifySupabaseOtp } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
   const next = loc.state?.from || "/";
@@ -21,15 +21,25 @@ export default function Login(){
   const [otpInfo, setOtpInfo] = useState(null); // {channel, masked, code?}
   const [cooldown, setCooldown] = useState(0);
 
-  function submit(e){
+  async function submit(e){
     e.preventDefault();
     setErr("");
     if(!identifier.trim()){ setErr("Enter your Gmail or phone number."); return; }
     setBusy(true);
+    if(isSupabaseConfigured){
+      // Real OTP via Supabase — password not required for OTP flow
+      const r = await loginWithSupabaseOtp(identifier.trim(), role);
+      setBusy(false);
+      if(!r.ok){ setErr(r.error); return; }
+      setOtpInfo({ channel: r.channel, masked: maskContact(identifier.trim(), r.channel), code: null });
+      setOtp(""); setStep("otp"); setCooldown(30);
+      const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
+      return;
+    }
     const r = login(identifier.trim(), password, role);
     setBusy(false);
     if(!r.ok){ setErr(r.error); return; }
-    // credentials ok — send OTP to the identifier channel
+    // mock OTP
     const channel = channelFor(identifier.trim());
     const sent = sendOtp(identifier.trim(), channel);
     setOtpInfo({ channel, masked: maskContact(identifier.trim(), channel), code: sent.code });
@@ -46,19 +56,35 @@ export default function Login(){
     if(role==="grader") setIdentifier("9876543210");
     else setIdentifier("9876543211");
   }
-  function verify(e){
+  async function verify(e){
     e.preventDefault();
     setErr("");
     if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    if(isSupabaseConfigured){
+      setBusy(true);
+      const v = await verifySupabaseOtp(identifier.trim(), otp.trim());
+      setBusy(false);
+      if(!v.ok){ setErr(v.error); return; }
+      nav(next, { replace:true }); return;
+    }
     const v = verifyOtp(identifier.trim(), otp.trim());
     if(!v.ok){ setErr(v.error); return; }
     nav(next, { replace:true });
   }
-  function resend(){
+  async function resend(){
+    setErr("");
+    if(isSupabaseConfigured){
+      const r = await loginWithSupabaseOtp(identifier.trim(), role);
+      if(!r.ok){ setErr(r.error); return; }
+      setOtpInfo({ channel: r.channel, masked: maskContact(identifier.trim(), r.channel), code: null });
+      setCooldown(30);
+      const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
+      return;
+    }
     const channel = channelFor(identifier.trim());
     const sent = sendOtp(identifier.trim(), channel);
     setOtpInfo({ channel, masked: maskContact(identifier.trim(), channel), code: sent.code });
-    setErr(""); setCooldown(30);
+    setCooldown(30);
     const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
   }
 
@@ -105,9 +131,10 @@ export default function Login(){
             <input className="input" type="text" required value={identifier} onChange={e=> setIdentifier(e.target.value)} placeholder="farmer@gmail.com or 9876543211" autoComplete="username" inputMode="email" />
             <button type="button" className="btn btn-ghost" style={{fontSize:11, padding:"4px 6px", justifySelf:"start"}} onClick={usePhone}>Use phone instead: {role==="grader" ? "9876543210" : "9876543211"}</button>
           </label>
-          <label style={{display:"grid", gap:6}}><span className="label">Password</span>
-            <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
+          <label style={{display:"grid", gap:6}}><span className="label">Password {isSupabaseConfigured && <span style={{fontWeight:400, color:"#8a7a74"}}>(not needed for real OTP — leave blank)</span>}</span>
+            <input className="input" type="password" required={!isSupabaseConfigured} value={password} onChange={e=> setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
           </label>
+          {isSupabaseConfigured && <div style={{fontSize:11, color:"#3F7D4A", background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:8, padding:8}}>✓ Real OTP enabled — Supabase will send a 6-digit code to your Gmail / SMS. {channelFor(identifier)==="sms" && "Requires Twilio configured in Supabase for SMS."}</div>}
 
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
 
@@ -122,10 +149,17 @@ export default function Login(){
             <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
             <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
           </div>
-          <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
-            <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
-            <div style={{color:"#6B5A54", marginTop:4}}>In production this is sent via {otpInfo?.channel==="sms" ? "Twilio SMS" : "Gmail (SendGrid / Supabase)"} and expires in 5 minutes. Console also logs it.</div>
-          </div>
+          {isSupabaseConfigured ? (
+            <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+              <b>Real OTP sent via {otpInfo?.channel==="sms" ? "SMS (Supabase + Twilio)" : "Gmail (Supabase)"}.</b>
+              <div style={{color:"#6B5A54", marginTop:4}}>Check your {otpInfo?.channel==="sms" ? "phone" : "Gmail inbox / spam"} for the 6-digit code. It expires in 5 minutes. {otpInfo?.channel==="sms" && "If SMS not received, enable Phone provider in Supabase."}</div>
+            </div>
+          ) : (
+            <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+              <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
+              <div style={{color:"#6B5A54", marginTop:4}}>Mock OTP — expires in 5 minutes. Console also logs it. Add Supabase anon key to send real codes.</div>
+            </div>
+          )}
           <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>
             <input className="input" type="text" inputMode="numeric" maxLength={6} required value={otp} onChange={e=> setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="• • • • • •" style={{letterSpacing:".2em", textAlign:"center", fontSize:18}} autoFocus />
           </label>

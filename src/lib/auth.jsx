@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { supabase, isSupabaseConfigured } from "./supabase";
 
 const AuthContext = createContext(null);
 export function useAuth(){ return useContext(AuthContext); }
@@ -10,6 +11,8 @@ const DEMO_USERS = [
   { id:"u-grader", name:"S. Kulkarni", email:"grader@gmail.com", phone:"9876543210", password:"123456", role:"grader", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH" },
   { id:"u-farmer", name:"Ramesh Patil", email:"farmer@gmail.com", phone:"9876543211", password:"123456", role:"farmer", center:"Lasalgaon APMC", location:"Nashik, MH" },
 ];
+
+export { isSupabaseConfigured };
 
 function loadUsers(){
   try{
@@ -38,6 +41,17 @@ export function AuthProvider({ children }){
     return null;
   });
   const [users, setUsers] = useState(()=> loadUsers());
+  const [supaUser, setSupaUser] = useState(null);
+
+  // Listen to Supabase Auth state if configured
+  useEffect(()=>{
+    if(!supabase) return;
+    supabase.auth.getSession().then(({ data })=> setSupaUser(data.session?.user || null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session)=>{
+      setSupaUser(session?.user || null);
+    });
+    return ()=> subscription.unsubscribe();
+  },[]);
 
   useEffect(()=>{
     if(user) localStorage.setItem(LS_KEY, JSON.stringify(user));
@@ -84,15 +98,60 @@ export function AuthProvider({ children }){
     setUser({ id:nu.id, name:nu.name, email:nu.email, phone:nu.phone, role:nu.role, center:nu.center, location:nu.location });
     return { ok:true };
   }
-  function logout(){ setUser(null); }
+  async function loginWithSupabaseOtp(identifier, role){
+    // Store intended role for after verify
+    localStorage.setItem("onion-setu-pending-role", role);
+    const isPhone = /^[6-9]\d{9}$/.test(String(identifier).trim());
+    if(isPhone){
+      const phone = `+91${String(identifier).trim()}`;
+      const { error } = await supabase.auth.signInWithOtp({ phone });
+      if(error) return { ok:false, error: error.message + " — Configure Phone provider in Supabase Dashboard (Auth → Providers → Phone → Twilio) for SMS to work. Email OTP works without extra config." };
+      return { ok:true, channel:"sms" };
+    } else {
+      const { error } = await supabase.auth.signInWithOtp({ email: String(identifier).trim().toLowerCase(), options:{ shouldCreateUser:true, data:{ role } } });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true, channel:"email" };
+    }
+  }
+  async function verifySupabaseOtp(identifier, code){
+    const isPhone = /^[6-9]\d{9}$/.test(String(identifier).trim());
+    const pendingRole = localStorage.getItem("onion-setu-pending-role") || "farmer";
+    if(isPhone){
+      const phone = `+91${String(identifier).trim()}`;
+      const { data, error } = await supabase.auth.verifyOtp({ phone, token: String(code).trim(), type:"sms" });
+      if(error) return { ok:false, error: error.message };
+      const u = data.user;
+      // create local user from supabase user
+      const local = { id: u.id, name: u.user_metadata?.name || u.email || u.phone || pendingRole, email: u.email || `${phone}@phone.local`, phone: identifier, role: u.user_metadata?.role || pendingRole, center: pendingRole==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon APMC", location:"Nashik, MH" };
+      setUser(local);
+      localStorage.removeItem("onion-setu-pending-role");
+      return { ok:true };
+    } else {
+      const email = String(identifier).trim().toLowerCase();
+      const { data, error } = await supabase.auth.verifyOtp({ email, token: String(code).trim(), type:"email" });
+      if(error) return { ok:false, error: error.message };
+      const u = data.user;
+      const local = { id: u.id, name: u.user_metadata?.name || email.split("@")[0], email: u.email, phone: "", role: u.user_metadata?.role || pendingRole, center: pendingRole==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon APMC", location:"Nashik, MH" };
+      setUser(local);
+      localStorage.removeItem("onion-setu-pending-role");
+      return { ok:true };
+    }
+  }
+  function logout(){
+    if(supabase) supabase.auth.signOut();
+    setUser(null);
+    localStorage.removeItem("onion-setu-pending-role");
+  }
   function demoLogin(role){
     const d = DEMO_USERS.find(u=> u.role===role);
     setUser({ id:d.id, name:d.name, email:d.email, phone:d.phone, role:d.role, center:d.center, location:d.location });
   }
   const isGrader = user?.role==="grader";
   const isFarmer = user?.role==="farmer";
+  // Effective user considers supabase session too
+  const effectiveUser = user || (supaUser ? { id: supaUser.id, name: supaUser.email || supaUser.phone, email: supaUser.email, phone: supaUser.phone, role: supaUser.user_metadata?.role || "farmer", center:"Lasalgaon APMC", location:"Nashik, MH" } : null);
   return (
-    <AuthContext.Provider value={{ user, users: DEMO_USERS, isGrader, isFarmer, login, signup, logout, demoLogin, isPhone }}>
+    <AuthContext.Provider value={{ user: effectiveUser, rawUser: user, supaUser, users: DEMO_USERS, isGrader, isFarmer, login, signup, logout, demoLogin, isPhone, loginWithSupabaseOtp, verifySupabaseOtp, isSupabaseConfigured }}>
       {children}
     </AuthContext.Provider>
   );
