@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useState } from "react";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Assessments(){
+  useSeo({ title:"Assessments", description:"Browse all onion grading assessments — filter by status, search by lot or farmer, view Grade A vs URS and open tamper-evident reports.", canonical:"/assessments" });
   const { assessments } = useStore();
   const [filter, setFilter] = useState("All");
   const [q, setQ] = useState("");
@@ -14,9 +16,10 @@ export default function Assessments(){
   });
   return (
     <div style={{display:"grid", gap:14}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Assessments", href:"/assessments"}]} />
       <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"end"}}>
         <div>
-          <h1 className="h-display" style={{fontSize:28, margin:0}}>Assessments</h1>
+          <h1 className="h-display" style={{fontSize:28, margin:0}}>All assessments</h1>
           <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>History — every report is immutable; corrections create linked records.</p>
         </div>
         <Link to="/new" className="btn btn-primary">New Assessment</Link>

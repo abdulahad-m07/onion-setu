@@ -1,9 +1,12 @@
 import { useStore } from "../lib/store";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Settings(){
   const { offline, setOffline, syncAll, pendingCount, activePolicy } = useStore();
+  useSeo({ title:"Settings", description:"Manage offline sync, view active grading policy and system status for OnionSetu procurement grading.", canonical:"/settings" });
   return (
     <div style={{display:"grid", gap:14, maxWidth:820}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Settings", href:"/settings"}]} />
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Settings</h1>
       <div className="card card-pad">
         <h3 style={{margin:"0 0 10px", fontSize:14, fontWeight:700}}>Offline & Sync</h3>

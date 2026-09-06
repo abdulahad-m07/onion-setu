@@ -164,6 +164,25 @@ export default function Layout({ children }){
         </header>
         <div className="content">
           {children}
+          <footer style={{marginTop:32, padding:"18px 0 8px", borderTop:"1px solid #EDE3DC", display:"flex", flexWrap:"wrap", gap:12, justifyContent:"space-between", fontSize:12, color:"#6B5A54"}}>
+            <div>
+              <div style={{fontWeight:700, color:"#17110F"}}>OnionSetu — Lasalgaon APMC</div>
+              <div>Nashik, Maharashtra · Built for NAFED procurement</div>
+              <div style={{marginTop:6, display:"flex", gap:10, flexWrap:"wrap"}}>
+                <a href="/" style={{color:"#7A263A", fontWeight:600}}>Dashboard</a>
+                <a href="/new" style={{color:"#7A263A", fontWeight:600}}>New Assessment</a>
+                <a href="/assessments" style={{color:"#7A263A", fontWeight:600}}>Assessments</a>
+                <a href="/reports" style={{color:"#7A263A", fontWeight:600}}>Reports</a>
+                <a href="/policy" style={{color:"#7A263A", fontWeight:600}}>Policy</a>
+                <a href="/sitemap.xml" style={{color:"#7A263A"}}>Sitemap</a>
+              </div>
+            </div>
+            <div style={{textAlign:"right", minWidth:160}}>
+              <div style={{fontWeight:600, color:"#17110F"}}>Verification</div>
+              <a href="/verify/OG-2026-0241" style={{color:"#7A263A", fontWeight:600}}>Verify a report →</a>
+              <div style={{marginTop:6}}>© 2026 OnionSetu · <a href="/llms.txt" style={{color:"#7A263A"}}>llms.txt</a> · <a href="/robots.txt" style={{color:"#7A263A"}}>robots.txt</a></div>
+            </div>
+          </footer>
         </div>
       </div>
 

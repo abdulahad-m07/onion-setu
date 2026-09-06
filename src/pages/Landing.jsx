@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useSeo } from "../lib/seo";
 
 export default function Landing(){
+  useSeo({ title:"Landing", description:"Start AI-assisted onion grading — representative sampling, instant Grade A/URS, QR-verified reports built for NAFED and APMC procurement.", canonical:"/landing" });
   return (
     <div style={{display:"grid", gap:20, maxWidth:1100, margin:"0 auto", padding:"18px 14px 40px"}}>
       <header style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:12}}>
@@ -23,7 +25,7 @@ export default function Landing(){
           </div>
         </div>
         <div className="card" style={{overflow:"hidden"}}>
-          <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=800&h=600&fit=crop" alt="Onions" style={{width:"100%", height:320, objectFit:"cover"}} />
+          <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=800&h=600&fit=crop" alt="Fresh onions sorted on a mat at Lasalgaon APMC for quality grading with 25mm reference scale" width="800" height="600" loading="eager" style={{width:"100%", height:320, objectFit:"cover"}} />
           <div style={{padding:12, display:"flex", gap:8, flexWrap:"wrap"}}>
             <span className="badge badge-success">68% Grade A</span><span className="badge">32% URS</span><span className="badge badge-maroon">v2026.1</span><span className="badge">SHA-256</span>
           </div>

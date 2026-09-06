@@ -1,11 +1,14 @@
 import { Link, useParams } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export function ReportsList(){
+  useSeo({ title:"Reports", description:"Evidence-backed quality reports — open tamper-evident PDFs with QR verification, policy version and SHA-256 hash for every assessment.", canonical:"/reports" });
   const { assessments } = useStore();
   return (
     <div style={{display:"grid", gap:14}}>
-      <h1 className="h-display" style={{fontSize:28, margin:0}}>Reports</h1>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
+      <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
@@ -26,10 +29,13 @@ export function ReportDetail(){
   const { id } = useParams();
   const { assessments, updateAssessment } = useStore();
   const a = assessments.find(x=> x.id===id);
-  if(!a) return <div className="card card-pad">Report not found.</div>;
+  useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — ${a.gradeA}% Grade A / ${a.urs}% URS for ${a.farmer} at ${a.center}. Policy ${a.policyVersion}, verified SHA-256 report.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
+  if(!a) return <div className="card card-pad">Report not found. <Link to="/reports">Browse reports</Link></div>;
   return (
     <div style={{display:"grid", gap:14}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"},{label:a.id, href:`/reports/${a.id}`}]} />
       <Link to="/reports" className="btn btn-ghost" style={{justifySelf:"start"}}>← All reports</Link>
+      <h1 className="h-display" style={{fontSize:22, margin:0, position:"absolute", left:-9999, top:"auto", width:1, height:1, overflow:"hidden"}}>Report {a.id} — {a.gradeA}% Grade A quality assessment for {a.farmer}</h1>
       <div className="card card-pad" style={{border:"1px solid #EDE3DC"}}>
         <div style={{display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:12}}>
           <div>
@@ -61,7 +67,7 @@ export function ReportDetail(){
           </div>
           <div style={{display:"grid", gap:10}}>
             <div style={{border:"1px solid #EDE3DC", borderRadius:10, overflow:"hidden"}}>
-              <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop" alt="Evidence" style={{width:"100%", height:160, objectFit:"cover"}} />
+              <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop" alt={`Evidence photo for ${a.id}: onions on mat with 25mm reference, captured at ${a.center} on ${new Date(a.date).toLocaleDateString()}`} width="600" height="400" loading="lazy" style={{width:"100%", height:160, objectFit:"cover"}} />
               <div style={{padding:8, fontSize:11, color:"#6B5A54"}}>Photo evidence — 3 views · Representative sample on mat with 25 mm reference</div>
             </div>
             <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>

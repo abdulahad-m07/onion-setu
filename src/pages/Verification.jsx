@@ -1,10 +1,12 @@
 import { useParams, Link } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Verification(){
   const { id } = useParams();
   const { assessments } = useStore();
   const a = assessments.find(x=> x.id===id);
+  useSeo({ title: a ? `Verify ${a.id}` : "Verify report", description: a ? `Verify ${a.id} — check tamper-evident hash, policy ${a.policyVersion} and Grade A ${a.gradeA}% for ${a.center}.` : "Verify OnionSetu report via QR — confirm hash and policy version.", canonical: `/verify/${id}`, noindex:true });
   if(!a) return <div className="card card-pad">No record found for {id}. <Link to="/reports" className="btn btn-secondary" style={{marginLeft:8}}>Browse reports</Link></div>;
   return (
     <div style={{maxWidth:560, margin:"0 auto", display:"grid", gap:14}}>

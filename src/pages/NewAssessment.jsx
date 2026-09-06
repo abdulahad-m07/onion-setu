@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { gradeLot, CONFIDENCE_THRESHOLD, sha256Placeholder } from "../lib/grading";
 import { demoOnions } from "../lib/mockData";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 /* Guided 12-step wizard covering PRD §13-51 */
 const STEPS = [
@@ -10,6 +11,7 @@ const STEPS = [
 ];
 
 export default function NewAssessment(){
+  useSeo({ title:"New Assessment", description:"Start a new onion grading session — enter lot details, capture 3 views with reference, run quality check and get Grade A / URS with evidence report.", canonical:"/new" });
   const { activePolicy, policies, addAssessment, offline, setOffline } = useStore();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
@@ -81,9 +83,10 @@ export default function NewAssessment(){
 
   return (
     <div style={{display:"grid", gap:16}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"New Assessment", href:"/new"}]} />
       <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"center"}}>
         <div>
-          <h1 className="h-display" style={{fontSize:28, margin:0}}>New Assessment</h1>
+          <h1 className="h-display" style={{fontSize:28, margin:0}}>New assessment</h1>
           <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Farmer + Grader joint session · AI assists, human decides · Offline-capable</p>
         </div>
         <div style={{display:"flex", gap:8, alignItems:"center"}}>
@@ -188,7 +191,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
             <div style={{height:160, background:"#F3EAE2", display:"grid", placeItems:"center", position:"relative", overflow:"hidden"}}>
               {captures[i] ? (
                 // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                <img src={captures[i].startsWith("demo") ? "https://images.unsplash.com/photo-1508747703725-719777637510?w=400&h=300&fit=crop" : captures[i]} alt={`View ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                <img src={captures[i].startsWith("demo") ? "https://images.unsplash.com/photo-1508747703725-719777637510?w=400&h=300&fit=crop" : captures[i]} alt={`Captured onion sample view ${i+1} of 3 with onions arranged on mat`} width="400" height="300" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}} />
               ) : (
                 <div style={{textAlign:"center", color:"#8a7a74", fontSize:12}}>No image yet<br/>Use camera or upload</div>
               )}
@@ -271,7 +274,7 @@ function StepDetection({processing,onions,onNext,onPrev}){
       ) : (
         <>
           <div style={{position:"relative", borderRadius:12, overflow:"hidden", border:"1px solid #EDE3DC", height:260, background:"linear-gradient(180deg,#FDFBF9,#F3EAE2)"}}>
-            <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop" alt="Onion detection" style={{width:"100%",height:"100%",objectFit:"cover", opacity:.88}} />
+            <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop" alt="Segmented onion detection overlay showing five onions labeled O1 to O5 with yellow bounding boxes on a sorting mat" width="900" height="500" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover", opacity:.88}} />
             {onions.slice(0,5).map(o=>(
               <div key={o.id} style={{position:"absolute", left:`${o.box.x}%`, top:`${o.box.y}%`, width:`${o.box.w}%`, height:`${o.box.h}%`, border:"2px solid #F2B84B", borderRadius:12, boxShadow:"0 2px 8px rgba(0,0,0,.18)", background:"rgba(242,184,75,.08)"}}>
                 <span style={{position:"absolute", top:-8, left:8, background:"#F2B84B", color:"#17110F", fontSize:10, fontWeight:800, padding:"2px 6px", borderRadius:999}}>{o.id}</span>

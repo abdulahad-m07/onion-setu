@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Dashboard(){
+  useSeo({ title:"Dashboard", description:"Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
   const { assessments, activePolicy } = useStore();
   const today = assessments.filter(a=> a.date.startsWith("2026-09-05")).length;
   const gradeAAvg = Math.round(assessments.slice(0,3).reduce((s,a)=>s+a.gradeA,0)/Math.max(1,Math.min(3,assessments.length)));
@@ -10,9 +12,10 @@ export default function Dashboard(){
 
   return (
     <div style={{display:"grid", gap:18}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Dashboard", href:"/"}]} />
       <div style={{display:"flex", flexWrap:"wrap", alignItems:"end", justifyContent:"space-between", gap:12}}>
         <div>
-          <h1 className="h-display" style={{fontSize:32, margin:0}}>Dashboard</h1>
+          <h1 className="h-display" style={{fontSize:32, margin:0}}>Onion grading dashboard</h1>
           <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>AI-assisted procurement overview — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span></p>
         </div>
         <div style={{display:"flex", gap:8}}>

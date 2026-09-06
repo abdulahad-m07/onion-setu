@@ -1,21 +1,26 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StoreProvider } from "./lib/store";
 import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import NewAssessment from "./pages/NewAssessment";
-import Assessments from "./pages/Assessments";
-import Reviews from "./pages/Reviews";
-import { ReportsList, ReportDetail } from "./pages/Reports";
-import Policy from "./pages/Policy";
-import Settings from "./pages/Settings";
-import Verification from "./pages/Verification";
-import Landing from "./pages/Landing";
 import { SplashScreen } from "./components/OnionSetuLoader";
+
+const Dashboard = lazy(()=> import("./pages/Dashboard"));
+const NewAssessment = lazy(()=> import("./pages/NewAssessment"));
+const Assessments = lazy(()=> import("./pages/Assessments"));
+const Reviews = lazy(()=> import("./pages/Reviews"));
+import { ReportsList, ReportDetail } from "./pages/Reports";
+const Policy = lazy(()=> import("./pages/Policy"));
+const Settings = lazy(()=> import("./pages/Settings"));
+const Verification = lazy(()=> import("./pages/Verification"));
+const Landing = lazy(()=> import("./pages/Landing"));
+const NotFound = lazy(()=> import("./pages/NotFound"));
+
+function Loader(){
+  return <div style={{padding:40, textAlign:"center", color:"#8a7a74", fontSize:14}}>Loading OnionSetu…</div>;
+}
 
 export default function App(){
   const [loading, setLoading] = useState(true);
-  // show splash only once per session — skip if already seen
   useEffect(()=>{
     if(sessionStorage.getItem("onionsetu_splash_seen")){
       setLoading(false);
@@ -29,10 +34,12 @@ export default function App(){
     <StoreProvider>
       <BrowserRouter>
         {loading && <SplashScreen onDone={handleDone} />}
+        <Suspense fallback={<Loader/>}>
         <Routes>
           <Route path="/landing" element={<Landing />} />
           <Route path="/*" element={
             <Layout>
+              <Suspense fallback={<Loader/>}>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/new" element={<NewAssessment />} />
@@ -43,11 +50,13 @@ export default function App(){
                 <Route path="/verify/:id" element={<Verification />} />
                 <Route path="/policy" element={<Policy />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
+              </Suspense>
             </Layout>
           } />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </StoreProvider>
   );

@@ -1,11 +1,14 @@
 import { useStore } from "../lib/store";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Policy(){
   const { policies, activePolicy, setPolicy } = useStore();
+  useSeo({ title:"Grading Policy", description:"Versioned procurement policy — compare v2026.1 (35–70mm) vs v2025.2 (45–65mm). Switch active policy without redeploy; every report records the version used.", canonical:"/policy" });
   return (
     <div style={{display:"grid", gap:14}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Policy", href:"/policy"}]} />
       <div>
-        <h1 className="h-display" style={{fontSize:28, margin:0}}>Versioned Policy</h1>
+        <h1 className="h-display" style={{fontSize:28, margin:0}}>Grading policy</h1>
         <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Grading rules are configuration, not hardcoded app logic. Switching policy re-computes Grade A / URS without redeploy.</p>
       </div>
       <div className="card" style={{overflow:"hidden"}}>

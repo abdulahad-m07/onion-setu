@@ -1,7 +1,9 @@
 import { useStore } from "../lib/store";
 import { useState } from "react";
+import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Reviews(){
+  useSeo({ title:"Review Center", description:"Human-in-the-loop review queue — low-confidence onions flagged below 60% for grader confirmation. Accept or correct AI results; original preserved.", canonical:"/reviews" });
   const { assessments, updateAssessment } = useStore();
   const uncertain = assessments.flatMap(a=> (a.onions||[]).filter(o=> o.confidence<60).map(o=> ({...o, assessmentId:a.id, lotId:a.lotId, farmer:a.farmer})));
   const [decisions, setDecisions] = useState({});
@@ -10,8 +12,9 @@ export default function Reviews(){
   }
   return (
     <div style={{display:"grid", gap:14}}>
+      <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reviews", href:"/reviews"}]} />
       <div>
-        <h1 className="h-display" style={{fontSize:28, margin:0}}>Review Center</h1>
+        <h1 className="h-display" style={{fontSize:28, margin:0}}>Review center</h1>
         <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Human-in-the-loop — uncertain results flagged by the {60}% confidence gate. AI assists, human decides.</p>
       </div>
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(260px,1fr))", gap:12}}>
