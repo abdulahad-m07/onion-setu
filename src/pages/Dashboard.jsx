@@ -62,34 +62,12 @@ export default function Dashboard(){
               <Activity dot="#B33A3A" text="Dispute opened — OG-2026-0238" time="Yesterday" />
             </div>
           </div>
-          <div className="card card-pad" style={{background:"#7A263A", color:"white", borderColor:"#7A263A"}}>
-            <div style={{fontSize:12, letterSpacing:".08em", textTransform:"uppercase", opacity:.8, fontWeight:700}}>Differentiators</div>
-            <ul style={{margin:"10px 0 0", paddingLeft:18, fontSize:13, lineHeight:1.6}}>
-              <li>Multi-view capture with reference calibration</li>
-              <li>On-device AI · Image Quality Gate</li>
-              <li>Human-in-the-loop · Versioned Policy</li>
-              <li>Evidence-backed reports · Offline-first</li>
-            </ul>
+          <div className="card card-pad">
+            <div style={{fontSize:12, letterSpacing:".08em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>How it works</div>
+            <div style={{marginTop:8, fontSize:13, color:"#17110F", lineHeight:1.5}}>Capture once · Get instant Grade A / URS · Review together · Walk away with a verified report.</div>
+            <div style={{marginTop:8, fontSize:12, color:"#6B5A54"}}>If the result is uncertain, it’s flagged for the grader to confirm — the original record is always preserved.</div>
           </div>
         </div>
-      </div>
-
-      <div className="card card-pad">
-        <h3 style={{margin:"0 0 12px", fontSize:14, fontWeight:700}}>Architecture</h3>
-        <div style={{display:"flex", flexWrap:"wrap", gap:8, alignItems:"center", fontSize:12, fontWeight:600, color:"#6B5A54"}}>
-          <span className="badge">Capture</span> <span>→</span>
-          <span className="badge">Quality Gate</span> <span>→</span>
-          <span className="badge">Detection</span> <span>→</span>
-          <span className="badge">Size + Defect</span> <span>→</span>
-          <span className="badge" style={{background:"#FEF3D8", borderColor:"#FBE2A8"}}>Confidence Gate</span> <span>→</span>
-          <span className="badge">Human Review</span> <span>→</span>
-          <span className="badge" style={{background:"#fdf2f4", borderColor:"#F0D0D8", color:"#7A263A"}}>Versioned Policy</span> <span>→</span>
-          <span className="badge" style={{background:"#EDF5EF", borderColor:"#C8E4CC", color:"#3F7D4A"}}>Grade A / URS</span> <span>→</span>
-          <span className="badge">Farmer + Grader Review</span> <span>→</span>
-          <span className="badge">Report · SHA-256 · QR</span> <span>→</span>
-          <span className="badge">Offline Sync → Supabase</span>
-        </div>
-        <div style={{marginTop:10, fontSize:12, color:"#8a7a74"}}>AI assists the grader — it does not replace the grader. Low-confidence results are flagged for human review and original records are preserved.</div>
       </div>
 
       <style>{`@media(max-width:900px){ .dash-grid{grid-template-columns:1fr !important} }`}</style>

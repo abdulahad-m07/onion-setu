@@ -124,15 +124,12 @@ export default function Layout({ children }){
               <button className="btn btn-ghost" style={{padding:"4px 8px",fontSize:12}} onClick={()=> setOffline(v=>!v)}>{offline ? "Go online" : "Go offline"}</button>
             </div>
             <div style={{fontSize:12, color:"#6B5A54"}}>
-              {offline ? `${pendingCount} assessment${pendingCount!==1?"s":""} queued locally.` : "All assessments synced to Supabase."}
-              <br/>Local encrypted queue → Supabase
+              {offline ? `${pendingCount} assessment${pendingCount!==1?"s":""} saved offline.` : "All assessments synced."}
+              <br/>{offline ? "Will sync when you're back online." : "Up to date."}
             </div>
             {offline && pendingCount>0 && (
-              <button className="btn btn-primary" style={{width:"100%",marginTop:10,fontSize:13}} onClick={syncAll}>Simulate sync</button>
+              <button className="btn btn-primary" style={{width:"100%",marginTop:10,fontSize:13}} onClick={syncAll}>Sync now</button>
             )}
-            <div style={{marginTop:8, display:"flex", gap:6}}>
-              <span className="kbd">Supabase</span><span className="kbd">Postgres</span><span className="kbd">SHA-256</span>
-            </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10, marginTop:12}}>
             <img src="https://i.pravatar.cc/100?img=12" alt="" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover"}}/>
