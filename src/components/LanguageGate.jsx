@@ -27,7 +27,7 @@ export default function LanguageGate(){
         </div>
         <div style={{display:"grid", placeItems:"center", gap:8}}>
           <button className="btn btn-primary" style={{minWidth:200, minHeight:44}} disabled={!pick} onClick={()=> setLang(pick)}>{pick ? `Continue in ${languages.find(l=>l.code===pick)?.native} →` : "Select a language"}</button>
-          <div style={{fontSize:11, color:"#8a7a74"}}>22 languages + English · Report can be downloaded in your language or English</div>
+          <div style={{fontSize:11, color:"#8a7a74"}}>22 languages + English · Report in your language or English · Also try <span style={{border:"1px solid #EDE3DC", background:"#FBF6F0", borderRadius:6, padding:"2px 6px", fontSize:11}}>Google Translate</span> in top bar for 100% instant translation</div>
         </div>
       </div>
     </div>
