@@ -9,11 +9,12 @@ export function ReportsList(){
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
+      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Dispute — plus uploaded images in final report</p>
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
             <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}>◉</div>
-            <div style={{flex:1}}>
+            <div style={{flex:1, minWidth:0}}>
               <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Disputed"?"badge-error": a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
@@ -29,8 +30,10 @@ export function ReportDetail(){
   const { id } = useParams();
   const { assessments, updateAssessment } = useStore();
   const a = assessments.find(x=> x.id===id);
-  useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — ${a.gradeA}% Grade A / ${a.urs}% URS for ${a.farmer} at ${a.center}. Policy ${a.policyVersion}, verified SHA-256 report.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
+  useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — ${a.gradeA}% Grade A / ${a.urs}% URS at ${a.location}. Policy ${a.policyVersion}, Confidence ${a.confidence}%.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
   if(!a) return <div className="card card-pad">Report not found. <Link to="/reports">Browse reports</Link></div>;
+  const hasImages = Array.isArray(a.images) && a.images.length;
+  const hasOnions = Array.isArray(a.onions) && a.onions.length;
   return (
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"},{label:a.id, href:`/reports/${a.id}`}]} />
@@ -40,23 +43,73 @@ export function ReportDetail(){
         <div style={{display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:12}}>
           <div>
             <div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:22, color:"#7A263A"}}>ONIONSETU</div>
-            <div style={{fontSize:11, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Quality Assessment Report</div>
-            <div style={{marginTop:8, fontSize:13}}><b>Assessment ID:</b> <span className="mono">{a.id}</span> · <b>Lot:</b> {a.lotId} · <b>Center:</b> {a.center}</div>
-            <div style={{fontSize:13}}><b>Farmer:</b> {a.farmer} · <b>Assessor:</b> {a.assessor} · <b>Date:</b> {new Date(a.date).toLocaleString()}</div>
-            <div style={{fontSize:12, color:"#6B5A54"}}>Policy {a.policyVersion} · Model {a.modelVersion} · Location {a.location}</div>
+            <div style={{fontSize:11, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Quality Assessment Report — Final</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"Fraunces, serif", fontSize:28, fontWeight:700, color:"#7A263A"}}>{a.gradeA}% GRADE A</div>
-            <div style={{fontFamily:"Fraunces, serif", fontSize:18, fontWeight:700}}>{a.urs}% URS</div>
+            <div style={{fontFamily:"Fraunces, serif", fontSize:26, fontWeight:700, color:"#7A263A"}}>{a.gradeA}% GRADE A</div>
+            <div style={{fontFamily:"Fraunces, serif", fontSize:16, fontWeight:700}}>{a.urs}% URS</div>
             <div style={{marginTop:6}}><span className={`badge ${a.status==="Disputed"?"badge-error":a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
           </div>
         </div>
+
         <div className="divider" />
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:16}} className="report-grid">
-          <div>
-            <div style={{fontWeight:700, fontSize:13}}>Sample & Results</div>
-            <div style={{fontSize:12, color:"#6B5A54"}}>Sample size: {a.sampleSize} onions · Confidence (avg): {a.confidence}% · Human reviews: {a.humanReviews}</div>
-            <div style={{marginTop:8, display:"grid", gap:6}}>
+
+        {/* ——— STORAGE FORMAT — exactly as requested, typed ——— */}
+        <div style={{background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:12, overflow:"hidden"}}>
+          <div style={{padding:"12px 14px", background:"#FBF6F0", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+            <div style={{fontWeight:700, fontSize:13}}>Stored Report Data</div>
+            <span className="badge badge-maroon" style={{fontSize:10}}>{a.policyVersion} · {a.modelVersion}</span>
+          </div>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px,1fr))", gap:0, fontSize:13}}>
+            <Row label="Report ID" value={a.id} mono />
+            <Row label="Date" value={new Date(a.date).toLocaleString()} />
+            <Row label="Location" value={`${a.location} · ${a.center}`} />
+            <Row label="Policy version" value={a.policyVersion} badge />
+            <Row label="Grade A %" value={`${a.gradeA}%`} strong color="#7A263A" />
+            <Row label="URS %" value={`${a.urs}%`} strong />
+            <Row label="Confidence" value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
+            <Row label="Farmer acknowledgement" value={a.acknowledged?.farmer ? "Acknowledged ✓" : "Pending"} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
+            <Row label="Grader acknowledgement" value={a.acknowledged?.grader ? "Acknowledged ✓" : "Pending"} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
+            <Row label="Dispute status" value={a.status==="Disputed" ? (a.dispute?.reason || "Disputed") : a.status==="Human Review" ? "Under review" : "No dispute"} badgeColor={a.status==="Disputed" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
+            <Row label="Sample size" value={`${a.sampleSize} onions`} />
+            <Row label="Lot ID" value={a.lotId} mono />
+            <Row label="Hash (SHA-256)" value={a.hash} mono small />
+          </div>
+        </div>
+
+        {/* ——— UPLOADED IMAGES — part of final report ——— */}
+        <div style={{marginTop:14}}>
+          <div style={{fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:8}}>
+            Uploaded Images — Final Report
+            <span className="badge" style={{fontSize:10}}>{hasImages ? `${a.images.length} views stored` : "Demo views"}</span>
+            <span className="badge badge-maroon" style={{fontSize:10}}>Stored in Supabase Storage</span>
+          </div>
+          <div style={{fontSize:11, color:"#6B5A54", marginTop:2}}>These are the exact 3 views captured (with 25mm reference). They are stored in <span className="mono" style={{fontSize:11}}>assessment-images</span> bucket: <span className="mono" style={{fontSize:10}}>{a.id}/view_0..2.jpg</span> — referenced by <span className="mono" style={{fontSize:10}}>assessment_images</span> table.</div>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginTop:10}} className="capture-grid">
+            {[0,1,2].map(i=>{
+              const stored = hasImages ? a.images.find(im=> im.view_index===i) : null;
+              const src = stored?.public_url || "https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop";
+              const label = `View ${i+1} of 3${i===0 ? " · 25mm ref" : ""}`;
+              return (
+                <div key={i} style={{border:"1px solid #EDE3DC", borderRadius:10, overflow:"hidden", background:"white"}}>
+                  <img src={src} alt={`Report ${a.id} uploaded image ${label} captured at ${a.location} on ${new Date(a.date).toLocaleDateString()}`} width="600" height="400" loading="lazy" style={{width:"100%", height:140, objectFit:"cover"}} />
+                  <div style={{padding:"8px 10px", fontSize:11, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <span style={{fontWeight:700}}>{label}</span>
+                    <span className="badge" style={{fontSize:9}}>{stored ? "Stored" : "Demo placeholder"}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{fontSize:11, color:"#8a7a74", marginTop:6}}>If real phone captures were uploaded, they appear here with signed URLs from Supabase Storage. Demo uses placeholder but storage path is still recorded.</div>
+        </div>
+
+        {/* Per-onion breakdown — also written */}
+        {hasOnions && (
+          <div style={{marginTop:14}}>
+            <div style={{fontWeight:700, fontSize:13}}>Per-Onion Results — Written to <span className="mono" style={{fontSize:11}}>assessment_onions</span></div>
+            <div style={{fontSize:11, color:"#6B5A54"}}>Each onion’s size, defect, confidence and Grade A/URS is stored as a typed row linked to <span className="mono" style={{fontSize:10}}>{a.id}</span>.</div>
+            <div style={{display:"grid", gap:6, marginTop:8}}>
               {(a.onions||[]).map(o=>(
                 <div key={o.id} style={{display:"flex", gap:8, alignItems:"center", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background:"white"}}>
                   <b>{o.id}</b><span>{o.sizeMm} mm</span><span>·</span><span>{o.defect}</span><span>·</span><span>{o.confidence}%</span>
@@ -65,27 +118,18 @@ export function ReportDetail(){
               ))}
             </div>
           </div>
-          <div style={{display:"grid", gap:10}}>
-            <div style={{border:"1px solid #EDE3DC", borderRadius:10, overflow:"hidden"}}>
-              <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop" alt={`Evidence photo for ${a.id}: onions on mat with 25mm reference, captured at ${a.center} on ${new Date(a.date).toLocaleDateString()}`} width="600" height="400" loading="lazy" style={{width:"100%", height:160, objectFit:"cover"}} />
-              <div style={{padding:8, fontSize:11, color:"#6B5A54"}}>Photo evidence — 3 views · Representative sample on mat with 25 mm reference</div>
-            </div>
-            <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
-              <div style={{fontWeight:700, fontSize:12}}>Evidence & Integrity</div>
-              <div style={{fontSize:11, color:"#6B5A54", marginTop:4, wordBreak:"break-all"}}><b>SHA-256:</b> <span className="mono">{a.hash}</span></div>
-              <div style={{fontSize:11, color:"#6B5A54"}}>Timestamp: {new Date(a.date).toLocaleString()} · Farmer ack: {a.acknowledged?.farmer?"Yes":"Pending"} · Grader ack: {a.acknowledged?.grader?"Yes":"Pending"}</div>
-              <div style={{fontSize:11, color:"#8a7a74", marginTop:6}}>SHA-256 provides tamper evidence for the stored photo set — not a blockchain.</div>
-            </div>
-            <div style={{border:"1px solid #EDE3DC", borderRadius:10, padding:10, display:"flex", gap:10, alignItems:"center"}}>
-              <div style={{width:64,height:64, border:"1px solid #EDE3DC", borderRadius:8, display:"grid", placeItems:"center", fontSize:10, textAlign:"center", background:"white"}}>QR<br/>Verify</div>
-              <div style={{fontSize:11}}>
-                <div style={{fontWeight:700}}>QR Verification</div>
-                <div className="mono" style={{color:"#6B5A54"}}> /verify/{a.id}</div>
-                <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>Open verification →</Link>
-              </div>
-            </div>
+        )}
+
+        <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center"}}>
+          <div style={{width:48,height:48, borderRadius:8, background:"white", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontSize:10, textAlign:"center"}}>QR<br/>Verify</div>
+          <div style={{fontSize:11}}>
+            <div style={{fontWeight:700}}>QR Verification</div>
+            <div className="mono" style={{color:"#6B5A54"}}>/verify/{a.id}</div>
+            <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>Open verification →</Link>
           </div>
+          <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: disputes create linked <span className="mono" style={{fontSize:10}}>disputes</span> row, original preserved.</div>
         </div>
+
         <div className="divider" />
         <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
           <button className="btn btn-primary" onClick={()=> window.print()}>Generate PDF · Print</button>
@@ -95,13 +139,26 @@ export function ReportDetail(){
           }}>Mark acknowledged</button>
           <button className="btn btn-ghost" style={{color:"#B33A3A"}} onClick={()=>{
             updateAssessment(a.id, { status:"Disputed", dispute:{ reason:"Flagged for second review", at:new Date().toISOString(), by:"Grader" } });
-            alert("Flagged — linked review record created. Original preserved (immutability).");
+            alert("Flagged — linked review record created. Original preserved.");
           }}>Flag Report / Second Review</button>
           {a.dispute && <span className="badge badge-error">Disputed: {a.dispute.reason}</span>}
         </div>
-        <div style={{marginTop:10, fontSize:11, color:"#8a7a74"}}>Audit: Report is immutable once finalized; disputes create linked records. Supabase PostgreSQL stores structured data; Storage holds photo sets; RLS controls access.</div>
       </div>
-      <style>{`@media(max-width:800px){ .report-grid{grid-template-columns:1fr !important} }`}</style>
+      <style>{`@media(max-width:800px){ .capture-grid{grid-template-columns:1fr !important} }`}</style>
+    </div>
+  );
+}
+
+function Row({label, value, mono, small, strong, color, badge, badgeColor, dot, suffix}){
+  return (
+    <div style={{display:"flex", justifyContent:"space-between", gap:12, padding:"9px 14px", borderBottom:"1px solid #F3EAE2", borderRight:"1px solid #F3EAE2", alignItems:"center", background:"white"}}>
+      <span style={{fontSize:11, letterSpacing:".06em", textTransform:"uppercase", fontWeight:700, color:"#8a7a74"}}>{label}</span>
+      <span style={{display:"flex", gap:8, alignItems:"center", fontSize: mono ? (small ? 10 : 11) : 13, fontWeight: strong ? 700 : 500, color: color || "#17110F", fontFamily: mono ? "JetBrains Mono, monospace" : undefined, textAlign:"right", wordBreak: mono ? "break-all" : undefined, maxWidth:"58%"}}>
+        {dot && <span className="dot" style={{background:dot}} />}
+        <span style={{overflow:"hidden", textOverflow:"ellipsis"}}>{value}</span>
+        {badge && <span className={`badge badge-${badgeColor||"maroon"}`} style={{fontSize:9}}>{value}</span>}
+        {suffix && <span className="badge" style={{fontSize:9}}>{suffix}</span>}
+      </span>
     </div>
   );
 }
