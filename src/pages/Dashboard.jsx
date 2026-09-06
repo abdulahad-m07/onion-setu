@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useAuth } from "../lib/auth";
 import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Dashboard(){
-  useSeo({ title:"Dashboard", description:"Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
+  const { user } = useAuth();
+  const isFarmer = user?.role==="farmer";
+  useSeo({ title:"Dashboard", description: isFarmer ? "Farmer dashboard — track your lots, Grade A results and verified reports at Lasalgaon APMC." : "Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
   const { assessments, activePolicy } = useStore();
+  const visible = isFarmer ? assessments.filter(a=> a.farmer.toLowerCase().includes(user.name.toLowerCase()) || a.farmer==="Ramesh Patil") : assessments;
   const today = assessments.filter(a=> a.date.startsWith("2026-09-05")).length;
   const gradeAAvg = Math.round(assessments.slice(0,3).reduce((s,a)=>s+a.gradeA,0)/Math.max(1,Math.min(3,assessments.length)));
   const humanReviews = assessments.reduce((s,a)=>s+a.humanReviews,0);
@@ -15,8 +19,8 @@ export default function Dashboard(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Dashboard", href:"/"}]} />
       <div style={{display:"flex", flexWrap:"wrap", alignItems:"end", justifyContent:"space-between", gap:12}}>
         <div>
-          <h1 className="h-display" style={{fontSize:32, margin:0}}>Onion grading dashboard</h1>
-          <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>AI-assisted procurement overview — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span></p>
+          <h1 className="h-display" style={{fontSize:32, margin:0}}>{isFarmer ? "My farm — grading overview" : "Onion grading dashboard"}</h1>
+          <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>{isFarmer ? <>Welcome, <b style={{color:"#7A263A"}}>{user.name}</b> · Farmer · {user.center}</> : <>AI-assisted procurement overview — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span> — Logged in as <b>{user?.role}</b></>}</p>
         </div>
         <div style={{display:"flex", gap:8}}>
           <Link to="/new" className="btn btn-primary">Start Assessment</Link>
@@ -25,9 +29,9 @@ export default function Dashboard(){
       </div>
 
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
-        <Metric label="Today's Assessments" value={today} sub="Sep 5, 2026" />
+        <Metric label={isFarmer ? "My Assessments" : "Today's Assessments"} value={isFarmer ? visible.length : today} sub={isFarmer ? "Linked to your account" : "Sep 5, 2026"} />
         <Metric label="Grade A %" value={`${gradeAAvg}%`} sub={`Policy ${activePolicy.version}`} accent />
-        <Metric label="Human Reviews" value={humanReviews} sub="Flagged by gate" />
+        <Metric label="Human Reviews" value={humanReviews} sub={isFarmer ? "Grader will review" : "Flagged by gate"} />
         <Metric label="Pending Disputes" value={pending} sub="Needs attention" warn={pending>0} />
       </div>
 
@@ -38,7 +42,7 @@ export default function Dashboard(){
             <Link to="/assessments" style={{fontSize:13, color:"#7A263A", fontWeight:600}}>View all →</Link>
           </div>
           <div style={{divide:""}}>
-            {assessments.slice(0,4).map(a=>(
+            {visible.slice(0,4).map(a=>(
               <div key={a.id} style={{display:"flex", alignItems:"center", gap:14, padding:"14px 18px", borderBottom:"1px solid #F3EAE2"}}>
                 <div style={{width:42,height:42, borderRadius:10, background:"#FBF6F0", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontFamily:"Fraunces, serif", fontWeight:700, color:"#7A263A"}}>{a.id.slice(-2)}</div>
                 <div style={{flex:1, minWidth:0}}>

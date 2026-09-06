@@ -1,15 +1,19 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useAuth } from "../lib/auth";
 import { useState } from "react";
 import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Assessments(){
-  useSeo({ title:"Assessments", description:"Browse all onion grading assessments — filter by status, search by lot or farmer, view Grade A vs URS and open tamper-evident reports.", canonical:"/assessments" });
+  const { user } = useAuth();
+  const isFarmer = user?.role==="farmer";
+  useSeo({ title: isFarmer ? "My Assessments" : "Assessments", description: isFarmer ? "My assessments — view lots linked to your farmer account, with Grade A/URS and evidence reports." : "Browse all onion grading assessments — filter by status, search by lot or farmer, view Grade A vs URS and open tamper-evident reports.", canonical:"/assessments" });
   const { assessments } = useStore();
   const [filter, setFilter] = useState("All");
   const [q, setQ] = useState("");
   const statuses = ["All","Completed","Human Review","Disputed","Sync Pending"];
-  const filtered = assessments.filter(a=>{
+  const visible = isFarmer ? assessments.filter(a=> a.farmer.toLowerCase().includes(user.name.toLowerCase()) || a.farmer==="Ramesh Patil") : assessments;
+  const filtered = visible.filter(a=>{
     if(filter!=="All" && a.status!==filter) return false;
     if(q && !(`${a.id} ${a.lotId} ${a.farmer} ${a.center}`.toLowerCase().includes(q.toLowerCase()))) return false;
     return true;
@@ -19,8 +23,8 @@ export default function Assessments(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Assessments", href:"/assessments"}]} />
       <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"end"}}>
         <div>
-          <h1 className="h-display" style={{fontSize:28, margin:0}}>All assessments</h1>
-          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>History — every report is immutable; corrections create linked records.</p>
+          <h1 className="h-display" style={{fontSize:28, margin:0}}>{isFarmer ? "My assessments" : "All assessments"}</h1>
+          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>{isFarmer ? "Only lots linked to your farmer account — open reports and QR verification." : "History — every report is immutable; corrections create linked records."}</p>
         </div>
         <Link to="/new" className="btn btn-primary">New Assessment</Link>
       </div>

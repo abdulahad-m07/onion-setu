@@ -1,15 +1,18 @@
 import { useStore } from "../lib/store";
+import { useAuth } from "../lib/auth";
 import { useSeo, Breadcrumbs } from "../lib/seo";
 
 export default function Policy(){
   const { policies, activePolicy, setPolicy } = useStore();
+  const { isGrader, user } = useAuth();
   useSeo({ title:"Grading Policy", description:"Versioned procurement policy — compare v2026.1 (35–70mm) vs v2025.2 (45–65mm). Switch active policy without redeploy; every report records the version used.", canonical:"/policy" });
   return (
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Policy", href:"/policy"}]} />
       <div>
         <h1 className="h-display" style={{fontSize:28, margin:0}}>Grading policy</h1>
-        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Grading rules are configuration, not hardcoded app logic. Switching policy re-computes Grade A / URS without redeploy.</p>
+        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Grading rules are configuration, not hardcoded app logic. {isGrader ? "Switching policy re-computes Grade A / URS without redeploy." : "Farmers can view the active policy; only graders can switch it."}</p>
+        {!isGrader && <div className="badge badge-warning" style={{marginTop:8}}>You are logged in as Farmer — policy switching is grader-only</div>}
       </div>
       <div className="card" style={{overflow:"hidden"}}>
         <div style={{padding:"14px 16px", background:"#7A263A", color:"white", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
@@ -46,9 +49,13 @@ export default function Policy(){
               <div style={{fontSize:12, color:"#6B5A54"}}>{p.description}</div>
               <div style={{fontSize:11, color:"#8a7a74"}}>Effective {p.effectiveFrom} · {p.updatedBy}</div>
             </div>
-            <button className={p.version===activePolicy.version ? "btn btn-ghost":"btn btn-primary"} style={{fontSize:12}} onClick={()=> setPolicy(p.version)} disabled={p.version===activePolicy.version}>
-              {p.version===activePolicy.version ? "Active" : "Activate"}
-            </button>
+            {isGrader ? (
+              <button className={p.version===activePolicy.version ? "btn btn-ghost":"btn btn-primary"} style={{fontSize:12}} onClick={()=> setPolicy(p.version)} disabled={p.version===activePolicy.version}>
+                {p.version===activePolicy.version ? "Active" : "Activate"}
+              </button>
+            ) : (
+              <span className="badge" style={{fontSize:10}} title="Only graders can switch policy">View only — {user?.role}</span>
+            )}
           </div>
         ))}
       </div>

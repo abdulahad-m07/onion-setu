@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
+import { useAuth } from "../lib/auth";
 
-const nav = [
-  { to:"/", label:"Dashboard", icon: IconDashboard },
-  { to:"/new", label:"New Assessment", icon: IconPlus },
-  { to:"/assessments", label:"Assessments", icon: IconClipboard },
-  { to:"/reviews", label:"Reviews", icon: IconEye },
-  { to:"/reports", label:"Reports", icon: IconFile },
-  { to:"/policy", label:"Policy", icon: IconScale },
-  { to:"/settings", label:"Settings", icon: IconGear },
+const baseNav = [
+  { to:"/", label:"Dashboard", icon: IconDashboard, roles:["farmer","grader"] },
+  { to:"/new", label:"New Assessment", icon: IconPlus, roles:["farmer","grader"] },
+  { to:"/assessments", label:"Assessments", icon: IconClipboard, roles:["farmer","grader"] },
+  { to:"/reviews", label:"Reviews", icon: IconEye, roles:["grader"] },
+  { to:"/reports", label:"Reports", icon: IconFile, roles:["farmer","grader"] },
+  { to:"/policy", label:"Policy", icon: IconScale, roles:["farmer","grader"] },
+  { to:"/settings", label:"Settings", icon: IconGear, roles:["farmer","grader"] },
 ];
 
 export default function Layout({ children }){
   const { offline, setOffline, pendingCount, syncAll, activePolicy } = useStore();
+  const { user, logout } = useAuth();
   const loc = useLocation();
   const nav2 = useNavigate();
+  const nav = baseNav.filter(n=> !user || n.roles.includes(user.role));
   const isLanding = loc.pathname === "/landing";
   const [menuOpen, setMenuOpen] = useState(false);
   const touchStartX = useRef(null);
@@ -132,13 +135,14 @@ export default function Layout({ children }){
             )}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10, marginTop:12}}>
-            <img src="https://i.pravatar.cc/100?img=12" alt="" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover"}}/>
-            <div>
-              <div style={{fontSize:13,fontWeight:600}}>S. Kulkarni</div>
-              <div style={{fontSize:11,color:"#8a7a74"}}>Grader · Lasalgaon</div>
+            <img src={user?.role==="grader" ? "https://i.pravatar.cc/100?img=12" : "https://i.pravatar.cc/100?img=15"} alt={`${user?.name || "User"} profile photo`} width="32" height="32" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover"}}/>
+            <div style={{minWidth:0, flex:1}}>
+              <div style={{fontSize:13,fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{user?.name || "Guest"}</div>
+              <div style={{fontSize:11,color:"#8a7a74"}}>{user?.role==="grader" ? "Grader" : "Farmer"} · {user?.center?.split("—")[0]?.trim() || "Lasalgaon"}</div>
             </div>
-            <span className="badge" style={{marginLeft:"auto",fontSize:10}}>Grader</span>
+            <span className={`badge ${user?.role==="grader" ? "badge-maroon":"badge-success"}`} style={{flexShrink:0, fontSize:10}}>{user?.role || "guest"}</span>
           </div>
+          <button className="btn btn-ghost" style={{width:"100%", marginTop:10, fontSize:12, justifyContent:"center"}} onClick={()=>{ logout(); nav2("/login"); }}>Logout</button>
         </div>
       </aside>
 
