@@ -13,6 +13,15 @@ export function ReportsList(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
       <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Dispute — plus uploaded images in final report</p>
+      <div className="card card-pad" style={{background:"#FDFBF9", borderColor:"#EDE3DC", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
+        <div style={{width:36,height:36, borderRadius:8, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}>◉</div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:700, fontSize:13}}>TOM2024 Final Report — PDF with accuracy at the end</div>
+          <div style={{fontSize:11, color:"#6B5A54"}}>120 sampled from your TOM2024.zip (Category B English test) — each report in your exact format + 12 images embedded + final accuracy summary</div>
+        </div>
+        <a href="/test_reports/OnionSetu_TOM2024_Final_Report.pdf" target="_blank" rel="noopener" className="btn btn-primary" style={{fontSize:12}}>Download Final PDF →</a>
+        <a href="/test_reports/tom2024_reports.json" target="_blank" rel="noopener" className="btn btn-secondary" style={{fontSize:12}}>JSON</a>
+      </div>
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
