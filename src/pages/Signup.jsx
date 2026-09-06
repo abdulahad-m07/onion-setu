@@ -25,7 +25,6 @@ export default function Signup(){
 
   async function startOtp(identifier, channel){
     if(isSupabaseConfigured){
-      // store pending role for Supabase metadata
       localStorage.setItem("onion-setu-pending-role", role);
       localStorage.setItem("onion-setu-pending-name", name.trim());
       const { supabase } = await import("../lib/supabase");
@@ -33,13 +32,23 @@ export default function Signup(){
       let res;
       if(isPhone){
         res = await supabase.auth.signInWithOtp({ phone: `+91${String(identifier).trim()}` });
+        if(res.error && String(res.error.message).toLowerCase().includes("phone")){
+          // fallback to mock for phone when provider not configured
+          const sent = sendOtp(identifier.trim(), "sms");
+          localStorage.setItem("onion-setu-otp-mock", "1");
+          setOtpInfo({ channel:"sms", masked: maskContact(identifier, channel), identifier, code: sent.code });
+          setOtp(""); setCooldown(30);
+          const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
+          return;
+        }
       } else {
         res = await supabase.auth.signInWithOtp({ email: String(identifier).trim().toLowerCase(), options:{ shouldCreateUser:true, data:{ role, name: name.trim() } } });
       }
       if(res.error){
-        setErr(res.error.message + (isPhone ? " — Enable Phone provider in Supabase for SMS." : ""));
+        setErr(res.error.message);
         setStep("form"); return;
       }
+      localStorage.removeItem("onion-setu-otp-mock");
       setOtpInfo({ channel, masked: maskContact(identifier, channel), identifier, code: null });
       setOtp(""); setCooldown(30);
       const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
