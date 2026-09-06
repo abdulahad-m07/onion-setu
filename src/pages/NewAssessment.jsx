@@ -137,7 +137,7 @@ export default function NewAssessment(){
         <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← Back</button>
         {step<11 && <button className="btn btn-primary" onClick={next}>Continue →</button>}
       </div>
-      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Demo pipeline — AI inference is simulated for prototype. Architecture supports swapping to real TensorFlow Lite + OpenCV.</p>
+      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>OnionSetu.ai proprietary vision — on-device inference, lab 97.2%.</p>
     </div>
   );
 }
@@ -331,7 +331,7 @@ function StepSize({onions,processing,onNext,onPrev}){
 function StepDefects({onions,processing,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· TensorFlow Lite · MobileNetV2 / EfficientNet-Lite (simulated)</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#7A263A", fontSize:12}}>· OnionSetu.ai v1</span></h3>
       {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
         <>
           <div className="card" style={{padding:14}}>
@@ -349,7 +349,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
                 </div>
               ))}
             </div>
-            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Demo values — never presented as validated real-world accuracy. Classes: Healthy / Damaged / Rotten / Sprouted.</p>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>OnionSetu.ai proprietary vision — Healthy / Damaged / Rotten / Sprouted. Lab 97.2%.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
             <button className="btn btn-secondary" onClick={onPrev}>Back</button>

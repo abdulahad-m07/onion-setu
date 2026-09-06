@@ -93,7 +93,7 @@ export function StoreProvider({ children }){
     const entry = {
       id, lotId, farmer: data.farmer, center: data.center, location: data.location,
       date: new Date().toISOString(), assessor: data.assessor,
-      policyVersion: activePolicy.version, modelVersion:"onion-grade-v1.1 (MobileNetV2)",
+      policyVersion: activePolicy.version, modelVersion:"OnionSetu.ai v1",
       sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, urs: grading.urs,
       status: data.status || "Completed", sync: offline ? "Offline" : "Synced",
       humanReviews: data.humanReviews ?? 0,
@@ -116,7 +116,7 @@ export function StoreProvider({ children }){
           // For now, insert assessment row
           const { error: insErr } = await supabase.from("assessments").insert({
             id, user_id: uid, lot_id: lotId, farmer_name: entry.farmer, center: entry.center, location: entry.location,
-            assessor_name: entry.assessor, policy_version: entry.policyVersion, model_version: entry.modelVersion,
+            assessor_name: entry.assessor, policy_version: entry.policyVersion, model_version: "OnionSetu.ai v1",
             sample_size: entry.sampleSize, grade_a: entry.gradeA, urs: entry.urs, status: entry.status, sync_status:"Synced",
             confidence: entry.confidence, human_reviews: entry.humanReviews, hash: entry.hash,
             farmer_ack:false, grader_ack:false

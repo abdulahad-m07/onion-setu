@@ -51,7 +51,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0241", lotId:"LOT-0241", farmer:"Ramesh Patil", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH",
     date:"2026-09-05T10:24:00", assessor:"S. Kulkarni (Grader)",
-    policyVersion:"v2026.1", modelVersion:"onion-grade-v1.1 (MobileNetV2)",
+    policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
     sampleSize:100, gradeA:68, urs:32, status:"Completed", sync:"Synced",
     humanReviews:3, confidence:84,
     onions: demoOnions,
