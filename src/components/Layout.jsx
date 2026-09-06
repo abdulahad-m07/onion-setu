@@ -115,10 +115,8 @@ export default function Layout({ children }){
             </NavLink>
           ))}
           <div style={{padding:"8px 10px"}}>
-            <label className="label" style={{marginBottom:6}}>{t("languageSettings")}</label>
-            <select className="select" value={lang} onChange={e=> setLang(e.target.value)} style={{fontSize:12}}>
-              {languages.map(l=> <option key={l.code} value={l.code}>{l.flag} {l.native}</option>)}
-            </select>
+            <div style={{fontSize:11, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase", color:"#8a7a74", marginBottom:6}}>{t("languageSettings")} — My Translator</div>
+            <MyTranslator variant="sidebar" />
           </div>
           <div className="nav-group-label" style={{marginTop:14}}>System</div>
           <div style={{padding:"8px 10px"}}>

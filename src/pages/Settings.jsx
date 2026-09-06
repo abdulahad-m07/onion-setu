@@ -1,6 +1,7 @@
 import { useStore } from "../lib/store";
 import { useSeo, Breadcrumbs } from "../lib/seo";
 import { useI18n } from "../lib/i18n";
+import MyTranslator from "../components/MyTranslator";
 
 export default function Settings(){
   const { offline, setOffline, syncAll, pendingCount, activePolicy } = useStore();
@@ -12,13 +13,10 @@ export default function Settings(){
       <h1 className="h-display" style={{fontSize:28, margin:0}}>{t("settings")}</h1>
 
       <div className="card card-pad" style={{borderLeft:"3px solid #7A263A"}}>
-        <h3 style={{margin:"0 0 10px", fontSize:14, fontWeight:700}}>{t("languageSettings")} — {languages.find(l=>l.code===lang)?.native} ({lang.toUpperCase()})</h3>
-        <p style={{margin:"0 0 10px", fontSize:12, color:"#6B5A54"}}>All 22 Indian languages + English. Report can be downloaded in your language or English. / सभी भारतीय भाषाएँ उपलब्ध।</p>
-        <label className="label">{t("changeLanguage")}</label>
-        <select className="select" value={lang} onChange={e=> setLang(e.target.value)} style={{maxWidth:360}}>
-          {languages.map(l=> <option key={l.code} value={l.code}>{l.flag} {l.native} — {l.name} ({l.code})</option>)}
-        </select>
-        <div style={{marginTop:8, fontSize:11, color:"#8a7a74"}}>Selected language is saved per-device and in your profile (Supabase). First screen after install also asks for language.</div>
+        <h3 style={{margin:"0 0 10px", fontSize:14, fontWeight:700}}>{t("languageSettings")} — My Translator</h3>
+        <p style={{margin:"0 0 10px", fontSize:12, color:"#6B5A54"}}>All 22 Indian languages + English. Wrapped Google Translate + perfect Hindi/Marathi manual. Saved per-device and per-user.</p>
+        <MyTranslator variant="settings" />
+        <div style={{marginTop:8, fontSize:11, color:"#8a7a74"}}>Current: <b>{languages.find(l=>l.code===lang)?.flag} {languages.find(l=>l.code===lang)?.native} ({lang.toUpperCase()})</b> — change here, in top bar, or on first screen. Report can be downloaded in your language or English.</div>
       </div>
 
       <div className="card card-pad">

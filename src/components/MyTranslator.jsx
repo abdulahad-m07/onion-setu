@@ -50,21 +50,24 @@ export default function MyTranslator({ variant="topbar" }){
   }
 
   const isTopbar = variant==="topbar";
+  const isGate = variant==="gate";
+  const isSidebar = variant==="sidebar";
   return (
-    <div ref={ref} style={{position:"relative", display:"inline-block"}}>
+    <div ref={ref} style={{position:"relative", display: isGate || isSidebar ? "block" : "inline-block", width: isGate || isSidebar ? "100%" : "auto"}}>
       <button
         onClick={()=> setOpen(v=>!v)}
         className="btn btn-secondary"
         style={{
           display:"inline-flex", alignItems:"center", gap:8,
-          padding: isTopbar ? "0 12px" : "10px 14px",
-          height: isTopbar ? 36 : 40,
-          borderRadius:10, border:"1px solid #EDE3DC",
-          background: open ? "#fdf2f4" : "#FBF6F0",
+          padding: isGate ? "12px 16px" : isSidebar ? "0 10px" : isTopbar ? "0 12px" : "10px 14px",
+          height: isSidebar ? 36 : isGate ? 48 : isTopbar ? 36 : 40,
+          borderRadius: isGate ? 14 : 10, border:"1px solid #EDE3DC",
+          background: open ? "#fdf2f4" : isGate || isSidebar ? "white" : "#FBF6F0",
           color: open ? "#7A263A" : "#17110F",
-          fontWeight:600, fontSize: isTopbar ? 12 : 13,
-          minWidth: isTopbar ? 132 : 180,
-          justifyContent:"space-between"
+          fontWeight:600, fontSize: isSidebar ? 12 : isGate ? 14 : isTopbar ? 12 : 13,
+          minWidth: isSidebar ? "100%" : isGate ? "100%" : isTopbar ? 132 : 180,
+          width: isSidebar || isGate ? "100%" : "auto",
+          justifyContent:"space-between", boxShadow: isGate ? "0 4px 16px rgba(23,17,15,.06)" : "none"
         }}
         aria-haspopup="listbox" aria-expanded={open}
       >
@@ -79,8 +82,8 @@ export default function MyTranslator({ variant="topbar" }){
         <div
           role="listbox"
           style={{
-            position:"absolute", top:"calc(100% + 8px)", right: isTopbar ? 0 : "auto", left: isTopbar ? "auto" : 0,
-            width: isTopbar ? 280 : 320, maxHeight:360, overflow:"auto",
+            position:"absolute", top:"calc(100% + 8px)", right: isTopbar || isSidebar ? 0 : isGate ? 0 : "auto", left: isTopbar || isSidebar ? "auto" : 0,
+            width: isSidebar ? "100%" : isGate ? "100%" : isTopbar ? 280 : 320, maxHeight:360, overflow:"auto",
             background:"white", border:"1px solid #EDE3DC", borderRadius:14,
             boxShadow:"0 12px 32px rgba(23,17,15,.12)", zIndex:50, padding:8
           }}
