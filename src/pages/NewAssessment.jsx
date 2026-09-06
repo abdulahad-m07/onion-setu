@@ -93,12 +93,12 @@ export default function NewAssessment(){
       </div>
 
       {/* Stepper */}
-      <div className="card card-pad" style={{overflow:"auto"}}>
-        <div className="steps" style={{minWidth:720}}>
+      <div className="card card-pad" style={{overflow:"hidden"}}>
+        <div className="steps steps-scroll" style={{minWidth:0}}>
           {STEPS.map((s,i)=>(
-            <div key={s} style={{display:"flex", alignItems:"center", gap:8}}>
-              <div className={`step-dot ${i===step?"active": i<step?"done":""}`} style={{flexShrink:0}}>{i<step?"✓":i+1}</div>
-              <span style={{fontSize:11, fontWeight:700, color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74", whiteSpace:"nowrap"}}>{s}</span>
+            <div key={s} style={{display:"flex", alignItems:"center", gap:6, flexShrink:0}}>
+              <div className={`step-dot ${i===step?"active": i<step?"done":""}`} >{i<step?"✓":i+1}</div>
+              <span className="step-label" style={{color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74"}}>{s}</span>
               {i<STEPS.length-1 && <div className={`step-line ${i<step?"done":""}`} />}
             </div>
           ))}
@@ -179,7 +179,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 3 — Multi-View Capture <span style={{color:"#8a7a74", fontWeight:500, fontSize:12}}>· smartphone simulation</span></h3>
-      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
+      <div className="capture-grid">
         {[0,1,2].map(i=>(
           <div key={i} className="card" style={{overflow:"hidden"}}>
             <div style={{padding:"10px 12px", fontSize:12, fontWeight:700, background:"#FBF6F0", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between"}}>

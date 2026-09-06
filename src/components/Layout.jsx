@@ -85,18 +85,18 @@ export default function Layout({ children }){
               const el=document.getElementById("sidebar");
               el.classList.toggle("open");
             }} aria-label="Menu">☰</button>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:10, minWidth:0}}>
               <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>◉</div>
-              <div>
-                <div style={{fontFamily:"Fraunces, serif",fontWeight:700,lineHeight:1, fontSize:15}}>ONIONSETU</div>
-                <div style={{fontSize:10,letterSpacing:".12em",textTransform:"uppercase",color:"#8a7a74",fontWeight:700}}>AI-Assisted Onion Quality Assessment</div>
+              <div className="topbar-brand-text" style={{minWidth:0}}>
+                <div className="brand-title">ONIONSETU</div>
+                <div className="brand-subtitle">AI-Assisted Onion Quality Assessment</div>
               </div>
             </div>
           </div>
           <div className="topbar-right">
             <span className="badge badge-maroon" style={{display:"none"}} id="top-policy">v2026.1</span>
             <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>nav2("/policy")}>Policy {activePolicy.version}</button>
-            <button className="btn btn-primary" onClick={()=>nav2("/new")}><IconPlus/> Start Assessment</button>
+            <button className="btn btn-primary" onClick={()=>nav2("/new")}><IconPlus/> <span>Start</span></button>
           </div>
         </header>
         <div className="content">
