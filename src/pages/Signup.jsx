@@ -4,12 +4,13 @@ import { useAuth } from "../lib/auth";
 import { useSeo } from "../lib/seo";
 
 export default function Signup(){
-  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu — get access to assessments, reports and verification tailored to your role.", canonical:"/signup" });
+  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — get access tailored to your role.", canonical:"/signup" });
   const { signup } = useAuth();
   const nav = useNavigate();
   const [role, setRole] = useState("farmer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [center, setCenter] = useState("");
   const [err, setErr] = useState("");
@@ -18,9 +19,12 @@ export default function Signup(){
   function submit(e){
     e.preventDefault();
     setErr("");
-    if(!name.trim() || !email.trim() || !password) { setErr("Please fill all required fields."); return; }
+    if(!name.trim() || !password) { setErr("Please fill name and password."); return; }
+    if(!email.trim() && !phone.trim()){ setErr("Enter a Gmail address or phone number."); return; }
+    if(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){ setErr("Enter a valid Gmail address (e.g., ramesh@gmail.com)."); return; }
+    if(phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())){ setErr("Enter a valid 10-digit phone number starting with 6-9."); return; }
     setBusy(true);
-    const r = signup({ name: name.trim(), email: email.trim(), password, role, center: center.trim() });
+    const r = signup({ name: name.trim(), email: email.trim(), phone: phone.trim(), password, role, center: center.trim() });
     setBusy(false);
     if(!r.ok) setErr(r.error);
     else nav("/", { replace:true });
@@ -35,7 +39,7 @@ export default function Signup(){
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
           <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Create your<br/><span style={{color:"#7A263A"}}>OnionSetu</span> account</h1>
-          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>One account, two roles. Farmers verify their lots; graders run the full procurement workflow.</p>
+          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>One account, two roles. Use Gmail or phone — no onionsetu.in needed.</p>
           <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:12, padding:12, fontSize:12, color:"#6B5A54"}}>
             <b>Farmer</b> can: view Dashboard (my lots), Assessments (my lots), Reports + QR verify, Policy (read-only).<br/>
             <b>Grader</b> can: everything Farmer can + create assessments, human review queue, switch active policy.
@@ -51,13 +55,19 @@ export default function Signup(){
           </div>
 
           <label style={{display:"grid", gap:6}}><span className="label">Full name *</span>
-            <input className="input" required value={name} onChange={e=> setName(e.target.value)} placeholder={role==="grader" ? "S. Kulkarni" : "Ramesh Patil"} />
+            <input className="input" required value={name} onChange={e=> setName(e.target.value)} placeholder={role==="grader" ? "S. Kulkarni" : "Ramesh Patil"} autoComplete="name" />
           </label>
-          <label style={{display:"grid", gap:6}}><span className="label">Email *</span>
-            <input className="input" type="email" required value={email} onChange={e=> setEmail(e.target.value)} placeholder="you@onionsetu.in" />
-          </label>
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="signup-grid">
+            <label style={{display:"grid", gap:6}}><span className="label">Gmail *</span>
+              <input className="input" type="email" value={email} onChange={e=> setEmail(e.target.value)} placeholder="ramesh@gmail.com" autoComplete="email" />
+            </label>
+            <label style={{display:"grid", gap:6}}><span className="label">Phone *</span>
+              <input className="input" type="tel" inputMode="numeric" value={phone} onChange={e=> setPhone(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="9876543211" autoComplete="tel" />
+            </label>
+          </div>
+          <div style={{fontSize:11, color:"#8a7a74", marginTop:-8}}>Enter Gmail <b>or</b> phone (or both). At least one is required. Phone must be 10 digits.</div>
           <label style={{display:"grid", gap:6}}><span className="label">Password *</span>
-            <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="At least 6 characters" />
+            <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete="new-password" />
           </label>
           <label style={{display:"grid", gap:6}}><span className="label">{role==="grader" ? "Procurement center" : "Village / Center"} <span style={{color:"#8a7a74", fontWeight:400}}>(optional)</span></span>
             <input className="input" value={center} onChange={e=> setCenter(e.target.value)} placeholder={role==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon"} />
@@ -70,7 +80,7 @@ export default function Signup(){
           <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>Already have an account? <Link to="/login" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>Log in</Link></div>
         </form>
       </div>
-      <style>{`@media(max-width:800px){ .login-grid{ grid-template-columns:1fr !important } }`}</style>
+      <style>{`@media(max-width:800px){ .login-grid{ grid-template-columns:1fr !important } .signup-grid{ grid-template-columns:1fr !important } }`}</style>
     </div>
   );
 }

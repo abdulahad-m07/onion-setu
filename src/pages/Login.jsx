@@ -4,13 +4,13 @@ import { useAuth } from "../lib/auth";
 import { useSeo } from "../lib/seo";
 
 export default function Login(){
-  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader — access assessments, reports and verification for Lasalgaon APMC.", canonical:"/login" });
+  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — access assessments, reports and verification for Lasalgaon APMC.", canonical:"/login" });
   const { login, demoLogin } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
   const next = loc.state?.from || "/";
   const [role, setRole] = useState("grader");
-  const [email, setEmail] = useState("grader@onionsetu.in");
+  const [identifier, setIdentifier] = useState("grader@gmail.com");
   const [password, setPassword] = useState("123456");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -18,17 +18,21 @@ export default function Login(){
   function submit(e){
     e.preventDefault();
     setErr("");
+    if(!identifier.trim()){ setErr("Enter your Gmail or phone number."); return; }
     setBusy(true);
-    const r = login(email.trim(), password, role);
+    const r = login(identifier.trim(), password, role);
     setBusy(false);
     if(!r.ok) setErr(r.error);
     else nav(next, { replace:true });
   }
   function onRole(r){
     setRole(r);
-    // auto-fill demo for convenience
-    if(r==="grader"){ setEmail("grader@onionsetu.in"); setPassword("123456"); }
-    else { setEmail("farmer@onionsetu.in"); setPassword("123456"); }
+    if(r==="grader"){ setIdentifier("grader@gmail.com"); setPassword("123456"); }
+    else { setIdentifier("farmer@gmail.com"); setPassword("123456"); }
+  }
+  function usePhone(){
+    if(role==="grader") setIdentifier("9876543210");
+    else setIdentifier("9876543211");
   }
 
   return (
@@ -40,17 +44,18 @@ export default function Login(){
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
           <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Welcome back to<br/><span style={{color:"#7A263A"}}>OnionSetu</span></h1>
-          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>Choose your role — <b>Farmer</b> views and verifies your lots; <b>Grader</b> grades, reviews and manages policy. Both see the same evidence.</p>
+          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>Choose your role — <b>Farmer</b> views and verifies your lots; <b>Grader</b> grades, reviews and manages policy.</p>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
             <RoleCard active={role==="farmer"} onClick={()=> onRole("farmer")} title="Farmer" desc="View my lots, reports & QR verification" icon="🌾" />
             <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title="Grader" desc="Grade lots, human review, policy" icon="◉" />
           </div>
           <div style={{fontSize:12, color:"#8a7a74", background:"white", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
             <b>Demo accounts</b> — click a role above (auto-fills). Password is <span className="mono">123456</span><br/>
-            Farmer: <span className="mono" style={{fontSize:11}}>farmer@onionsetu.in</span> · Grader: <span className="mono" style={{fontSize:11}}>grader@onionsetu.in</span>
-            <div style={{display:"flex", gap:8, marginTop:8}}>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>Quick login as Farmer</button>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>Quick login as Grader</button>
+            Farmer: <span className="mono" style={{fontSize:11}}>farmer@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543211</span><br/>
+            Grader: <span className="mono" style={{fontSize:11}}>grader@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543210</span>
+            <div style={{display:"flex", gap:8, marginTop:8, flexWrap:"wrap"}}>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>Quick as Farmer</button>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>Quick as Grader</button>
             </div>
           </div>
         </div>
@@ -58,7 +63,7 @@ export default function Login(){
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <div>
             <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Login</h2>
-            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Enter your credentials for the selected role.</p>
+            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Use your Gmail or phone number with the selected role.</p>
           </div>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
@@ -66,8 +71,10 @@ export default function Login(){
             <button type="button" onClick={()=> onRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13, minHeight:38}}>◉ Grader</button>
           </div>
 
-          <label style={{display:"grid", gap:6}}><span className="label">Email</span>
-            <input className="input" type="email" required value={email} onChange={e=> setEmail(e.target.value)} placeholder="you@onionsetu.in" autoComplete="email" />
+          <label style={{display:"grid", gap:6}}>
+            <span className="label">Gmail or Phone number *</span>
+            <input className="input" type="text" required value={identifier} onChange={e=> setIdentifier(e.target.value)} placeholder="farmer@gmail.com or 9876543211" autoComplete="username" inputMode="email" />
+            <button type="button" className="btn btn-ghost" style={{fontSize:11, padding:"4px 6px", justifySelf:"start"}} onClick={usePhone}>Use phone instead: {role==="grader" ? "9876543210" : "9876543211"}</button>
           </label>
           <label style={{display:"grid", gap:6}}><span className="label">Password</span>
             <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
