@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 
@@ -16,11 +17,77 @@ export default function Layout({ children }){
   const loc = useLocation();
   const nav2 = useNavigate();
   const isLanding = loc.pathname === "/landing";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const sidebarRef = useRef(null);
+
+  // close on route change
+  useEffect(()=>{ setMenuOpen(false); }, [loc.pathname]);
+
+  // close on window resize to desktop
+  useEffect(()=>{
+    const onResize = ()=>{ if(window.innerWidth > 900) setMenuOpen(false); };
+    window.addEventListener("resize", onResize);
+    return ()=> window.removeEventListener("resize", onResize);
+  },[]);
+
+  // lock body scroll when menu open on mobile
+  useEffect(()=>{
+    if(menuOpen && window.innerWidth <= 900){
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return ()=>{ document.body.style.overflow = ""; };
+  },[menuOpen]);
+
+  // swipe to close: swipe left on sidebar or swipe from left edge
+  function onTouchStart(e){
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e){
+    if(touchStartX.current === null) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    // if horizontal swipe left is dominant, prevent scroll
+    if(menuOpen && dx < -10 && Math.abs(dx) > Math.abs(dy)){
+      // allow native scroll to be interrupted
+    }
+  }
+  function onTouchEnd(e){
+    if(touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    // swipe left to close (sidebar open) OR swipe right from edge to open
+    if(menuOpen && dx < -60 && Math.abs(dx) > Math.abs(dy)){
+      setMenuOpen(false);
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  }
+
   if(isLanding) return children;
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar" id="sidebar">
+    <div className="app-shell" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      {/* Backdrop */}
+      {menuOpen && (
+        <div
+          aria-hidden="true"
+          onClick={()=> setMenuOpen(false)}
+          style={{position:"fixed", inset:0, background:"rgba(23,17,15,.32)", backdropFilter:"blur(2px)", zIndex:39}}
+        />
+      )}
+      <aside
+        ref={sidebarRef}
+        id="sidebar"
+        className={`sidebar ${menuOpen ? "open" : ""}`}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        aria-hidden={menuOpen ? "false" : undefined}
+      >
         <div className="sidebar-brand">
           <div className="brand-mark">
             <div className="brand-icon">◉</div>
@@ -36,7 +103,7 @@ export default function Layout({ children }){
         <nav className="nav" aria-label="Primary">
           <div className="nav-group-label">Workspace</div>
           {nav.map(item=>(
-            <NavLink key={item.to} to={item.to} className={({isActive})=> isActive ? "nav-link active" : "nav-link"}>
+            <NavLink key={item.to} to={item.to} onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive ? "nav-link active" : "nav-link"}>
               <item.icon />
               {item.label}
             </NavLink>
@@ -81,10 +148,9 @@ export default function Layout({ children }){
       <div className="main">
         <header className="topbar">
           <div className="topbar-left">
-            <button className="btn btn-secondary mobile-menu-btn" onClick={()=>{
-              const el=document.getElementById("sidebar");
-              el.classList.toggle("open");
-            }} aria-label="Menu">☰</button>
+            <button className="btn btn-secondary mobile-menu-btn" onClick={()=> setMenuOpen(v=>!v)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="sidebar">
+              {menuOpen ? "✕" : "☰"}
+            </button>
             <div style={{display:"flex",alignItems:"center",gap:10, minWidth:0}}>
               <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>◉</div>
               <div className="topbar-brand-text" style={{minWidth:0}}>
@@ -95,8 +161,8 @@ export default function Layout({ children }){
           </div>
           <div className="topbar-right">
             <span className="badge badge-maroon" style={{display:"none"}} id="top-policy">v2026.1</span>
-            <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>nav2("/policy")}>Policy {activePolicy.version}</button>
-            <button className="btn btn-primary" onClick={()=>nav2("/new")}><IconPlus/> <span>Start</span></button>
+            <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>{ setMenuOpen(false); nav2("/policy"); }}>Policy {activePolicy.version}</button>
+            <button className="btn btn-primary" onClick={()=>{ setMenuOpen(false); nav2("/new"); }}><IconPlus/> <span>Start</span></button>
           </div>
         </header>
         <div className="content">
@@ -105,11 +171,11 @@ export default function Layout({ children }){
       </div>
 
       <nav className="bottom-nav" aria-label="Mobile navigation">
-        <NavLink to="/" className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconDashboard/>Dashboard</NavLink>
-        <NavLink to="/new" className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconPlus/>New</NavLink>
-        <NavLink to="/assessments" className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconClipboard/>Assess</NavLink>
-        <NavLink to="/reviews" className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconEye/>Reviews</NavLink>
-        <NavLink to="/reports" className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconFile/>Reports</NavLink>
+        <NavLink to="/" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconDashboard/>Dashboard</NavLink>
+        <NavLink to="/new" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconPlus/>New</NavLink>
+        <NavLink to="/assessments" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconClipboard/>Assess</NavLink>
+        <NavLink to="/reviews" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconEye/>Reviews</NavLink>
+        <NavLink to="/reports" onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive?"bnav-link active":"bnav-link"}><IconFile/>Reports</NavLink>
       </nav>
     </div>
   );
