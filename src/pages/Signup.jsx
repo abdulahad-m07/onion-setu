@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useSeo } from "../lib/seo";
+import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Signup(){
-  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — get access tailored to your role.", canonical:"/signup" });
+  useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — OTP verified via the channel you use.", canonical:"/signup" });
   const { signup } = useAuth();
   const nav = useNavigate();
   const [role, setRole] = useState("farmer");
@@ -15,6 +16,19 @@ export default function Signup(){
   const [center, setCenter] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  // OTP
+  const [step, setStep] = useState("form"); // form | otp
+  const [otp, setOtp] = useState("");
+  const [otpInfo, setOtpInfo] = useState(null);
+  const [pendingData, setPendingData] = useState(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  function startOtp(identifier, channel){
+    const sent = sendOtp(identifier, channel);
+    setOtpInfo({ channel, masked: maskContact(identifier, channel), identifier, code: sent.code });
+    setOtp(""); setCooldown(30);
+    const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
+  }
 
   function submit(e){
     e.preventDefault();
@@ -23,11 +37,29 @@ export default function Signup(){
     if(!email.trim() && !phone.trim()){ setErr("Enter a Gmail address or phone number."); return; }
     if(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){ setErr("Enter a valid Gmail address (e.g., ramesh@gmail.com)."); return; }
     if(phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())){ setErr("Enter a valid 10-digit phone number starting with 6-9."); return; }
+    // choose OTP channel: prefer the identifier user will login with — if phone given, send SMS, else Gmail
+    const identifier = phone.trim() || email.trim();
+    const channel = channelFor(identifier);
+    const data = { name: name.trim(), email: email.trim(), phone: phone.trim(), password, role, center: center.trim() };
+    setPendingData(data);
+    startOtp(identifier, channel);
+    setStep("otp");
+  }
+  function verify(e){
+    e.preventDefault();
+    setErr("");
+    if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    const v = verifyOtp(otpInfo.identifier, otp.trim());
+    if(!v.ok){ setErr(v.error); return; }
     setBusy(true);
-    const r = signup({ name: name.trim(), email: email.trim(), phone: phone.trim(), password, role, center: center.trim() });
+    const r = signup(pendingData);
     setBusy(false);
-    if(!r.ok) setErr(r.error);
-    else nav("/", { replace:true });
+    if(!r.ok){ setErr(r.error); setStep("form"); return; }
+    nav("/", { replace:true });
+  }
+  function resend(){
+    startOtp(otpInfo.identifier, otpInfo.channel);
+    setErr("");
   }
 
   return (
@@ -39,13 +71,14 @@ export default function Signup(){
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
           <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Create your<br/><span style={{color:"#7A263A"}}>OnionSetu</span> account</h1>
-          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>One account, two roles. Use Gmail or phone — no onionsetu.in needed.</p>
+          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>One account, two roles. We’ll send an OTP to your Gmail or phone to verify you.</p>
           <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:12, padding:12, fontSize:12, color:"#6B5A54"}}>
             <b>Farmer</b> can: view Dashboard (my lots), Assessments (my lots), Reports + QR verify, Policy (read-only).<br/>
             <b>Grader</b> can: everything Farmer can + create assessments, human review queue, switch active policy.
           </div>
         </div>
 
+        {step==="form" ? (
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Sign up</h2>
 
@@ -58,14 +91,14 @@ export default function Signup(){
             <input className="input" required value={name} onChange={e=> setName(e.target.value)} placeholder={role==="grader" ? "S. Kulkarni" : "Ramesh Patil"} autoComplete="name" />
           </label>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="signup-grid">
-            <label style={{display:"grid", gap:6}}><span className="label">Gmail *</span>
+            <label style={{display:"grid", gap:6}}><span className="label">Gmail</span>
               <input className="input" type="email" value={email} onChange={e=> setEmail(e.target.value)} placeholder="ramesh@gmail.com" autoComplete="email" />
             </label>
-            <label style={{display:"grid", gap:6}}><span className="label">Phone *</span>
+            <label style={{display:"grid", gap:6}}><span className="label">Phone</span>
               <input className="input" type="tel" inputMode="numeric" value={phone} onChange={e=> setPhone(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="9876543211" autoComplete="tel" />
             </label>
           </div>
-          <div style={{fontSize:11, color:"#8a7a74", marginTop:-8}}>Enter Gmail <b>or</b> phone (or both). At least one is required. Phone must be 10 digits.</div>
+          <div style={{fontSize:11, color:"#8a7a74", marginTop:-8}}>Enter Gmail <b>or</b> phone (or both). At least one required — OTP will be sent there.</div>
           <label style={{display:"grid", gap:6}}><span className="label">Password *</span>
             <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete="new-password" />
           </label>
@@ -75,10 +108,29 @@ export default function Signup(){
 
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
 
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Creating…" : `Create ${role} account →`}</button>
+          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Sending OTP…" : `Send OTP →`}</button>
 
           <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>Already have an account? <Link to="/login" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>Log in</Link></div>
         </form>
+        ) : (
+        <form onSubmit={verify} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
+          <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
+          <p style={{margin:0, color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
+          <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+            <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
+            <div style={{color:"#6B5A54", marginTop:4}}>In production: sent via {otpInfo?.channel==="sms" ? "Twilio SMS" : "Gmail"} — expires in 5 minutes.</div>
+          </div>
+          <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>
+            <input className="input" type="text" inputMode="numeric" maxLength={6} required value={otp} onChange={e=> setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="• • • • • •" style={{letterSpacing:".2em", textAlign:"center", fontSize:18}} autoFocus />
+          </label>
+          {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
+          <button className="btn btn-primary" type="submit" style={{width:"100%", minHeight:44}}>Verify & create account →</button>
+          <div style={{display:"flex", gap:8}}>
+            <button type="button" className="btn btn-secondary" style={{flex:1, fontSize:12}} onClick={resend} disabled={cooldown>0}>{cooldown>0 ? `Resend in ${cooldown}s` : `Resend OTP`}</button>
+            <button type="button" className="btn btn-ghost" style={{fontSize:12}} onClick={()=>{ setStep("form"); setErr(""); }}>Back</button>
+          </div>
+        </form>
+        )}
       </div>
       <style>{`@media(max-width:800px){ .login-grid{ grid-template-columns:1fr !important } .signup-grid{ grid-template-columns:1fr !important } }`}</style>
     </div>

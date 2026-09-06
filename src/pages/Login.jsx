@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { useSeo } from "../lib/seo";
+import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Login(){
-  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — access assessments, reports and verification for Lasalgaon APMC.", canonical:"/login" });
+  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — OTP verified via SMS or email.", canonical:"/login" });
   const { login, demoLogin } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
@@ -14,6 +15,11 @@ export default function Login(){
   const [password, setPassword] = useState("123456");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  // OTP state
+  const [step, setStep] = useState("credentials"); // credentials | otp
+  const [otp, setOtp] = useState("");
+  const [otpInfo, setOtpInfo] = useState(null); // {channel, masked, code?}
+  const [cooldown, setCooldown] = useState(0);
 
   function submit(e){
     e.preventDefault();
@@ -22,17 +28,38 @@ export default function Login(){
     setBusy(true);
     const r = login(identifier.trim(), password, role);
     setBusy(false);
-    if(!r.ok) setErr(r.error);
-    else nav(next, { replace:true });
+    if(!r.ok){ setErr(r.error); return; }
+    // credentials ok — send OTP to the identifier channel
+    const channel = channelFor(identifier.trim());
+    const sent = sendOtp(identifier.trim(), channel);
+    setOtpInfo({ channel, masked: maskContact(identifier.trim(), channel), code: sent.code });
+    setOtp(""); setStep("otp"); setCooldown(30);
+    const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
   }
   function onRole(r){
     setRole(r);
     if(r==="grader"){ setIdentifier("grader@gmail.com"); setPassword("123456"); }
     else { setIdentifier("farmer@gmail.com"); setPassword("123456"); }
+    setStep("credentials"); setErr("");
   }
   function usePhone(){
     if(role==="grader") setIdentifier("9876543210");
     else setIdentifier("9876543211");
+  }
+  function verify(e){
+    e.preventDefault();
+    setErr("");
+    if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    const v = verifyOtp(identifier.trim(), otp.trim());
+    if(!v.ok){ setErr(v.error); return; }
+    nav(next, { replace:true });
+  }
+  function resend(){
+    const channel = channelFor(identifier.trim());
+    const sent = sendOtp(identifier.trim(), channel);
+    setOtpInfo({ channel, masked: maskContact(identifier.trim(), channel), code: sent.code });
+    setErr(""); setCooldown(30);
+    const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
   }
 
   return (
@@ -52,18 +79,20 @@ export default function Login(){
           <div style={{fontSize:12, color:"#8a7a74", background:"white", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
             <b>Demo accounts</b> — click a role above (auto-fills). Password is <span className="mono">123456</span><br/>
             Farmer: <span className="mono" style={{fontSize:11}}>farmer@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543211</span><br/>
-            Grader: <span className="mono" style={{fontSize:11}}>grader@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543210</span>
+            Grader: <span className="mono" style={{fontSize:11}}>grader@gmail.com</span> or <span className="mono" style={{fontSize:11}}>9876543210</span><br/>
+            <span style={{fontSize:11, color:"#7A263A", fontWeight:600}}>OTP is sent to your Gmail or phone — demo code shown below after login.</span>
             <div style={{display:"flex", gap:8, marginTop:8, flexWrap:"wrap"}}>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>Quick as Farmer</button>
-              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>Quick as Grader</button>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("farmer"); nav(next,{replace:true}); }}>Quick as Farmer (no OTP)</button>
+              <button className="btn btn-secondary" style={{fontSize:12, flex:1}} onClick={()=>{ demoLogin("grader"); nav(next,{replace:true}); }}>Quick as Grader (no OTP)</button>
             </div>
           </div>
         </div>
 
+        {step==="credentials" ? (
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <div>
             <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Login</h2>
-            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Use your Gmail or phone number with the selected role.</p>
+            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Use your Gmail or phone number with the selected role. We’ll send an OTP to verify it.</p>
           </div>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
@@ -82,14 +111,33 @@ export default function Login(){
 
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
 
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Signing in…" : `Login as ${role==="grader"?"Grader":"Farmer"} →`}</button>
+          <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Signing in…" : `Send OTP →`}</button>
 
           <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>No account? <Link to="/signup" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>Create one</Link> · <Link to="/landing" style={{color:"#8a7a74"}}>Learn more</Link></div>
-
-          <div style={{fontSize:11, color:"#8a7a74", textAlign:"center", borderTop:"1px solid #F3EAE2", paddingTop:10}}>
-            Lasalgaon APMC · Nashik, MH — <Link to="/policy" style={{color:"#7A263A"}}>Policy {role==="grader"?"v2026.1":""}</Link> · <Link to="/sitemap.xml" style={{color:"#7A263A"}}>Sitemap</Link>
-          </div>
+          <div style={{fontSize:11, color:"#8a7a74", textAlign:"center", borderTop:"1px solid #F3EAE2", paddingTop:10}}>Lasalgaon APMC · OTP sent via {channelFor(identifier)==="sms" ? "SMS" : "Gmail"} to your contact</div>
         </form>
+        ) : (
+        <form onSubmit={verify} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
+          <div>
+            <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
+            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
+          </div>
+          <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+            <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
+            <div style={{color:"#6B5A54", marginTop:4}}>In production this is sent via {otpInfo?.channel==="sms" ? "Twilio SMS" : "Gmail (SendGrid / Supabase)"} and expires in 5 minutes. Console also logs it.</div>
+          </div>
+          <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>
+            <input className="input" type="text" inputMode="numeric" maxLength={6} required value={otp} onChange={e=> setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="• • • • • •" style={{letterSpacing:".2em", textAlign:"center", fontSize:18}} autoFocus />
+          </label>
+          {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
+          <button className="btn btn-primary" type="submit" style={{width:"100%", minHeight:44}}>Verify & enter →</button>
+          <div style={{display:"flex", gap:8}}>
+            <button type="button" className="btn btn-secondary" style={{flex:1, fontSize:12}} onClick={resend} disabled={cooldown>0}>{cooldown>0 ? `Resend in ${cooldown}s` : `Resend OTP via ${otpInfo?.channel==="sms" ? "SMS" : "Gmail"}`}</button>
+            <button type="button" className="btn btn-ghost" style={{fontSize:12}} onClick={()=>{ setStep("credentials"); setErr(""); }}>Back</button>
+          </div>
+          <div style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Didn’t receive it? Check spam for Gmail, or network for SMS. Demo code is shown above.</div>
+        </form>
+        )}
       </div>
       <style>{`@media(max-width:800px){ .login-grid{ grid-template-columns:1fr !important } }`}</style>
     </div>
