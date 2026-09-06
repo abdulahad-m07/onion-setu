@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { useSeo, Breadcrumbs } from "../lib/seo";
+import { useI18n } from "../lib/i18n";
 
 export default function Dashboard(){
+  const { t } = useI18n();
   const { user } = useAuth();
   const isFarmer = user?.role==="farmer";
-  useSeo({ title:"Dashboard", description: isFarmer ? "Farmer dashboard — track your lots, Grade A results and verified reports at Lasalgaon APMC." : "Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
+  useSeo({ title: t("dashboard"), description: isFarmer ? "Farmer dashboard — track your lots, Grade A results and verified reports at Lasalgaon APMC." : "Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
   const { assessments, activePolicy } = useStore();
   const visible = isFarmer ? assessments.filter(a=> a.farmer.toLowerCase().includes(user.name.toLowerCase()) || a.farmer==="Ramesh Patil") : assessments;
   const today = assessments.filter(a=> a.date.startsWith("2026-09-05")).length;
@@ -19,8 +21,8 @@ export default function Dashboard(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Dashboard", href:"/"}]} />
       <div style={{display:"flex", flexWrap:"wrap", alignItems:"end", justifyContent:"space-between", gap:12}}>
         <div>
-          <h1 className="h-display" style={{fontSize:32, margin:0}}>{isFarmer ? "My farm — grading overview" : "Onion grading dashboard"}</h1>
-          <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>{isFarmer ? <>Welcome, <b style={{color:"#7A263A"}}>{user.name}</b> · Farmer · {user.center}</> : <>AI-assisted procurement overview — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span> — Logged in as <b>{user?.role}</b></>}</p>
+          <h1 className="h-display" style={{fontSize:32, margin:0}}>{isFarmer ? t("myFarm") : t("dashboard")}</h1>
+          <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>{isFarmer ? <>{t("welcomeBack")}, <b style={{color:"#7A263A"}}>{user.name}</b> · {t("farmer")} · {user.center}</> : <>{t("procOverview")} — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span> — {t("grader")}: <b>{user?.role}</b></>}</p>
         </div>
         <div style={{display:"flex", gap:8}}>
           <Link to="/new" className="btn btn-primary">Start Assessment</Link>
@@ -29,10 +31,10 @@ export default function Dashboard(){
       </div>
 
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
-        <Metric label={isFarmer ? "My Assessments" : "Today's Assessments"} value={isFarmer ? visible.length : today} sub={isFarmer ? "Linked to your account" : "Sep 5, 2026"} />
-        <Metric label="Grade A %" value={`${gradeAAvg}%`} sub={`Policy ${activePolicy.version}`} accent />
-        <Metric label="Human Reviews" value={humanReviews} sub={isFarmer ? "Grader will review" : "Flagged by gate"} />
-        <Metric label="Pending Disputes" value={pending} sub="Needs attention" warn={pending>0} />
+        <Metric label={isFarmer ? t("myAssessments") : t("todaysAssessments")} value={isFarmer ? visible.length : today} sub={isFarmer ? t("farmerDesc") : "Sep 5, 2026"} />
+        <Metric label={t("gradeAPercent")} value={`${gradeAAvg}%`} sub={`Policy ${activePolicy.version}`} accent />
+        <Metric label={t("humanReviews")} value={humanReviews} sub={isFarmer ? t("graderDesc") : "Flagged by gate"} />
+        <Metric label={t("pendingDisputes")} value={pending} sub={t("activity")} warn={pending>0} />
       </div>
 
       <div style={{display:"grid", gridTemplateColumns:"1.2fr .8fr", gap:12}} className="dash-grid">

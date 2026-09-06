@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, isSupabaseConfigured } from "../lib/auth";
 import { useSeo } from "../lib/seo";
+import { useI18n } from "../lib/i18n";
 import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Login(){
-  useSeo({ title:"Login", description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — real OTP via Supabase when configured.", canonical:"/login" });
+  const { t, lang, setLang, languages } = useI18n();
+  useSeo({ title: t("login"), description:"Login to OnionSetu as Farmer or Grader with Gmail or phone — real OTP via Supabase when configured.", canonical:"/login" });
   const { login, demoLogin, loginWithSupabaseOtp, verifySupabaseOtp } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
@@ -108,11 +110,16 @@ export default function Login(){
             <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>◉</div>
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
-          <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Welcome back to<br/><span style={{color:"#7A263A"}}>OnionSetu</span></h1>
-          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>Choose your role — <b>Farmer</b> views and verifies your lots; <b>Grader</b> grades, reviews and manages policy.</p>
+          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:8}}>
+            <h1 className="h-display" style={{margin:0, fontSize:28, lineHeight:.95}}>{t("welcomeBack")}<br/><span style={{color:"#7A263A"}}>{t("onionSetu")}</span></h1>
+            <select className="select" value={lang} onChange={e=> setLang(e.target.value)} style={{maxWidth:140, fontSize:12, padding:"6px 8px"}}>
+              {languages.map(l=> <option key={l.code} value={l.code}>{l.flag} {l.native}</option>)}
+            </select>
+          </div>
+          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>{t("farmer")} — {t("farmerDesc")} · {t("grader")} — {t("graderDesc")}</p>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
-            <RoleCard active={role==="farmer"} onClick={()=> onRole("farmer")} title="Farmer" desc="View my lots, reports & QR verification" icon="🌾" />
-            <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title="Grader" desc="Grade lots, human review, policy" icon="◉" />
+            <RoleCard active={role==="farmer"} onClick={()=> onRole("farmer")} title={t("farmer")} desc={t("farmerDesc")} icon="🌾" />
+            <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title={t("grader")} desc={t("graderDesc")} icon="◉" />
           </div>
           <div style={{fontSize:12, color:"#8a7a74", background:"white", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
             <b>Demo accounts</b> — click a role above (auto-fills). Password is <span className="mono">123456</span><br/>
@@ -129,8 +136,8 @@ export default function Login(){
         {step==="credentials" ? (
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <div>
-            <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Login</h2>
-            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Use your Gmail or phone number with the selected role. We’ll send an OTP to verify it.</p>
+            <h2 style={{margin:0, fontSize:18, fontWeight:700}}>{t("login")}</h2>
+            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>{t("gmailOrPhone")} — {t("selectLanguageDesc")}</p>
           </div>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
