@@ -542,7 +542,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
           </div>
           <div style={{textAlign:"right", fontSize:11, color:"#6B5A54"}}>
             <div>Report ID: <span className="mono">{lot.lotId.replace("LOT","OG")}</span></div>
-            <div>Policy: {policy.version} · Model: onion-grade-v1.1</div>
+            <div>Policy: {policy.version} · Model: OnionSetu.ai v1</div>
             <div>{new Date().toLocaleString()}</div>
           </div>
         </div>
