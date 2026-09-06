@@ -31,7 +31,7 @@ export default function Login(){
       const r = await loginWithSupabaseOtp(identifier.trim(), role);
       setBusy(false);
       if(!r.ok){ setErr(r.error); return; }
-      setOtpInfo({ channel: r.channel, masked: maskContact(identifier.trim(), r.channel), code: null });
+      setOtpInfo({ channel: r.channel, masked: maskContact(identifier.trim(), r.channel), code: r.code || null });
       setOtp(""); setStep("otp"); setCooldown(30);
       const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
       return;
@@ -149,15 +149,20 @@ export default function Login(){
             <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
             <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
           </div>
-          {isSupabaseConfigured ? (
+          {otpInfo?.code ? (
+            <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
+              <b>Demo OTP (SMS fallback — phone provider not configured):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
+              <div style={{color:"#6B5A54", marginTop:4}}>Phone SMS needs Twilio in Supabase. For now this mock code works — enter it above. Gmail OTP works for real without extra setup.</div>
+            </div>
+          ) : isSupabaseConfigured ? (
             <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
               <b>Real OTP sent via {otpInfo?.channel==="sms" ? "SMS (Supabase + Twilio)" : "Gmail (Supabase)"}.</b>
-              <div style={{color:"#6B5A54", marginTop:4}}>Check your {otpInfo?.channel==="sms" ? "phone" : "Gmail inbox / spam"} for the 6-digit code. It expires in 5 minutes. {otpInfo?.channel==="sms" && "If SMS not received, enable Phone provider in Supabase."}</div>
+              <div style={{color:"#6B5A54", marginTop:4}}>Check your {otpInfo?.channel==="sms" ? "phone" : "Gmail inbox / spam"} for the 6-digit code. It expires in 5 minutes.</div>
             </div>
           ) : (
             <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
               <b>Demo OTP (simulated):</b> <span className="mono" style={{fontSize:16, color:"#7A263A", letterSpacing:".08em"}}>{otpInfo?.code}</span>
-              <div style={{color:"#6B5A54", marginTop:4}}>Mock OTP — expires in 5 minutes. Console also logs it. Add Supabase anon key to send real codes.</div>
+              <div style={{color:"#6B5A54", marginTop:4}}>Mock OTP — expires in 5 minutes.</div>
             </div>
           )}
           <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>

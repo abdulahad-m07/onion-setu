@@ -99,21 +99,46 @@ export function AuthProvider({ children }){
     return { ok:true };
   }
   async function loginWithSupabaseOtp(identifier, role){
-    // Store intended role for after verify
     localStorage.setItem("onion-setu-pending-role", role);
     const isPhone = /^[6-9]\d{9}$/.test(String(identifier).trim());
     if(isPhone){
       const phone = `+91${String(identifier).trim()}`;
       const { error } = await supabase.auth.signInWithOtp({ phone });
-      if(error) return { ok:false, error: error.message + " — Configure Phone provider in Supabase Dashboard (Auth → Providers → Phone → Twilio) for SMS to work. Email OTP works without extra config." };
+      if(error){
+        const msg = String(error.message||"");
+        // Fallback to mock OTP if phone provider not configured — so demo still works
+        if(msg.toLowerCase().includes("unsupported phone") || msg.toLowerCase().includes("phone provider") || msg.toLowerCase().includes("sms")){
+          const { sendOtp } = await import("./otp");
+          const { channelFor } = await import("./otp");
+          const sent = sendOtp(identifier.trim(), "sms");
+          // mark as mock so verify knows to use mock
+          localStorage.setItem("onion-setu-otp-mock", "1");
+          return { ok:true, channel:"sms", mock:true, code: sent.code };
+        }
+        return { ok:false, error: msg + " — Phone SMS needs Twilio configured in Supabase (Auth → Providers → Phone). Use Gmail OTP for now — it works without extra config." };
+      }
+      localStorage.removeItem("onion-setu-otp-mock");
       return { ok:true, channel:"sms" };
     } else {
       const { error } = await supabase.auth.signInWithOtp({ email: String(identifier).trim().toLowerCase(), options:{ shouldCreateUser:true, data:{ role } } });
       if(error) return { ok:false, error: error.message };
+      localStorage.removeItem("onion-setu-otp-mock");
       return { ok:true, channel:"email" };
     }
   }
   async function verifySupabaseOtp(identifier, code){
+    const isMock = localStorage.getItem("onion-setu-otp-mock")==="1";
+    if(isMock){
+      const { verifyOtp } = await import("./otp");
+      const v = verifyOtp(identifier.trim(), String(code).trim());
+      if(!v.ok) return { ok:false, error: v.error };
+      const pendingRole = localStorage.getItem("onion-setu-pending-role") || "farmer";
+      const local = { id:`u-${Date.now()}`, name: identifier.includes("@") ? identifier.split("@")[0] : identifier, email: identifier.includes("@") ? String(identifier).trim().toLowerCase() : `${String(identifier).trim()}@phone.local`, phone: /^[6-9]\d{9}$/.test(String(identifier).trim()) ? String(identifier).trim() : "", role: pendingRole, center: pendingRole==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon APMC", location:"Nashik, MH" };
+      setUser(local);
+      localStorage.removeItem("onion-setu-pending-role");
+      localStorage.removeItem("onion-setu-otp-mock");
+      return { ok:true };
+    }
     const isPhone = /^[6-9]\d{9}$/.test(String(identifier).trim());
     const pendingRole = localStorage.getItem("onion-setu-pending-role") || "farmer";
     if(isPhone){
@@ -121,7 +146,6 @@ export function AuthProvider({ children }){
       const { data, error } = await supabase.auth.verifyOtp({ phone, token: String(code).trim(), type:"sms" });
       if(error) return { ok:false, error: error.message };
       const u = data.user;
-      // create local user from supabase user
       const local = { id: u.id, name: u.user_metadata?.name || u.email || u.phone || pendingRole, email: u.email || `${phone}@phone.local`, phone: identifier, role: u.user_metadata?.role || pendingRole, center: pendingRole==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon APMC", location:"Nashik, MH" };
       setUser(local);
       localStorage.removeItem("onion-setu-pending-role");
