@@ -18,14 +18,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <style>
-      #google_translate_element{ display:inline-block; vertical-align:middle }
-      .goog-te-gadget{ font-family: "Instrument Sans", system-ui, sans-serif !important; font-size:12px !important }
-      .goog-te-gadget-simple{ border:1px solid #EDE3DC !important; border-radius:8px !important; padding:4px 8px !important; background:#FBF6F0 !important }
+      #google_translate_element{ display:inline-flex; align-items:center; height:36px; }
+      #google_translate_element .goog-te-gadget{ display:inline-flex !important; align-items:center; height:36px; margin:0 !important; }
+      .goog-te-gadget{ font-family: "Instrument Sans", system-ui, sans-serif !important; font-size:12px !important; line-height:1 !important; }
+      .goog-te-gadget-simple{ display:inline-flex !important; align-items:center; gap:6px; border:1px solid #EDE3DC !important; border-radius:10px !important; padding:0 10px !important; background:#FBF6F0 !important; height:36px !important; line-height:36px !important; }
+      .goog-te-gadget-simple .goog-te-menu-value{ display:inline-flex !important; align-items:center; gap:6px; margin:0 !important; padding:0 !important; }
+      .goog-te-gadget-simple .goog-te-menu-value span:first-child{ display:inline !important; line-height:36px !important; }
+      .goog-te-gadget-simple img{ vertical-align:middle; margin:0 4px 0 0 !important; }
       .goog-te-banner-frame.skiptranslate{ display:none !important }
       body{ top:0 !important }
       .goog-logo-link{ display:none !important }
-      .goog-te-gadget span{ display:none }
-      .goog-te-gadget-simple span{ display:inline !important }
+      /* Hide Google's extra spans but keep the selected language text */
+      .goog-te-gadget > span:last-child{ display:none !important; }
+      @media(max-width:640px){ #google_translate_element{ display:none !important } }
     </style>
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
