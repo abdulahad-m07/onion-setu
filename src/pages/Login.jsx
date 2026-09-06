@@ -88,8 +88,20 @@ export default function Login(){
     const iv = setInterval(()=> setCooldown(c=>{ if(c<=1){ clearInterval(iv); return 0; } return c-1; }), 1000);
   }
 
+  const isDemoPhone = ["9876543210","9876543211"].includes(String(identifier).trim());
   return (
     <div style={{minHeight:"100dvh", background:"#FDFBF9", display:"grid", placeItems:"center", padding:"20px 12px"}}>
+      {step==="otp" && otpInfo?.code && isDemoPhone && (
+        <div style={{position:"fixed", bottom:16, right:16, zIndex:50, background:"#17110F", color:"white", borderRadius:12, padding:"12px 16px", boxShadow:"0 8px 24px rgba(0,0,0,.18)", display:"flex", gap:12, alignItems:"center", maxWidth:"calc(100vw - 24px)"}}>
+          <div style={{width:36,height:36, borderRadius:8, background:"#F2B84B", color:"#17110F", display:"grid", placeItems:"center", fontWeight:800}}>◉</div>
+          <div>
+            <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", opacity:.7, fontWeight:700}}>{otpInfo.channel==="sms" ? "SMS OTP" : "Gmail OTP"} · Demo · {isDemoPhone ? maskContact(identifier.trim(), otpInfo.channel) : ""}</div>
+            <div style={{fontFamily:"JetBrains Mono, monospace", fontSize:20, letterSpacing:".14em", fontWeight:700}}>{otpInfo.code}</div>
+            <div style={{fontSize:11, opacity:.7}}>For {identifier.trim()} — expires in 5m</div>
+          </div>
+          <button className="btn btn-ghost" style={{color:"white", borderColor:"rgba(255,255,255,.2)", fontSize:11, padding:"6px 8px"}} onClick={()=> navigator.clipboard?.writeText(otpInfo.code)}>Copy</button>
+        </div>
+      )}
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
         <div style={{display:"grid", gap:14, alignContent:"center"}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
