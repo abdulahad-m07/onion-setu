@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { useI18n } from "../lib/i18n";
+import MyTranslator from "./MyTranslator";
 
 const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
@@ -169,7 +170,7 @@ export default function Layout({ children }){
             </div>
           </div>
           <div className="topbar-right">
-            <span id="google_translate_element" style={{minWidth:120}} title="Google Translate — 100% coverage for all languages"></span>
+            <MyTranslator variant="topbar" />
             <span className="badge badge-maroon" style={{display:"none"}} id="top-policy">v2026.1</span>
             <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>{ setMenuOpen(false); nav2("/policy"); }}>Policy {activePolicy.version}</button>
             <button className="btn btn-primary" onClick={()=>{ setMenuOpen(false); nav2("/new"); }}><IconPlus/> <span>Start</span></button>
