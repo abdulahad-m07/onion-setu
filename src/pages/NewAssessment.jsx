@@ -308,9 +308,9 @@ function StepSize({onions,processing,onNext,onPrev}){
             <div style={{display:"flex", flexWrap:"wrap", gap:8, alignItems:"center", fontSize:12}}>
               <span className="badge">Reference: 25 mm</span> <span>→</span> <span className="badge badge-maroon">Pixels → Millimeters</span> <span>→</span> <span className="badge badge-success">Diameter (mm)</span>
             </div>
-            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(120px,1fr))", gap:10, marginTop:12}}>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(92px,1fr))", gap:8, marginTop:12}}>
               {onions.map(o=>(
-                <div key={o.id} className="card" style={{padding:10, textAlign:"center"}}>
+                <div key={o.id} className="card" style={{padding:8, textAlign:"center", minWidth:0}}>
                   <div style={{fontWeight:800, color:"#7A263A"}}>{o.id}</div>
                   <div style={{fontFamily:"Fraunces, serif", fontSize:20, fontWeight:700}}>{o.sizeMm} <span style={{fontSize:12, color:"#8a7a74"}}>mm</span></div>
                   <div style={{fontSize:11, color:"#6B5A54"}}>{o.sizeMm>=35 && o.sizeMm<=70 ? "In band" : "Out of band"}</div>
@@ -334,18 +334,18 @@ function StepDefects({onions,processing,onNext,onPrev}){
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#7A263A", fontSize:12}}>· OnionSetu.ai v1</span></h3>
       {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
         <>
-          <div className="card" style={{padding:14}}>
+          <div className="card" style={{padding:12}}>
             <div style={{display:"grid", gap:8}}>
               {onions.map(o=>(
-                <div key={o.id} style={{display:"flex", alignItems:"center", gap:12, padding:10, border:"1px solid #EDE3DC", borderRadius:10, background: o.defect==="Healthy" ? "#EDF5EF" : o.defect==="Rotten" ? "#FDECEC" : "#FEF3D8"}}>
-                  <span style={{width:36, height:36, borderRadius:8, display:"grid", placeItems:"center", background:"white", border:"1px solid #EDE3DC", fontWeight:800, color:"#7A263A"}}>{o.id}</span>
-                  <div style={{flex:1}}>
+                <div key={o.id} style={{display:"flex", alignItems:"center", gap:8, padding:8, border:"1px solid #EDE3DC", borderRadius:10, background: o.defect==="Healthy" ? "#EDF5EF" : o.defect==="Rotten" ? "#FDECEC" : "#FEF3D8", minWidth:0}}>
+                  <span style={{width:32, height:32, borderRadius:8, display:"grid", placeItems:"center", background:"white", border:"1px solid #EDE3DC", fontWeight:800, color:"#7A263A", flexShrink:0, fontSize:12}}>{o.id}</span>
+                  <div style={{flex:1, minWidth:0}}>
                     <div style={{fontWeight:700, fontSize:13}}>{o.defect} <span style={{fontWeight:500, color:"#6B5A54"}}>· {o.confidence}% confidence</span></div>
                     <div style={{height:6, background:"white", border:"1px solid #EDE3DC", borderRadius:999, overflow:"hidden", marginTop:4}}>
                       <div style={{width:`${o.confidence}%`, height:"100%", background: o.confidence>=60 ? "#3F7D4A" : "#D99024"}} />
                     </div>
                   </div>
-                  <span className={`badge ${o.defect==="Healthy"?"badge-success": o.defect==="Rotten"?"badge-error":"badge-warning"}`} style={{fontSize:10}}>{o.confidence>=60?"Demo":"Review"}</span>
+                  <span className={`badge ${o.defect==="Healthy"?"badge-success": o.defect==="Rotten"?"badge-error":"badge-warning"}`} style={{fontSize:10, flexShrink:0}}>{o.confidence>=60?"Demo":"Review"}</span>
                 </div>
               ))}
             </div>
@@ -364,12 +364,12 @@ function StepConfidence({onions,low,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Confidence Gate <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· {CONFIDENCE_THRESHOLD}% threshold (configurable prototype)</span></h3>
-      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:12}}>
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(132px,1fr))", gap:8}}>
         {onions.slice(0,4).map(o=>(
-          <div key={o.id} className="card" style={{padding:14, textAlign:"center", borderColor: o.confidence>=CONFIDENCE_THRESHOLD ? "#C8E4CC" : "#FBE2A8", background: o.confidence>=CONFIDENCE_THRESHOLD ? "#EDF5EF" : "#FEF3D8"}}>
+          <div key={o.id} className="card" style={{padding:10, textAlign:"center", borderColor: o.confidence>=CONFIDENCE_THRESHOLD ? "#C8E4CC" : "#FBE2A8", background: o.confidence>=CONFIDENCE_THRESHOLD ? "#EDF5EF" : "#FEF3D8", minWidth:0}}>
             <div style={{fontWeight:800, color:"#7A263A"}}>{o.id}</div>
             <div style={{fontFamily:"Fraunces, serif", fontSize:28, fontWeight:700, color: o.confidence>=60 ? "#3F7D4A" : "#B33A3A"}}>{o.confidence}%</div>
-            <div className={`badge ${o.confidence>=CONFIDENCE_THRESHOLD ? "badge-success":"badge-error"}`} style={{marginTop:6}}>{o.confidence>=CONFIDENCE_THRESHOLD?"AUTO-PROCESSED":"HUMAN REVIEW REQUIRED"}</div>
+            <div className={`badge ${o.confidence>=CONFIDENCE_THRESHOLD ? "badge-success":"badge-error"}`} style={{marginTop:6, fontSize:9}}>{o.confidence>=CONFIDENCE_THRESHOLD?"AUTO-PROCESSED":"HUMAN REVIEW REQUIRED"}</div>
             <div style={{fontSize:11, color:"#6B5A54", marginTop:6}}>{o.confidence>=60 ? "≥ 60% → automatic continuation" : "< 60% → flagged for review"}</div>
           </div>
         ))}
