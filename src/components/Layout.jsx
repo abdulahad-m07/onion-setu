@@ -96,7 +96,7 @@ export default function Layout({ children }){
       >
         <div className="sidebar-brand">
           <div className="brand-mark">
-            <div className="brand-icon">◉</div>
+            <div className="brand-icon">O</div>
             <div>
               <div className="brand-name">ONIONSETU</div>
               <div className="brand-sub">AI-Assisted Grading</div>
@@ -157,10 +157,10 @@ export default function Layout({ children }){
         <header className="topbar">
           <div className="topbar-left">
             <button className="btn btn-secondary mobile-menu-btn" onClick={()=> setMenuOpen(v=>!v)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="sidebar">
-              {menuOpen ? "✕" : "☰"}
+              {menuOpen ? "X" : "Menu"}
             </button>
             <div style={{display:"flex",alignItems:"center",gap:10, minWidth:0}}>
-              <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>◉</div>
+              <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>O</div>
               <div className="topbar-brand-text" style={{minWidth:0}}>
                 <div className="brand-title">ONIONSETU</div>
                 <div className="brand-subtitle">AI-Assisted Onion Quality Assessment</div>

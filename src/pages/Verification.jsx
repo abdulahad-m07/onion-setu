@@ -15,7 +15,7 @@ export default function Verification(){
         <div style={{fontSize:11, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Verification</div>
       </div>
       <div className="card card-pad" style={{textAlign:"center"}}>
-        <div style={{width:64,height:64, borderRadius:"50%", background:"#EDF5EF", border:"2px solid #C8E4CC", display:"grid", placeItems:"center", margin:"0 auto", color:"#3F7D4A", fontWeight:800, fontSize:22}}>✓</div>
+        <div style={{width:64,height:64, borderRadius:"50%", background:"#EDF5EF", border:"2px solid #C8E4CC", display:"grid", placeItems:"center", margin:"0 auto", color:"#3F7D4A", fontWeight:800, fontSize:22}}></div>
         <div style={{fontWeight:700, marginTop:10}}>Report Verified</div>
         <div style={{fontSize:12, color:"#6B5A54"}}>This QR corresponds to a valid assessment record.</div>
         <div style={{marginTop:12, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:12, textAlign:"left", fontSize:12}}>

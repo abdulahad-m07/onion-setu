@@ -106,7 +106,7 @@ export default function NewAssessment(){
         <div className="steps steps-scroll" style={{minWidth:0}}>
           {STEPS.map((s,i)=>(
             <div key={s} style={{display:"flex", alignItems:"center", gap:6, flexShrink:0}}>
-              <div className={`step-dot ${i===step?"active": i<step?"done":""}`} >{i<step?"✓":i+1}</div>
+              <div className={`step-dot ${i===step?"active": i<step?"done":""}`} >{i<step?"":i+1}</div>
               <span className="step-label" style={{color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74"}}>{s}</span>
               {i<STEPS.length-1 && <div className={`step-line ${i<step?"done":""}`} />}
             </div>
@@ -201,11 +201,11 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
               ) : (
                 <div style={{textAlign:"center", color:"#8a7a74", fontSize:12}}>No image yet<br/>Use camera or upload</div>
               )}
-              {i===0 && captures[i] && <span style={{position:"absolute", bottom:8, right:8, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"3px 8px", fontSize:10, fontWeight:700}}>⦿ 25 mm ref visible</span>}
+              {i===0 && captures[i] && <span style={{position:"absolute", bottom:8, right:8, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"3px 8px", fontSize:10, fontWeight:700}}> 25 mm ref visible</span>}
             </div>
             <div style={{padding:10, display:"grid", gap:8}}>
               <input ref={fileRefs[i]} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>handleFile(i,e)} />
-              <button className="btn btn-secondary" style={{width:"100%", fontSize:13}} onClick={()=> fileRefs[i].current.click()}>📷 Camera / Upload</button>
+              <button className="btn btn-secondary" style={{width:"100%", fontSize:13}} onClick={()=> fileRefs[i].current.click()}> Camera / Upload</button>
               {captures[i] && <button className="btn btn-ghost" style={{width:"100%", fontSize:12}} onClick={()=>{
                 // retake
                 const el=fileRefs[i].current; if(el) el.click();
@@ -242,7 +242,7 @@ function StepQuality({quality,processing,run,onNext,onPrev}){
       ) : quality.pass ? (
         <div className="card" style={{borderColor:"#C8E4CC", background:"#EDF5EF", padding:16}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
-            <span style={{width:32,height:32, borderRadius:"50%", background:"#3F7D4A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}>✓</span>
+            <span style={{width:32,height:32, borderRadius:"50%", background:"#3F7D4A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></span>
             <div><div style={{fontWeight:700, color:"#3F7D4A"}}>PASS — Image quality accepted</div><div style={{fontSize:12, color:"#6B5A54"}}>Sharpness OK · Lighting OK · Reference visible · Framing OK</div></div>
           </div>
           <button className="btn btn-primary" style={{marginTop:12}} onClick={onNext}>Continue to detection →</button>
@@ -376,7 +376,7 @@ function StepConfidence({onions,low,onNext,onPrev}){
       </div>
       {low.length>0 ? (
         <div className="card" style={{padding:12, background:"#FEF3D8", borderColor:"#FBE2A8"}}>
-          <div style={{fontWeight:700, color:"#8a5a0a"}}>⚠ {low.length} onion{low.length>1?"s":""} below {CONFIDENCE_THRESHOLD}% — will require human review.</div>
+          <div style={{fontWeight:700, color:"#8a5a0a"}}> {low.length} onion{low.length>1?"s":""} below {CONFIDENCE_THRESHOLD}% — will require human review.</div>
           <div style={{fontSize:12, color:"#6B5A54"}}>AI confidence is below the configured threshold. Human review is required before finalizing.</div>
         </div>
       ) : (
@@ -566,7 +566,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
         <div style={{marginTop:12, display:"flex", gap:8, alignItems:"center", flexWrap:"wrap"}}>
           <div style={{width:72,height:72, border:"1px solid #EDE3DC", borderRadius:8, display:"grid", placeItems:"center", background:"white", fontSize:10, textAlign:"center", padding:6}}>QR<br/>Verify<br/>Report</div>
           <div style={{fontSize:11, color:"#8a7a74"}}>QR links to verification page<br/><span className="mono">/verify/{lot.lotId.replace("LOT","OG")}</span><br/>Shows status · policy · hash</div>
-          <span className="badge" style={{marginLeft:"auto", fontSize:10}}>Farmer: {farmerAccepted?"✓ Ack":"Pending"} · Grader: {graderAccepted?"✓ Ack":"Pending"}</span>
+          <span className="badge" style={{marginLeft:"auto", fontSize:10}}>Farmer: {farmerAccepted?" Ack":"Pending"} · Grader: {graderAccepted?" Ack":"Pending"}</span>
         </div>
       </div>
 

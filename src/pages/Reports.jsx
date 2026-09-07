@@ -14,7 +14,7 @@ export function ReportsList(){
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
       <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Dispute — plus uploaded images in final report</p>
       <div className="card card-pad" style={{background:"#FDFBF9", borderColor:"#EDE3DC", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
-        <div style={{width:36,height:36, borderRadius:8, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}>◉</div>
+        <div style={{width:36,height:36, borderRadius:8, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}></div>
         <div style={{flex:1}}>
           <div style={{fontWeight:700, fontSize:13}}>TOM2024 Final Report — PDF with accuracy at the end</div>
           <div style={{fontSize:11, color:"#6B5A54"}}>120 sampled from your TOM2024.zip (Category B English test) — each report in your exact format + 12 images embedded + final accuracy summary</div>
@@ -25,7 +25,7 @@ export function ReportsList(){
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
-            <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}>◉</div>
+            <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
             <div style={{flex:1, minWidth:0}}>
               <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Disputed"?"badge-error": a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
@@ -92,8 +92,8 @@ export function ReportDetail(){
             <Row label={effectiveT("gradeA")} value={`${a.gradeA}%`} strong color="#7A263A" />
             <Row label={effectiveT("urs")} value={`${a.urs}%`} strong />
             <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
-            <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ✓` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
-            <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ✓` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
+            <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
+            <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
             <Row label={effectiveT("disputeStatus")} value={a.status==="Disputed" ? (a.dispute?.reason || effectiveT("disputed")) : a.status==="Human Review" ? effectiveT("underReview") : effectiveT("noDispute")} badgeColor={a.status==="Disputed" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
             <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
             <Row label={effectiveT("lotId")} value={a.lotId} mono />

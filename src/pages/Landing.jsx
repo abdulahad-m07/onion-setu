@@ -7,7 +7,7 @@ export default function Landing(){
     <div style={{display:"grid", gap:20, maxWidth:1100, margin:"0 auto", padding:"18px 14px 40px"}}>
       <header style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:12}}>
         <div style={{display:"flex", gap:10, alignItems:"center"}}>
-          <div style={{width:34,height:34, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>◉</div>
+          <div style={{width:34,height:34, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}></div>
           <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Onion Quality Assessment</div></div>
         </div>
         <Link to="/" className="btn btn-primary">Open app →</Link>

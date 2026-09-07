@@ -72,7 +72,7 @@ export default function MyTranslator({ variant="topbar" }){
         aria-haspopup="listbox" aria-expanded={open}
       >
         <span style={{display:"flex", gap:8, alignItems:"center", minWidth:0}}>
-          <span style={{fontSize:14}}>{current.flag}</span>
+          <span style={{width:22,height:22, borderRadius:6, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontSize:10, fontWeight:700}}>{current.code.toUpperCase().slice(0,2)}</span>
           <span style={{whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{current.native}</span>
           <span style={{fontSize:10, color:"#8a7a74", fontWeight:500}}>{current.code.toUpperCase()}</span>
         </span>
@@ -107,12 +107,12 @@ export default function MyTranslator({ variant="topbar" }){
                 fontWeight: lang===l.code ? 700 : 500, textAlign:"left"
               }}
             >
-              <span style={{width:28,height:28, borderRadius:8, background: lang===l.code ? "#7A263A" : "#FBF6F0", color: lang===l.code ? "white":"#7A263A", display:"grid", placeItems:"center", fontSize:13}}>{l.flag}</span>
+              <span style={{width:28,height:28, borderRadius:8, background: lang===l.code ? "#7A263A" : "#FBF6F0", color: lang===l.code ? "white":"#7A263A", display:"grid", placeItems:"center", fontSize:11, fontWeight:700}}>{l.code.toUpperCase().slice(0,2)}</span>
               <div style={{flex:1, minWidth:0}}>
                 <div style={{fontSize:13, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{l.native} <span style={{color:"#8a7a74", fontWeight:500, fontSize:11}}>· {l.name}</span></div>
                 <div style={{fontSize:11, color:"#8a7a74"}}>{GOOGLE_SUPPORTED.has(l.code) ? "Google + Manual" : "Manual (offline)"} · {l.code}</div>
               </div>
-              {lang===l.code && <span style={{color:"#7A263A", fontWeight:800}}>✓</span>}
+              {lang===l.code && <span style={{color:"#7A263A", fontWeight:800}}></span>}
             </button>
           ))}
           <div style={{padding:"8px 8px 4px", fontSize:10, color:"#8a7a74", borderTop:"1px solid #F3EAE2", marginTop:8}}>

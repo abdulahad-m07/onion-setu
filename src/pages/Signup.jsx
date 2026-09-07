@@ -119,7 +119,7 @@ export default function Signup(){
     <div style={{minHeight:"100dvh", background:"#FDFBF9", display:"grid", placeItems:"center", padding:"20px 12px"}}>
       {step==="otp" && otpInfo?.code && (
         <div style={{position:"fixed", bottom:16, right:16, zIndex:50, background:"#17110F", color:"white", borderRadius:12, padding:"12px 16px", boxShadow:"0 8px 24px rgba(0,0,0,.18)", display:"flex", gap:12, alignItems:"center", maxWidth:"calc(100vw - 24px)"}}>
-          <div style={{width:36,height:36, borderRadius:8, background:"#F2B84B", color:"#17110F", display:"grid", placeItems:"center", fontWeight:800}}>◉</div>
+          <div style={{width:36,height:36, borderRadius:8, background:"#F2B84B", color:"#17110F", display:"grid", placeItems:"center", fontWeight:800}}>O</div>
           <div>
             <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", opacity:.7, fontWeight:700}}>SMS OTP · Demo · {maskContact(otpInfo.identifier || signupPhone, "sms")}</div>
             <div style={{fontFamily:"JetBrains Mono, monospace", fontSize:20, letterSpacing:".14em", fontWeight:700}}>{otpInfo.code}</div>
@@ -131,7 +131,7 @@ export default function Signup(){
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
         <div style={{display:"grid", gap:14, alignContent:"center"}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
-            <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>◉</div>
+            <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>O</div>
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
           <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Create your<br/><span style={{color:"#7A263A"}}>OnionSetu</span> account</h1>
@@ -147,8 +147,8 @@ export default function Signup(){
           <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Sign up</h2>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
-            <button type="button" onClick={()=> setRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}>🌾 Farmer</button>
-            <button type="button" onClick={()=> setRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}>◉ Grader</button>
+            <button type="button" onClick={()=> setRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}> Farmer</button>
+            <button type="button" onClick={()=> setRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}> Grader</button>
           </div>
 
           <label style={{display:"grid", gap:6}}><span className="label">Full name *</span>

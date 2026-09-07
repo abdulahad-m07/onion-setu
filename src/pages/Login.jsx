@@ -95,7 +95,7 @@ export default function Login(){
     <div style={{minHeight:"100dvh", background:"#FDFBF9", display:"grid", placeItems:"center", padding:"20px 12px"}}>
       {step==="otp" && otpInfo?.code && isDemoPhone && (
         <div style={{position:"fixed", bottom:16, right:16, zIndex:50, background:"#17110F", color:"white", borderRadius:12, padding:"12px 16px", boxShadow:"0 8px 24px rgba(0,0,0,.18)", display:"flex", gap:12, alignItems:"center", maxWidth:"calc(100vw - 24px)"}}>
-          <div style={{width:36,height:36, borderRadius:8, background:"#F2B84B", color:"#17110F", display:"grid", placeItems:"center", fontWeight:800}}>◉</div>
+          <div style={{width:36,height:36, borderRadius:8, background:"#F2B84B", color:"#17110F", display:"grid", placeItems:"center", fontWeight:800}}>O</div>
           <div>
             <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", opacity:.7, fontWeight:700}}>{otpInfo.channel==="sms" ? "SMS OTP" : "Gmail OTP"} · Demo · {isDemoPhone ? maskContact(identifier.trim(), otpInfo.channel) : ""}</div>
             <div style={{fontFamily:"JetBrains Mono, monospace", fontSize:20, letterSpacing:".14em", fontWeight:700}}>{otpInfo.code}</div>
@@ -107,7 +107,7 @@ export default function Login(){
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
         <div style={{display:"grid", gap:14, alignContent:"center"}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
-            <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>◉</div>
+            <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>O</div>
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
           </div>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:8}}>
@@ -118,8 +118,8 @@ export default function Login(){
           </div>
           <p style={{margin:0, color:"#6B5A54", fontSize:14}}>{t("farmer")} — {t("farmerDesc")} · {t("grader")} — {t("graderDesc")}</p>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
-            <RoleCard active={role==="farmer"} onClick={()=> onRole("farmer")} title={t("farmer")} desc={t("farmerDesc")} icon="🌾" />
-            <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title={t("grader")} desc={t("graderDesc")} icon="◉" />
+            <RoleCard active={role==="farmer"} onClick={()=> onRole("farmer")} title={t("farmer")} desc={t("farmerDesc")} icon="F" />
+            <RoleCard active={role==="grader"} onClick={()=> onRole("grader")} title={t("grader")} desc={t("graderDesc")} icon="G" />
           </div>
           <div style={{fontSize:12, color:"#8a7a74", background:"white", border:"1px solid #EDE3DC", borderRadius:10, padding:10}}>
             <b>{t("demoAccounts")}</b> — {t("selectLanguageDesc")}<br/>
@@ -140,8 +140,8 @@ export default function Login(){
           </div>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
-            <button type="button" onClick={()=> onRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13, minHeight:38}}>🌾 Farmer</button>
-            <button type="button" onClick={()=> onRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13, minHeight:38}}>◉ Grader</button>
+            <button type="button" onClick={()=> onRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13, minHeight:38}}> Farmer</button>
+            <button type="button" onClick={()=> onRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13, minHeight:38}}> Grader</button>
           </div>
 
           <label style={{display:"grid", gap:6}}>
@@ -152,7 +152,7 @@ export default function Login(){
           <label style={{display:"grid", gap:6}}><span className="label">{t("password")} {isSupabaseConfigured && <span style={{fontWeight:400, color:"#8a7a74"}}>(OTP — leave blank)</span>}</span>
             <input className="input" type="password" required={!isSupabaseConfigured} value={password} onChange={e=> setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
           </label>
-          {isSupabaseConfigured && <div style={{fontSize:11, color:"#3F7D4A", background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:8, padding:8}}>✓ Real OTP enabled — Supabase will send a 6-digit code to your Gmail / SMS. {channelFor(identifier)==="sms" && "Requires Twilio configured in Supabase for SMS."}</div>}
+          {isSupabaseConfigured && <div style={{fontSize:11, color:"#3F7D4A", background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:8, padding:8}}> Real OTP enabled — Supabase will send a 6-digit code to your Gmail / SMS. {channelFor(identifier)==="sms" && "Requires Twilio configured in Supabase for SMS."}</div>}
 
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
 
