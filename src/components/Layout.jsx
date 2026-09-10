@@ -9,6 +9,7 @@ const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
   { to:"/new", key:"newAssessment", icon: IconPlus, roles:["farmer","grader"] },
   { to:"/assessments", key:"assessments", icon: IconClipboard, roles:["farmer","grader"] },
+  { to:"/lot-status", key:"lotStatus", icon: IconClipboard, roles:["farmer","grader"] },
   { to:"/reviews", key:"reviews", icon: IconEye, roles:["grader"] },
   { to:"/reports", key:"reports", icon: IconFile, roles:["farmer","grader"] },
   { to:"/policy", key:"policy", icon: IconScale, roles:["farmer","grader"] },
