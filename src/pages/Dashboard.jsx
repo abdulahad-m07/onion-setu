@@ -14,7 +14,7 @@ export default function Dashboard(){
   const today = assessments.filter(a=> a.date.startsWith("2026-09-05")).length;
   const gradeAAvg = Math.round(assessments.slice(0,3).reduce((s,a)=>s+a.gradeA,0)/Math.max(1,Math.min(3,assessments.length)));
   const humanReviews = assessments.reduce((s,a)=>s+a.humanReviews,0);
-  const pending = assessments.filter(a=> a.status==="Human Review" || a.status==="Disputed").length;
+  const pending = assessments.filter(a=> a.status==="Human Review").length;
 
   return (
     <div style={{display:"grid", gap:18}}>
@@ -68,7 +68,7 @@ export default function Dashboard(){
               <Activity dot="#D99024" text="Human review requested — O8 (47% confidence)" time="10:22 AM" />
               <Activity dot="#7A263A" text="Report generated — SHA-256 stamped" time="10:25 AM" />
               <Activity dot="#17110F" text="Policy in use — v2026.1 (35–70 mm)" time="Active" />
-              <Activity dot="#B33A3A" text="Dispute opened — OG-2026-0238" time="Yesterday" />
+              <Activity dot="#B33A3A" text="Human Review — OG-2026-0238" time="Yesterday" />
             </div>
           </div>
           <div className="card card-pad">
@@ -93,7 +93,7 @@ function Metric({label,value,sub,accent,warn}){
   );
 }
 function StatusBadge({status}){
-  const map={ Completed:"badge-success", "Human Review":"badge-warning", Disputed:"badge-error", "Sync Pending":"badge-offline", Synced:"badge-success" };
+  const map={ Completed:"badge-success", "Human Review":"badge-warning", "Sync Pending":"badge-offline", Synced:"badge-success" };
   return <span className={`badge ${map[status]||""}`} style={{fontSize:10}}>{status}</span>;
 }
 function Activity({dot,text,time}){

@@ -82,7 +82,7 @@ export const assessmentsSeed = [
     id:"OG-2026-0238", lotId:"LOT-0238", farmer:"Anil Pawar", center:"Manmad APMC", location:"Nashik, MH",
     date:"2026-09-04T11:02:00", assessor:"P. More",
     policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
-    sampleSize:50, gradeA:74, urs:26, status:"Disputed", sync:"Synced",
+    sampleSize:50, gradeA:74, urs:26, status:"Human Review", sync:"Synced",
     humanReviews:4, confidence:55,
     onions: demoOnions.slice(0,5),
     hash:"e8f1a2c3 9b0d 4c77 8a11 3f6e9d2b5c44",

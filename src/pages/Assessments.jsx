@@ -11,7 +11,7 @@ export default function Assessments(){
   const { assessments } = useStore();
   const [filter, setFilter] = useState("All");
   const [q, setQ] = useState("");
-  const statuses = ["All","Completed","Human Review","Disputed","Sync Pending"];
+  const statuses = ["All","Completed","Human Review","Sync Pending"];
   const visible = isFarmer ? assessments.filter(a=> a.farmer.toLowerCase().includes(user.name.toLowerCase()) || a.farmer==="Ramesh Patil") : assessments;
   const filtered = visible.filter(a=>{
     if(filter!=="All" && a.status!==filter) return false;
@@ -60,6 +60,6 @@ export default function Assessments(){
   );
 }
 function Status({status}){
-  const map={ Completed:"badge-success", "Human Review":"badge-warning", Disputed:"badge-error", "Sync Pending":"badge-offline" };
+  const map={ Completed:"badge-success", "Human Review":"badge-warning", "Sync Pending":"badge-offline" };
   return <span className={`badge ${map[status]||"badge"}`} style={{fontSize:10}}>{status}</span>;
 }

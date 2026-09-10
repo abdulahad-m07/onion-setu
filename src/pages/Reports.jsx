@@ -27,7 +27,7 @@ export function ReportsList(){
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
             <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
             <div style={{flex:1, minWidth:0}}>
-              <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Disputed"?"badge-error": a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
+              <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Human Review"?"badge-error": a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
             <span className="btn btn-secondary" style={{fontSize:12}}>Open report →</span>
@@ -72,7 +72,7 @@ export function ReportDetail(){
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"Fraunces, serif", fontSize:26, fontWeight:700, color:"#7A263A"}}>{a.gradeA}% GRADE A</div>
             <div style={{fontFamily:"Fraunces, serif", fontSize:16, fontWeight:700}}>{a.urs}% URS</div>
-            <div style={{marginTop:6}}><span className={`badge ${a.status==="Disputed"?"badge-error":a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
+            <div style={{marginTop:6}}><span className={`badge ${a.status==="Human Review"?"badge-error":a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export function ReportDetail(){
             <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
             <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
             <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
-            <Row label={effectiveT("disputeStatus")} value={a.status==="Disputed" ? (a.dispute?.reason || effectiveT("disputed")) : a.status==="Human Review" ? effectiveT("underReview") : effectiveT("noDispute")} badgeColor={a.status==="Disputed" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
+            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? (a.dispute?.reason || effectiveT("disputed")) : a.status==="Human Review" ? effectiveT("underReview") : effectiveT("noDispute")} badgeColor={a.status==="Human Review" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
             <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
             <Row label={effectiveT("lotId")} value={a.lotId} mono />
             <Row label={effectiveT("hash")} value={a.hash} mono small />
