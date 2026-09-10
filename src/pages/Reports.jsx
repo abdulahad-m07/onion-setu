@@ -72,7 +72,7 @@ export function ReportDetail(){
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"Fraunces, serif", fontSize:26, fontWeight:700, color:"#7A263A"}}>{a.gradeA}% GRADE A</div>
             <div style={{fontFamily:"Fraunces, serif", fontSize:16, fontWeight:700}}>{a.urs}% URS</div>
-            <div style={{marginTop:6}}><span className={`badge ${a.status==="Human Review"?"badge-error":a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
+            <div style={{marginTop:6}}><span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{marginLeft:6}}>{a.acceptance || "Accepted"}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
           </div>
         </div>
 
@@ -145,6 +145,17 @@ export function ReportDetail(){
             <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>{t("openVerification")} →</Link>
           </div>
           <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: disputes create linked <span className="mono" style={{fontSize:10}}>disputes</span> row, original preserved.</div>
+        </div>
+
+        <div className="card card-pad" style={{background: a.acceptance==="Rejected" ? "#FDECEC" : "#EDF5EF", borderColor: a.acceptance==="Rejected" ? "#F5C2C2" : "#C8E4CC", marginTop:14}}>
+          <div style={{display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
+            <div style={{fontWeight:700, fontSize:13}}>Lot Status: <span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{marginLeft:6}}>{a.acceptance || "Accepted"}</span></div>
+            <span style={{fontSize:11, color:"#6B5A54"}}>Grader updates manually — Accepted = lot accepted for procurement, Rejected = farmer refused / lot rejected / incident</span>
+            <div style={{marginLeft:"auto", display:"flex", gap:8}}>
+              <button className={`btn ${a.acceptance==="Accepted"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px"}} onClick={()=> updateAssessment(a.id, { acceptance:"Accepted" })}>Mark Accepted</button>
+              <button className={`btn ${a.acceptance==="Rejected"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px", background: a.acceptance==="Rejected" ? "#B33A3A" : undefined, borderColor: a.acceptance==="Rejected" ? "#B33A3A" : undefined, color: a.acceptance==="Rejected" ? "white" : undefined}} onClick={()=> updateAssessment(a.id, { acceptance:"Rejected" })}>Mark Rejected</button>
+            </div>
+          </div>
         </div>
 
         <div className="divider" />

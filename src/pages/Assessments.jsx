@@ -39,7 +39,7 @@ export default function Assessments(){
       </div>
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Assessment ID</th><th>Lot · Farmer</th><th>Date</th><th>Grade</th><th>Status</th><th>Sync</th><th>Policy</th><th></th></tr></thead>
+          <thead><tr><th>Assessment ID</th><th>Lot · Farmer</th><th>Date</th><th>Grade</th><th>Status</th><th>Lot Status</th><th>Sync</th><th>Policy</th><th></th></tr></thead>
           <tbody>
             {filtered.map(a=>(
               <tr key={a.id}>
@@ -48,6 +48,7 @@ export default function Assessments(){
                 <td style={{fontSize:12}}>{new Date(a.date).toLocaleDateString()}<div style={{fontSize:11, color:"#8a7a74"}}>{a.assessor}</div></td>
                 <td><b>{a.gradeA}%</b> <span style={{color:"#8a7a74"}}>/ {a.urs}%</span><div style={{fontSize:11, color:"#6B5A54"}}>{a.sampleSize} onions</div></td>
                 <td><Status status={a.status} /></td>
+                <td><span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{fontSize:10}}>{a.acceptance || "Accepted"}</span></td>
                 <td><span className={`badge ${a.sync==="Offline"||a.sync==="Sync Pending" ? "badge-offline":"badge-success"}`} style={{fontSize:10}}>{a.sync}</span></td>
                 <td><span className="badge badge-maroon" style={{fontSize:10}}>{a.policyVersion}</span></td>
                 <td><Link to={`/reports/${a.id}`} className="btn btn-secondary" style={{fontSize:12, padding:"6px 10px"}}>Report →</Link></td>

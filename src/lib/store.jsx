@@ -57,7 +57,7 @@ export function StoreProvider({ children }){
       const mapped = data.map(row=>({
         id: row.id, lotId: row.lot_id, farmer: row.farmer_name, center: row.center, location: row.location,
         assessor: row.assessor_name, policyVersion: row.policy_version, modelVersion: row.model_version,
-        sampleSize: row.sample_size, gradeA: row.grade_a, urs: row.urs, status: row.status, sync:"Synced",
+        sampleSize: row.sample_size, gradeA: row.grade_a, urs: row.urs, status: row.status, sync:"Synced", acceptance: row.acceptance_status || "Accepted",
         confidence: row.confidence, humanReviews: row.human_reviews, hash: row.hash,
         acknowledged:{ farmer: row.farmer_ack, grader: row.grader_ack },
         date: row.created_at, updatedAt: row.updated_at,
@@ -95,7 +95,7 @@ export function StoreProvider({ children }){
       date: new Date().toISOString(), assessor: data.assessor,
       policyVersion: activePolicy.version, modelVersion:"OnionSetu.ai v1",
       sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, gradeB: grading.gradeB || 0, gradeC: grading.gradeC || 0, reject: grading.reject || 0, urs: grading.urs,
-      status: data.status || "Completed", sync: offline ? "Offline" : "Synced",
+      status: data.status || "Completed", sync: offline ? "Offline" : "Synced", acceptance: data.acceptance || "Accepted",
       humanReviews: data.humanReviews ?? 0,
       confidence: data.confidence ?? Math.round((data.onions||[]).reduce((a,b)=>a+b.confidence,0)/Math.max(1,(data.onions||[]).length)),
       onions: grading.details, hash: data.hash || "a3f9c1e7 8b2d 4f0a 9e11 d6c3a5b8e902",
@@ -119,7 +119,7 @@ export function StoreProvider({ children }){
             assessor_name: entry.assessor, policy_version: entry.policyVersion, model_version: "OnionSetu.ai v1",
             sample_size: entry.sampleSize, grade_a: entry.gradeA, urs: entry.urs, status: entry.status, sync_status:"Synced",
             confidence: entry.confidence, human_reviews: entry.humanReviews, hash: entry.hash,
-            farmer_ack:false, grader_ack:false
+            farmer_ack:false, grader_ack:false, acceptance_status: entry.acceptance
           });
           if(!insErr){
             // Onions
@@ -166,6 +166,7 @@ export function StoreProvider({ children }){
         const colMap = { farmer:"farmer_name", center:"center", status:"status", dispute_reason:"dispute_reason" };
         const dbPatch = {};
         if(patch.status) dbPatch.status = patch.status;
+        if(patch.acceptance) dbPatch.acceptance_status = patch.acceptance;
         if(patch.dispute) { dbPatch.dispute_reason = patch.dispute.reason; dbPatch.dispute_by = patch.dispute.by; dbPatch.dispute_at = patch.dispute.at; }
         if(patch.acknowledged){ if(patch.acknowledged.farmer) dbPatch.farmer_ack = true; if(patch.acknowledged.grader) dbPatch.grader_ack = true; }
         if(Object.keys(dbPatch).length){
