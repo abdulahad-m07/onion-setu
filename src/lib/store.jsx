@@ -94,7 +94,7 @@ export function StoreProvider({ children }){
       id, lotId, farmer: data.farmer, center: data.center, location: data.location,
       date: new Date().toISOString(), assessor: data.assessor,
       policyVersion: activePolicy.version, modelVersion:"OnionSetu.ai v1",
-      sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, urs: grading.urs,
+      sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, gradeB: grading.gradeB || 0, gradeC: grading.gradeC || 0, reject: grading.reject || 0, urs: grading.urs,
       status: data.status || "Completed", sync: offline ? "Offline" : "Synced",
       humanReviews: data.humanReviews ?? 0,
       confidence: data.confidence ?? Math.round((data.onions||[]).reduce((a,b)=>a+b.confidence,0)/Math.max(1,(data.onions||[]).length)),

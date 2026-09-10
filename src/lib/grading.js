@@ -3,26 +3,34 @@ export const CONFIDENCE_THRESHOLD = 60;
 export function classifyOnion(onion, policy){
   const { sizeMm, defect } = onion;
   const { min, max } = policy.sizeBand;
-  const sizeOk = sizeMm >= min && sizeMm <= max;
-  const defectFail = defect === "Rotten" || defect === "Sprouted";
-  const damaged = defect === "Damaged";
-  // Damaged is tolerated up to policy, but for per-onion we mark URS if rotten/sprouted or out-of-size
-  // Damaged counts toward URS in aggregate via tolerances — simplified per-onion rule: out-of-size OR rotten/sprouted = URS
-  if (!sizeOk || defectFail) return "URS";
-  if (damaged) return "URS"; // conservative demo — policy tolerances shown in aggregate explanation
-  return "Grade A";
+  // URS is distinct from Reject — URS = undersized/rotten/sprouted (policy violation), Reject = grade D
+  const isURS = sizeMm < min || defect === "Rotten" || defect === "Sprouted";
+  if (isURS) return "URS";
+  if (defect === "Damaged") return "Reject"; // damaged → Reject (grade D)
+  if (sizeMm < min || sizeMm > max) return "Reject";
+  if (sizeMm >= 60) return "Grade A";
+  if (sizeMm >= 50) return "Grade B";
+  if (sizeMm >= 35) return "Grade C";
+  return "Reject";
 }
 
 export function gradeLot(onions, policy){
-  let gradeACount = 0;
+  const counts = { A:0, B:0, C:0, Reject:0, URS:0 };
   const details = onions.map(o => {
     const grade = classifyOnion(o, policy);
-    if (grade === "Grade A") gradeACount++;
+    let key = "Reject";
+    if(grade==="Grade A") key="A"; else if(grade==="Grade B") key="B"; else if(grade==="Grade C") key="C"; else if(grade==="URS") key="URS"; else key="Reject";
+    counts[key]++;
     return { ...o, grade };
   });
   const total = onions.length || 1;
-  const gradeAPct = Math.round((gradeACount/total)*100);
-  return { details, gradeA: gradeAPct, urs: 100-gradeAPct, total };
+  const gradeA = Math.round((counts.A/total)*100);
+  const gradeB = Math.round((counts.B/total)*100);
+  const gradeC = Math.round((counts.C/total)*100);
+  const reject = Math.round((counts.Reject/total)*100);
+  const urs = Math.round((counts.URS/total)*100);
+  // For display, keep URS separate, Reject is grade D
+  return { details, gradeA, gradeB, gradeC, reject, urs, counts, total };
 }
 
 export function needsHumanReview(onion){
@@ -35,7 +43,6 @@ export function lotConfidence(onions){
 }
 
 export function sha256Placeholder(seed="photo-set"){
-  // deterministic fake hash for demo — label clearly as demo
   let h="";
   const chars="abcdef0123456789";
   let s=0; for(let i=0;i<seed.length;i++) s+=seed.charCodeAt(i);

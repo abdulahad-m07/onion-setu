@@ -167,10 +167,10 @@ export function ReportDetail(){
             alert("Acknowledged — both parties have seen the report.");
           }}>Mark acknowledged</button>
           <button className="btn btn-ghost" style={{color:"#B33A3A"}} onClick={()=>{
-            updateAssessment(a.id, { status:"Disputed", dispute:{ reason:"Flagged for second review", at:new Date().toISOString(), by:"Grader" } });
-            alert("Flagged — linked review record created. Original preserved.");
-          }}>Flag Report / Second Review</button>
-          {a.dispute && <span className="badge badge-error">Disputed: {a.dispute.reason}</span>}
+            updateAssessment(a.id, { status:"Human Review", dispute:{ reason:"Flagged for human review", at:new Date().toISOString(), by:"Farmer" } });
+            alert("Flagged for human review — linked review record created. Original preserved. No dispute, just human review.");
+          }}>Flag for Human Review</button>
+          {a.dispute && <span className="badge badge-warning">Human Review: {a.dispute.reason}</span>}
         </div>
       </div>
       <style>{`@media(max-width:800px){ .capture-grid{grid-template-columns:1fr !important} }`}</style>
