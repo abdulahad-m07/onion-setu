@@ -12,7 +12,6 @@ const NewAssessment = lazy(()=> import("./pages/NewAssessment"));
 const Assessments = lazy(()=> import("./pages/Assessments"));
 const Reviews = lazy(()=> import("./pages/Reviews"));
 import { ReportsList, ReportDetail } from "./pages/Reports";
-const LotStatus = lazy(()=> import("./pages/LotStatus"));
 const Policy = lazy(()=> import("./pages/Policy"));
 const Settings = lazy(()=> import("./pages/Settings"));
 const Verification = lazy(()=> import("./pages/Verification"));
@@ -72,7 +71,6 @@ function AppRoutes(){
               <Route path="/" element={<Dashboard />} />
               <Route path="/new" element={<NewAssessment />} />
               <Route path="/assessments" element={<Assessments />} />
-              <Route path="/lot-status" element={<LotStatus />} />
               <Route path="/reviews" element={
                 <Protected allow={["grader"]}><Reviews /></Protected>
               } />

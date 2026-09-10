@@ -93,7 +93,7 @@ export function ReportDetail(){
             <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
             <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
             <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
-            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? effectiveT("underReview") : a.acceptance==="Rejected" ? "Rejected" : "Accepted"} badgeColor={a.status==="Human Review" ? "warning" : a.acceptance==="Rejected" ? "error" : "success"} />
+            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? effectiveT("underReview") : a.acceptance==="Rejected" ? effectiveT("disputed") : effectiveT("accepted")} badgeColor={a.status==="Human Review" ? "warning" : a.acceptance==="Rejected" ? "error" : "success"} />
             <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
             <Row label={effectiveT("lotId")} value={a.lotId} mono />
             <Row label={effectiveT("hash")} value={a.hash} mono small />

@@ -3,13 +3,11 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { useI18n } from "../lib/i18n";
-import MyTranslator from "./MyTranslator";
 
 const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
   { to:"/new", key:"newAssessment", icon: IconPlus, roles:["farmer","grader"] },
   { to:"/assessments", key:"assessments", icon: IconClipboard, roles:["farmer","grader"] },
-  { to:"/lot-status", key:"lotStatus", icon: IconClipboard, roles:["farmer","grader"] },
   { to:"/reviews", key:"reviews", icon: IconEye, roles:["grader"] },
   { to:"/reports", key:"reports", icon: IconFile, roles:["farmer","grader"] },
   { to:"/policy", key:"policy", icon: IconScale, roles:["farmer","grader"] },
@@ -115,10 +113,6 @@ export default function Layout({ children }){
               {t(item.key)}
             </NavLink>
           ))}
-          <div style={{padding:"8px 10px"}}>
-            <div style={{fontSize:11, fontWeight:700, letterSpacing:".06em", textTransform:"uppercase", color:"#8a7a74", marginBottom:6}}>{t("languageSettings")} — My Translator</div>
-            <MyTranslator variant="sidebar" />
-          </div>
           <div className="nav-group-label" style={{marginTop:14}}>System</div>
           <div style={{padding:"8px 10px"}}>
             <div style={{fontSize:12, fontWeight:600}}>Active policy</div>
@@ -169,7 +163,6 @@ export default function Layout({ children }){
             </div>
           </div>
           <div className="topbar-right">
-            <MyTranslator variant="topbar" />
             <span className="badge badge-maroon" style={{display:"none"}} id="top-policy">v2026.1</span>
             <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>{ setMenuOpen(false); nav2("/policy"); }}>Policy {activePolicy.version}</button>
             <button className="btn btn-primary" onClick={()=>{ setMenuOpen(false); nav2("/new"); }}><IconPlus/> <span>Start</span></button>
