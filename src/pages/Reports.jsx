@@ -128,21 +128,11 @@ export function ReportDetail(){
           <div style={{fontSize:11, color:"#8a7a74", marginTop:6}}>If real phone captures were uploaded, they appear here with signed URLs from Supabase Storage. Demo uses placeholder but storage path is still recorded.</div>
         </div>
 
-        {/* Per-onion breakdown — also written */}
-        {hasOnions && (
-          <div style={{marginTop:14}}>
-            <div style={{fontWeight:700, fontSize:13}}>Per-Onion Results — Written to <span className="mono" style={{fontSize:11}}>assessment_onions</span></div>
-            <div style={{fontSize:11, color:"#6B5A54"}}>Each onion’s size, defect, confidence and Grade A/URS is stored as a typed row linked to <span className="mono" style={{fontSize:10}}>{a.id}</span>.</div>
-            <div style={{display:"grid", gap:6, marginTop:8}}>
-              {(a.onions||[]).map(o=>(
-                <div key={o.id} style={{display:"flex", gap:8, alignItems:"center", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background:"white"}}>
-                  <b>{o.id}</b><span>{o.sizeMm} mm</span><span>·</span><span>{o.defect}</span><span>·</span><span>{o.confidence}%</span>
-                  <span style={{marginLeft:"auto"}} className={`badge ${o.grade==="Grade A"?"badge-success":"badge-warning"}`} style={{fontSize:10}}>{o.grade|| (o.sizeMm>=35&&o.sizeMm<=70 && o.defect==="Healthy" ? "Grade A":"URS")}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Overall check — not per-onion, per lot */}
+        <div style={{marginTop:14, background:"#FFFEFD", border:"1px solid #EDE3DC", borderRadius:10, padding:12}}>
+          <div style={{fontWeight:700, fontSize:13}}>Overall Lot Check — Written to <span className="mono" style={{fontSize:11}}>assessments</span> (overall, not per-onion)</div>
+          <div style={{fontSize:11, color:"#6B5A54"}}>Overall grade for the lot: <b>{a.gradeA ? `${a.gradeA}% Grade A` : a.gradeB ? `${a.gradeB}% Grade B` : a.gradeC ? `${a.gradeC}% Grade C` : a.reject ? `${a.reject}% Reject` : `${a.urs}% URS`}</b> — avg size {a.onions?.[0]?.sizeMm || "—"}mm, confidence {a.confidence}%. Stored as overall, per-onion kept for audit only.</div>
+        </div>
 
         <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
           <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:8, padding:6}}>
