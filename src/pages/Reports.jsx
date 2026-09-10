@@ -12,7 +12,7 @@ export function ReportsList(){
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
-      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Dispute — plus uploaded images in final report</p>
+      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Review status — plus uploaded images in final report</p>
       <div className="card card-pad" style={{background:"#FDFBF9", borderColor:"#EDE3DC", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
         <div style={{width:36,height:36, borderRadius:8, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}></div>
         <div style={{flex:1}}>
@@ -27,7 +27,7 @@ export function ReportsList(){
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
             <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
             <div style={{flex:1, minWidth:0}}>
-              <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Human Review"?"badge-error": a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
+              <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
             <span className="btn btn-secondary" style={{fontSize:12}}>Open report →</span>
@@ -45,9 +45,8 @@ export function ReportDetail(){
   const [printLang, setPrintLang] = useState(null); // null = follow app lang, "en" = force English
   const effectiveLang = printLang || lang;
   const effectiveT = (k)=> {
-    // if printLang forced to en, use English; else use current lang via t
     if(printLang==="en"){
-      const enDict = { reportId:"Report ID", date:"Date", location:"Location", policyVersion:"Policy version", gradeA:"Grade A %", urs:"URS %", confidence:"Confidence", farmerAck:"Farmer acknowledgement", graderAck:"Grader acknowledgement", disputeStatus:"Dispute status" };
+      const enDict = { reportId:"Report ID", date:"Date", location:"Location", policyVersion:"Policy version", gradeA:"Grade A %", urs:"URS %", confidence:"Confidence", farmerAck:"Farmer acknowledgement", graderAck:"Grader acknowledgement", disputeStatus:"Review status", reviewStatus:"Review status" };
       return enDict[k] || k;
     }
     return t(k);
@@ -94,7 +93,7 @@ export function ReportDetail(){
             <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
             <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
             <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
-            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? (a.dispute?.reason || effectiveT("disputed")) : a.status==="Human Review" ? effectiveT("underReview") : effectiveT("noDispute")} badgeColor={a.status==="Human Review" ? "error" : a.status==="Human Review" ? "warning" : "success"} />
+            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? effectiveT("underReview") : a.acceptance==="Rejected" ? "Rejected" : "Accepted"} badgeColor={a.status==="Human Review" ? "warning" : a.acceptance==="Rejected" ? "error" : "success"} />
             <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
             <Row label={effectiveT("lotId")} value={a.lotId} mono />
             <Row label={effectiveT("hash")} value={a.hash} mono small />
