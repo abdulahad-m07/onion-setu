@@ -128,12 +128,6 @@ export function ReportDetail(){
           <div style={{fontSize:11, color:"#8a7a74", marginTop:6}}>If real phone captures were uploaded, they appear here with signed URLs from Supabase Storage. Demo uses placeholder but storage path is still recorded.</div>
         </div>
 
-        {/* Overall check — not per-onion, per lot */}
-        <div style={{marginTop:14, background:"#FFFEFD", border:"1px solid #EDE3DC", borderRadius:10, padding:12}}>
-          <div style={{fontWeight:700, fontSize:13}}>Overall Lot Check — Written to <span className="mono" style={{fontSize:11}}>assessments</span> (overall, not per-onion)</div>
-          <div style={{fontSize:11, color:"#6B5A54"}}>Overall grade for the lot: <b>{a.gradeA ? `${a.gradeA}% Grade A` : a.gradeB ? `${a.gradeB}% Grade B` : a.gradeC ? `${a.gradeC}% Grade C` : a.reject ? `${a.reject}% Reject` : `${a.urs}% URS`}</b> — avg size {a.onions?.[0]?.sizeMm || "—"}mm, confidence {a.confidence}%. Stored as overall, per-onion kept for audit only.</div>
-        </div>
-
         <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
           <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:8, padding:6}}>
             <QRCodeSVG value={verifyUrl} size={72} level="M" bgColor="#FFFFFF" fgColor="#7A263A" />
