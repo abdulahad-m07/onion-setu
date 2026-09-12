@@ -37,7 +37,23 @@ export function gradeLot(onions, policy){
   const overallGrade = counts.A >= counts.B && counts.A >= counts.C && counts.A >= counts.Reject ? "Grade A"
     : counts.B >= counts.C && counts.B >= counts.Reject ? "Grade B"
     : counts.C >= counts.Reject ? "Grade C" : "Reject";
-  return { details, gradeA, gradeB, gradeC, gradeReject, urs, counts, total, overallGrade };
+  // Tolerance verdict from policy (defect rates vs allowed %): Reject if
+  // rotten/sprouted exceed tolerance, URS if damaged exceeds tolerance.
+  const pct = n => Math.round((n/total)*100);
+  const rotten = onions.filter(o=> o.defect==="Rotten").length;
+  const sprouted = onions.filter(o=> o.defect==="Sprouted").length;
+  const damaged = onions.filter(o=> o.defect==="Damaged").length;
+  const rottenPct = pct(rotten), sproutedPct = pct(sprouted), damagedPct = pct(damaged);
+  const tol = policy.tolerances || {};
+  const toleranceBreaches = [];
+  if(rottenPct > (tol.rotten ?? 100)) toleranceBreaches.push(`rotten ${rottenPct}% > ${tol.rotten}% allowed`);
+  if(sproutedPct > (tol.sprouted ?? 100)) toleranceBreaches.push(`sprouted ${sproutedPct}% > ${tol.sprouted}% allowed`);
+  if(damagedPct > (tol.damaged ?? 100)) toleranceBreaches.push(`damaged ${damagedPct}% > ${tol.damaged}% allowed`);
+  let lotStatus = "Within tolerance";
+  if(rottenPct > (tol.rotten ?? 100) || sproutedPct > (tol.sprouted ?? 100)) lotStatus = "Reject";
+  else if(toleranceBreaches.length) lotStatus = "URS";
+  return { details, gradeA, gradeB, gradeC, gradeReject, urs, counts, total, overallGrade,
+    rottenPct, sproutedPct, damagedPct, lotStatus, toleranceBreaches };
 }
 
 export function needsHumanReview(onion){

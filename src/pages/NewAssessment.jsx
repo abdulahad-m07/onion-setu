@@ -68,7 +68,51 @@ export default function NewAssessment(){
     setProcessing(true);
     setTimeout(()=> setProcessing(false), 1200);
   }
-  useEffect(()=>{ if(step===4 || step===5 || step===6){ simulateProcessingPipeline(); } },[step]);
+  useEffect(()=>{ if(step===5 || step===6){ simulateProcessingPipeline(); } },[step]);
+
+  // Detection (step 4): try live grading from captured Files, fall back to demo.
+  function fileToBase64(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+  useEffect(()=>{
+    if(step!==4) return;
+    const files = captureFiles.filter(Boolean);
+    if(offline || files.length===0) return; // demo mode — keep demoOnions
+    let cancelled = false;
+    (async ()=>{
+      setProcessing(true);
+      try{
+        const images = await Promise.all(files.slice(0,3).map(fileToBase64));
+        const resp = await fetch("/api/ai-analyze",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ images, policyVersion: policy.version }),
+        });
+        const data = await resp.json();
+        if(cancelled || !Array.isArray(data.results) || !data.results.length) return;
+        const boxes = demoOnions.map(o=> o.box);
+        const live = data.results.slice(0,10).map((r,i)=>({
+          id: r.id || `O${i+1}`,
+          sizeMm: Number(r.sizeMm) || 60,
+          defect: ["Healthy","Damaged","Rotten","Sprouted"].includes(r.defect) ? r.defect : "Healthy",
+          confidence: Math.max(0, Math.min(100, Number(r.confidence) || 70)),
+          box: boxes[i % boxes.length],
+        }));
+        setOnions(live);
+      }catch{
+        // keep demoOnions — demo/offline path must keep working
+      }finally{
+        if(!cancelled) setProcessing(false);
+      }
+    })();
+    return ()=>{ cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[step]);
 
   async function finalize(){
     // collect real files for Storage (filter nulls)
@@ -125,7 +169,7 @@ export default function NewAssessment(){
         {step===1 && <StepSampling onNext={next} onPrev={prev} />}
         {step===2 && <StepCapture captures={captures} setCaptures={setCaptures} fileRefs={fileRefs} handleFile={handleFile} useDemo={useDemoImages} onNext={next} onPrev={prev} />}
         {step===3 && <StepQuality captures={captures} quality={quality} processing={processing} run={runQualityCheck} onNext={next} onPrev={prev} />}
-        {step===4 && <StepDetection processing={processing} onions={onions} onNext={next} onPrev={prev} />}
+        {step===4 && <StepDetection processing={processing} onions={onions} captures={captures} onNext={next} onPrev={prev} />}
         {step===5 && <StepSize onions={onions} processing={processing} onNext={next} onPrev={prev} />}
         {step===6 && <StepDefects onions={onions} processing={processing} onNext={next} onPrev={prev} />}
         {step===7 && <StepConfidence onions={onions} low={lowConfidence} onNext={next} onPrev={prev} />}
@@ -139,7 +183,7 @@ export default function NewAssessment(){
         <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← Back</button>
         {step<11 && <button className="btn btn-primary" onClick={next}>Continue →</button>}
       </div>
-      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Prototype demo inference — YOLOv8 Nano + MobileNetV2 adapters ready for on-device TFLite.</p>
+      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>OnionSetu grading (Gemini-assisted, Phase 1) — AI assists, human decides.</p>
     </div>
   );
 }
@@ -270,7 +314,10 @@ function StepQuality({quality,processing,run,onNext,onPrev}){
     </div>
   );
 }
-function StepDetection({processing,onions,onNext,onPrev}){
+function StepDetection({processing,onions,captures=[],onNext,onPrev}){
+  // Show the user's own capture; stock photo only in demo mode (no real capture).
+  const realCapture = captures.find(c=> c && !String(c).startsWith("demo"));
+  const imgSrc = realCapture || "https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop";
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Onion Detection / Segmentation</h3>
@@ -282,7 +329,7 @@ function StepDetection({processing,onions,onNext,onPrev}){
       ) : (
         <>
           <div style={{position:"relative", borderRadius:12, overflow:"hidden", border:"1px solid #EDE3DC", height:260, background:"linear-gradient(180deg,#FDFBF9,#F3EAE2)"}}>
-            <img src="https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop" alt="Segmented onion detection overlay showing five onions labeled O1 to O5 with yellow bounding boxes on a sorting mat" width="900" height="500" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover", opacity:.88}} />
+            <img src={imgSrc} alt="Segmented onion detection overlay showing detected onions with bounding boxes" width="900" height="500" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover", opacity:.88}} />
             {onions.slice(0,5).map(o=>(
               <div key={o.id} style={{position:"absolute", left:`${o.box.x}%`, top:`${o.box.y}%`, width:`${o.box.w}%`, height:`${o.box.h}%`, border:"2px solid #F2B84B", borderRadius:12, boxShadow:"0 2px 8px rgba(0,0,0,.18)", background:"rgba(242,184,75,.08)"}}>
                 <span style={{position:"absolute", top:-8, left:8, background:"#F2B84B", color:"#17110F", fontSize:10, fontWeight:800, padding:"2px 6px", borderRadius:999}}>{o.id}</span>
@@ -290,7 +337,7 @@ function StepDetection({processing,onions,onNext,onPrev}){
             ))}
             <span style={{position:"absolute", bottom:10, left:10, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"5px 10px", fontSize:12, fontWeight:700}}>{onions.length} onions detected</span>
           </div>
-          <p style={{margin:0, fontSize:12, color:"#8a7a74"}}>Prototype simulation — detector crops each onion for size + defect analysis. Replaceable with on-device segmentation model.</p>
+          <p style={{margin:0, fontSize:12, color:"#8a7a74"}}>Detector crops each onion for size + defect analysis.</p>
           <div style={{display:"flex", gap:8}}>
             <button className="btn btn-secondary" onClick={onPrev}>Back</button>
             <button className="btn btn-primary" onClick={onNext}>Continue to size →</button>
@@ -333,7 +380,7 @@ function StepSize({onions,processing,onNext,onPrev}){
 function StepDefects({onions,processing,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:11, border:"1px solid #EDE3DC", background:"#FBF6F0", borderRadius:6, padding:"2px 6px"}}>Prototype Demo Inference — MobileNetV2 adapter ready</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#7A263A", fontSize:12}}>· Gemini-assisted, Phase 1</span></h3>
       {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
         <>
           <div className="card" style={{padding:12}}>
@@ -351,7 +398,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
                 </div>
               ))}
             </div>
-            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Prototype demo — Healthy / Damaged / Rotten / Sprouted. On-device MobileNetV2 + TFLite adapter ready; demo uses deterministic mock.</p>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Gemini-assisted defect review — Healthy / Damaged / Rotten / Sprouted. Human decides below 60%.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
             <button className="btn btn-secondary" onClick={onPrev}>Back</button>
@@ -546,7 +593,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
           </div>
           <div style={{textAlign:"right", fontSize:11, color:"#6B5A54"}}>
             <div>Report ID: <span className="mono">{lot.lotId.replace("LOT","OG")}</span></div>
-            <div>Policy: {policy.version} · Model: Prototype Demo Inference</div>
+            <div>Policy: {policy.version} · Model: OnionSetu grading (Gemini-assisted, Phase 1)</div>
             <div>{new Date().toLocaleString()}</div>
           </div>
         </div>

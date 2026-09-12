@@ -40,7 +40,7 @@ create table if not exists public.assessments (
   location text,
   assessor_name text,
   policy_version text not null references public.policies(version),
-  model_version text not null default 'OnionSetu.ai v1',
+  model_version text not null default 'OnionSetu grading (Gemini-assisted, Phase 1)',
   sample_size int not null,
   grade_a int not null default 0 check (grade_a between 0 and 100),
   grade_b int not null default 0 check (grade_b between 0 and 100),

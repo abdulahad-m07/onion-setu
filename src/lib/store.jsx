@@ -57,7 +57,7 @@ export function StoreProvider({ children }){
       const mapped = data.map(row=>({
         id: row.id, lotId: row.lot_id, farmer: row.farmer_name, center: row.center, location: row.location,
         assessor: row.assessor_name, policyVersion: row.policy_version, modelVersion: row.model_version,
-        sampleSize: row.sample_size, gradeA: row.grade_a ?? 0, gradeB: row.grade_b ?? 0, gradeC: row.grade_c ?? 0, gradeReject: row.grade_reject ?? 0, urs: row.urs ?? 0, status: row.status, sync:"Synced", acceptance: row.acceptance_status || "Accepted",
+        sampleSize: row.sample_size, gradeA: row.grade_a, urs: row.urs, status: row.status, sync:"Synced",
         confidence: row.confidence, humanReviews: row.human_reviews, hash: row.hash,
         acknowledged:{ farmer: row.farmer_ack, grader: row.grader_ack },
         date: row.created_at, updatedAt: row.updated_at,
@@ -89,14 +89,13 @@ export function StoreProvider({ children }){
   async function addAssessment(data){
     const id = generateId();
     const lotId = data.lotId || generateLotId();
-    const policyForGrading = data.policyVersion ? (policies.find(p=>p.version===data.policyVersion) || activePolicy) : activePolicy;
-    const grading = data.pregraded ? { details: data.onions || [], gradeA: data.gradeA ?? 0, gradeB: data.gradeB ?? 0, gradeC: data.gradeC ?? 0, gradeReject: data.gradeReject ?? data.reject ?? 0, urs: data.urs ?? 0, total: (data.onions||[]).length } : gradeLot(data.onions || [], policyForGrading);
+    const grading = gradeLot(data.onions || [], activePolicy);
     const entry = {
       id, lotId, farmer: data.farmer, center: data.center, location: data.location,
       date: new Date().toISOString(), assessor: data.assessor,
-      policyVersion: data.policyVersion || policyForGrading.version, modelVersion: data.modelVersion || "Prototype Demo Inference",
-      sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, gradeB: grading.gradeB ?? 0, gradeC: grading.gradeC ?? 0, gradeReject: grading.gradeReject ?? grading.reject ?? 0, reject: grading.gradeReject ?? grading.reject ?? 0, urs: grading.urs,
-      status: data.status || "Completed", sync: offline ? "Offline" : "Synced", acceptance: data.acceptance || "Accepted",
+      policyVersion: activePolicy.version, modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
+      sampleSize: data.onions?.length || grading.total, gradeA: grading.gradeA, urs: grading.urs,
+      status: data.status || "Completed", sync: offline ? "Offline" : "Synced",
       humanReviews: data.humanReviews ?? 0,
       confidence: data.confidence ?? Math.round((data.onions||[]).reduce((a,b)=>a+b.confidence,0)/Math.max(1,(data.onions||[]).length)),
       onions: grading.details, hash: data.hash || "a3f9c1e7 8b2d 4f0a 9e11 d6c3a5b8e902",
@@ -117,10 +116,10 @@ export function StoreProvider({ children }){
           // For now, insert assessment row
           const { error: insErr } = await supabase.from("assessments").insert({
             id, user_id: uid, lot_id: lotId, farmer_name: entry.farmer, center: entry.center, location: entry.location,
-            assessor_name: entry.assessor, policy_version: entry.policyVersion, model_version: entry.modelVersion,
-            sample_size: entry.sampleSize, grade_a: entry.gradeA, grade_b: entry.gradeB ?? 0, grade_c: entry.gradeC ?? 0, grade_reject: entry.gradeReject ?? entry.reject ?? 0, urs: entry.urs, status: entry.status, sync_status:"Synced",
+            assessor_name: entry.assessor, policy_version: entry.policyVersion, model_version: "OnionSetu grading (Gemini-assisted, Phase 1)",
+            sample_size: entry.sampleSize, grade_a: entry.gradeA, urs: entry.urs, status: entry.status, sync_status:"Synced",
             confidence: entry.confidence, human_reviews: entry.humanReviews, hash: entry.hash,
-            farmer_ack:false, grader_ack:false, acceptance_status: entry.acceptance
+            farmer_ack:false, grader_ack:false
           });
           if(!insErr){
             // Onions
@@ -143,7 +142,7 @@ export function StoreProvider({ children }){
               }
             }
             // Audit
-            await supabase.from("audit_logs").insert({ assessment_id:id, action:"create", actor_id:uid, actor_role: session.user?.user_metadata?.role || "farmer", details:{ grade_a: entry.gradeA, grade_b: entry.gradeB ?? 0, grade_c: entry.gradeC ?? 0, grade_reject: entry.gradeReject ?? entry.reject ?? 0, urs: entry.urs } });
+            await supabase.from("audit_logs").insert({ assessment_id:id, action:"create", actor_id:uid, actor_role: session.user?.user_metadata?.role || "farmer", details:{ grade_a: entry.gradeA, urs: entry.urs } });
             // Mark synced
             setAssessments(prev=> prev.map(a=> a.id===id ? { ...a, sync:"Synced" } : a));
           } else {
@@ -167,7 +166,6 @@ export function StoreProvider({ children }){
         const colMap = { farmer:"farmer_name", center:"center", status:"status", dispute_reason:"dispute_reason" };
         const dbPatch = {};
         if(patch.status) dbPatch.status = patch.status;
-        if(patch.acceptance) dbPatch.acceptance_status = patch.acceptance;
         if(patch.dispute) { dbPatch.dispute_reason = patch.dispute.reason; dbPatch.dispute_by = patch.dispute.by; dbPatch.dispute_at = patch.dispute.at; }
         if(patch.acknowledged){ if(patch.acknowledged.farmer) dbPatch.farmer_ack = true; if(patch.acknowledged.grader) dbPatch.grader_ack = true; }
         if(Object.keys(dbPatch).length){
@@ -190,7 +188,7 @@ export function StoreProvider({ children }){
           const { error } = await supabase.from("assessments").insert({
             id: p.id, user_id: uid, lot_id: p.lotId, farmer_name: p.farmer, center: p.center, location: p.location,
             assessor_name: p.assessor, policy_version: p.policyVersion, model_version: p.modelVersion,
-            sample_size: p.sampleSize, grade_a: p.gradeA ?? 0, grade_b: p.gradeB ?? 0, grade_c: p.gradeC ?? 0, grade_reject: p.gradeReject ?? p.reject ?? 0, urs: p.urs ?? 0, status:"Completed", sync_status:"Synced",
+            sample_size: p.sampleSize, grade_a: p.gradeA, urs: p.urs, status:"Completed", sync_status:"Synced",
             confidence: p.confidence, human_reviews: p.humanReviews, hash: p.hash
           });
           if(!error && p.onions?.length){

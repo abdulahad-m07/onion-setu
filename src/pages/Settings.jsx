@@ -34,7 +34,7 @@ export default function Settings(){
         <div style={{display:"grid", gap:8, fontSize:13}}>
           <div><b>Active policy:</b> {activePolicy.version} ({activePolicy.sizeBand.min}–{activePolicy.sizeBand.max} mm)</div>
           <div><b>Detection:</b> YOLOv8n prototype · <b>Defect:</b> MobileNetV2 prototype · <b>Size:</b> OpenCV + 25mm ref</div>
-          <div><b>Inference:</b> Prototype Demo Inference — on-device adapter ready</div>
+          <div><b>Model:</b> OnionSetu grading (Gemini-assisted, Phase 1) — live when API key is set, demo otherwise</div>
           <div><b>Confidence threshold:</b> 60%</div>
           <div><b>Backend:</b> Supabase — per-user RLS, Storage for images/reports, QR verification</div>
         </div>

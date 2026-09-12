@@ -3,7 +3,7 @@
 > AI-assisted onion quality assessment and procurement grading for APMC and NAFED centers in Maharashtra, India.
 
 ## Description
-OnionSetu captures multi-view onion samples with a 25mm reference, runs on-device quality checks, detects and sizes onions, classifies visible defects (Healthy / Damaged / Rotten / Sprouted), applies a versioned grading policy to compute Grade A / URS, and generates tamper-evident SHA-256 + QR reports. Offline-first, human-in-the-loop.
+OnionSetu captures multi-view onion samples with a 25mm reference, runs image quality checks, detects and sizes onions, classifies visible defects (Healthy / Damaged / Rotten / Sprouted), applies a versioned grading policy to compute Grade A / URS, and generates tamper-evident SHA-256 + QR reports. Offline-first, human-in-the-loop.
 
 ## URLs
 - Home: https://onion-setu.vercel.app/
