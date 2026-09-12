@@ -39,8 +39,8 @@ def analyze(session_id: str):
 
 @router.get("/{session_id}/results")
 def get_results(session_id: str):
-    return {"grade": "A", "A%": 80, "URS%": 20, "onions": []}
+    return {"grades": {"A": 50, "B": 20, "C": 20, "Reject": 10}, "urs_percent": 12, "onions": []}
 
 @router.post("/{session_id}/regrade")
 def regrade(session_id: str, policy_version: str):
-    return {"policy_version": policy_version, "A%": 68, "URS%": 32}
+    return {"policy_version": policy_version, "grades": {"A": 50, "B": 20, "C": 20, "Reject": 10}, "urs_percent": 12}

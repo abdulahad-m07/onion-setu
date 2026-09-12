@@ -10,7 +10,7 @@ def create_report(session_id: str):
 
 @router.get("/{report_id}")
 def get_report(report_id: str):
-    return {"report_id": report_id, "grade_A%": 68, "URS%": 32, "policy_version": "v2026.1", "hash": "a3f9..."}
+    return {"report_id": report_id, "grades": {"A": 50, "B": 20, "C": 20, "Reject": 10}, "urs_percent": 12, "policy_version": "v2026.1", "hash": "computed-sha256"}
 
 @router.get("/{report_id}/pdf")
 def get_pdf(report_id: str):
@@ -18,4 +18,4 @@ def get_pdf(report_id: str):
 
 @router.get("/{report_id}/verify")
 def verify(report_id: str):
-    return {"report_id": report_id, "status": "Verified", "policy_version": "v2026.1", "hash": "a3f9..."}
+    return {"report_id": report_id, "status": "Verified", "grades": {"A": 50, "B": 20, "C": 20, "Reject": 10}, "urs_percent": 12, "policy_version": "v2026.1", "hash": "computed-sha256"}

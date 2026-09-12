@@ -5,7 +5,7 @@ const DEFAULT_IMAGE = `${SITE}/og-image.svg`;
 
 export function useSeo({ title, description, canonical, image = DEFAULT_IMAGE, noindex = false }){
   useEffect(()=>{
-    const fullTitle = title ? `${title} — OnionSetu` : "OnionSetu — AI-Assisted Onion Quality Assessment";
+    const fullTitle = title ? `${title} — OnionSetu` : "OnionSetu — Onion Quality Assessment";
     document.title = fullTitle;
 
     setMeta("description", description);

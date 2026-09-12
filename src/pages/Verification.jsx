@@ -6,7 +6,7 @@ export default function Verification(){
   const { id } = useParams();
   const { assessments } = useStore();
   const a = assessments.find(x=> x.id===id);
-  useSeo({ title: a ? `Verify ${a.id}` : "Verify report", description: a ? `Verify ${a.id} — check tamper-evident hash, policy ${a.policyVersion} and Grade A ${a.gradeA}% for ${a.center}.` : "Verify OnionSetu report via QR — confirm hash and policy version.", canonical: `/verify/${id}`, noindex:true });
+  useSeo({ title: a ? `Verify ${a.id}` : "Verify report", description: a ? `Verify ${a.id} — check tamper-evident hash, policy ${a.policyVersion} and grades A:${a.gradeA}% B:${a.gradeB ?? 0}% C:${a.gradeC ?? 0}% Reject:${a.gradeReject ?? 0}% with URS ${a.urs}% separate.` : "Verify OnionSetu report via QR — confirm hash and policy version.", canonical: `/verify/${id}`, noindex:true });
   if(!a) return <div className="card card-pad">No record found for {id}. <Link to="/reports" className="btn btn-secondary" style={{marginLeft:8}}>Browse reports</Link></div>;
   return (
     <div style={{maxWidth:560, margin:"0 auto", display:"grid", gap:14}}>
@@ -21,7 +21,7 @@ export default function Verification(){
         <div style={{marginTop:12, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:12, textAlign:"left", fontSize:12}}>
           <div><b>Assessment ID:</b> <span className="mono">{a.id}</span></div>
           <div><b>Lot:</b> {a.lotId} · <b>Center:</b> {a.center}</div>
-          <div><b>Policy:</b> {a.policyVersion} · <b>Grade:</b> {a.gradeA}% Grade A / {a.urs}% URS</div>
+          <div><b>Policy:</b> {a.policyVersion} · <b>Grades:</b> A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% Reject:{a.gradeReject ?? a.reject ?? 0}% · <b>URS:</b> {a.urs}% separate</div>
           <div><b>Timestamp:</b> {new Date(a.date).toLocaleString()}</div>
           <div><b>Status:</b> {a.status} · <b>Sync:</b> {a.sync}</div>
           <div style={{marginTop:6, wordBreak:"break-all"}}><b>SHA-256:</b> <span className="mono" style={{fontSize:10}}>{a.hash}</span></div>

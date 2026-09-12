@@ -8,7 +8,7 @@ export default function Dashboard(){
   const { t } = useI18n();
   const { user } = useAuth();
   const isFarmer = user?.role==="farmer";
-  useSeo({ title: t("dashboard"), description: isFarmer ? "Farmer dashboard — track your lots, Grade A results and verified reports at Lasalgaon APMC." : "Live overview of onion grading at Lasalgaon APMC — today's assessments, Grade A averages, pending reviews and recent evidence-backed reports.", canonical:"/" });
+  useSeo({ title: t("dashboard"), description: isFarmer ? "Farmer dashboard — track your lots, A/B/C/Reject grades with separate URS at Lasalgaon APMC." : "Overview of onion grading at Lasalgaon APMC — today's assessments, grade averages, pending reviews and reports.", canonical:"/" });
   const { assessments, activePolicy } = useStore();
   const visible = isFarmer ? assessments.filter(a=> a.farmer.toLowerCase().includes(user.name.toLowerCase()) || a.farmer==="Ramesh Patil") : assessments;
   const today = assessments.filter(a=> a.date.startsWith("2026-09-05")).length;
@@ -52,7 +52,8 @@ export default function Dashboard(){
                   <div style={{fontSize:12, color:"#6B5A54"}}>{a.farmer} · {a.center}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontWeight:700, fontSize:13}}>{a.gradeA}% Grade A <span style={{color:"#8a7a74", fontWeight:500}}>/ {a.urs}% URS</span></div>
+                  <div style={{fontWeight:700, fontSize:13}}>A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}%</div>
+                  <div style={{fontSize:11, color:"#8a7a74"}}>URS: {a.urs}% separate</div>
                   <div><StatusBadge status={a.status} /></div>
                 </div>
               </div>
@@ -73,8 +74,8 @@ export default function Dashboard(){
           </div>
           <div className="card card-pad">
             <div style={{fontSize:12, letterSpacing:".08em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>How it works</div>
-            <div style={{marginTop:8, fontSize:13, color:"#17110F", lineHeight:1.5}}>Capture once · Get instant Grade A / URS · Review together · Walk away with a verified report.</div>
-            <div style={{marginTop:8, fontSize:12, color:"#6B5A54"}}>If the result is uncertain, it’s flagged for the grader to confirm — the original record is always preserved.</div>
+            <div style={{marginTop:8, fontSize:13, color:"#17110F", lineHeight:1.5}}>Capture · Validate · Detect (YOLOv8) · Measure (OpenCV) · Classify (MobileNetV2) · Grade A/B/C/Reject · URS separate · Human review when needed · Report with QR + SHA-256.</div>
+            <div style={{marginTop:8, fontSize:12, color:"#6B5A54"}}>If confidence is low, it’s flagged for human review — the original record is preserved and URS is reported separately from grades.</div>
           </div>
         </div>
       </div>

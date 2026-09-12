@@ -108,7 +108,7 @@ export default function Login(){
         <div style={{display:"grid", gap:14, alignContent:"center"}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
             <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>O</div>
-            <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>AI-Assisted Grading</div></div>
+            <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Onion Quality Assessment</div></div>
           </div>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:8}}>
             <h1 className="h-display" style={{margin:0, fontSize:28, lineHeight:.95}}>{t("welcomeBack")}<br/><span style={{color:"#7A263A"}}>{t("onionSetu")}</span></h1>

@@ -17,7 +17,7 @@ const baseNav = [
 export default function Layout({ children }){
   const { offline, setOffline, pendingCount, syncAll, activePolicy } = useStore();
   const { user, logout } = useAuth();
-  const { t, lang, setLang, languages } = useI18n();
+  const { t } = useI18n();
   const loc = useLocation();
   const nav2 = useNavigate();
   const nav = baseNav.filter(n=> !user || n.roles.includes(user.role));
@@ -98,7 +98,7 @@ export default function Layout({ children }){
             <div className="brand-icon">O</div>
             <div>
               <div className="brand-name">ONIONSETU</div>
-              <div className="brand-sub">AI-Assisted Grading</div>
+              <div className="brand-sub">Onion Quality Assessment</div>
             </div>
           </div>
           <div style={{marginTop:10, fontSize:11, color:"#8a7a74", lineHeight:1.4}}>
@@ -137,7 +137,7 @@ export default function Layout({ children }){
             )}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10, marginTop:12}}>
-            <img src={user?.role==="grader" ? "https://i.pravatar.cc/100?img=12" : "https://i.pravatar.cc/100?img=15"} alt={`${user?.name || "User"} profile photo`} width="32" height="32" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover"}}/>
+            <div style={{width:32,height:32, borderRadius:"50%", background:"#F8E9EC", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontFamily:"Fraunces, serif", fontWeight:700, color:"#7A263A", fontSize:12}}>{(user?.name || "G").split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase()}</div>
             <div style={{minWidth:0, flex:1}}>
               <div style={{fontSize:13,fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{user?.name || "Guest"}</div>
               <div style={{fontSize:11,color:"#8a7a74"}}>{user?.role==="grader" ? "Grader" : "Farmer"} · {user?.center?.split("—")[0]?.trim() || "Lasalgaon"}</div>
@@ -158,7 +158,7 @@ export default function Layout({ children }){
               <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>O</div>
               <div className="topbar-brand-text" style={{minWidth:0}}>
                 <div className="brand-title">ONIONSETU</div>
-                <div className="brand-subtitle">AI-Assisted Onion Quality Assessment</div>
+                <div className="brand-subtitle">Onion Quality Assessment</div>
               </div>
             </div>
           </div>

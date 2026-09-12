@@ -60,13 +60,12 @@ export function OnionSetuLoader({ loop = false, onRevealComplete }){
   );
 }
 
-// Full-screen overlay used on app startup
+// Full-screen overlay used on app startup — kept minimal, no flashy effect
 export function SplashScreen({ onDone }){
   const [fade, setFade] = useState(false);
-  // show loader for ~3.8s (animation duration) + small hold, then fade
   useEffect(()=>{
-    const t1 = setTimeout(()=> setFade(true), 3800);
-    const t2 = setTimeout(()=> onDone?.(), 4400);
+    const t1 = setTimeout(()=> setFade(true), 1200);
+    const t2 = setTimeout(()=> onDone?.(), 1600);
     return ()=>{ clearTimeout(t1); clearTimeout(t2); };
   },[onDone]);
   return (

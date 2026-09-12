@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
-import { gradeLot, CONFIDENCE_THRESHOLD, sha256Placeholder } from "../lib/grading";
+import { gradeLot, CONFIDENCE_THRESHOLD, sha256 } from "../lib/grading";
 import { demoOnions } from "../lib/mockData";
 import { useSeo, Breadcrumbs } from "../lib/seo";
 
@@ -11,7 +11,7 @@ const STEPS = [
 ];
 
 export default function NewAssessment(){
-  useSeo({ title:"New Assessment", description:"Start a new onion grading session — enter lot details, capture 3 views with reference, run quality check and get Grade A / URS with evidence report.", canonical:"/new" });
+  useSeo({ title:"New Assessment", description:"Start a new onion grading session — enter lot details, capture 3 views with reference, run quality check and get Grade A/B/C/Reject with separate URS.", canonical:"/new" });
   const { activePolicy, policies, addAssessment, offline, setOffline } = useStore();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
@@ -71,13 +71,15 @@ export default function NewAssessment(){
   useEffect(()=>{ if(step===4 || step===5 || step===6){ simulateProcessingPipeline(); } },[step]);
 
   async function finalize(){
-    const hash = sha256Placeholder(lot.lotId + Date.now());
     // collect real files for Storage (filter nulls)
     const files = captureFiles.filter(Boolean);
+    const tmpId = lot.lotId.replace("LOT","OG");
+    const canonical = JSON.stringify({ reportId: tmpId, lotId: lot.lotId, farmer: lot.farmer, center: lot.center, policyVersion: policy.version, gradeA: grading.gradeA, gradeB: grading.gradeB, gradeC: grading.gradeC, gradeReject: grading.gradeReject, urs: grading.urs, sampleSize: grading.total, onions: grading.details.map(d=>({id:d.id,sizeMm:d.sizeMm,defect:d.defect,confidence:d.confidence,grade:d.grade})) });
+    const hash = await sha256(canonical);
     const entry = await addAssessment({
       lotId: lot.lotId, farmer: lot.farmer, center: lot.center, location: lot.location, assessor: lot.assessor,
-      onions: grading.details, policyVersion: policy.version, hash,
-      sampleSize: grading.total, gradeA: grading.gradeA, urs: grading.urs,
+      onions: grading.details, policyVersion: policy.version, modelVersion: "Prototype Demo Inference", hash,
+      sampleSize: grading.total, gradeA: grading.gradeA, gradeB: grading.gradeB, gradeC: grading.gradeC, gradeReject: grading.gradeReject, urs: grading.urs,
       confidence: Math.round(onions.reduce((a,b)=>a+b.confidence,0)/onions.length),
       humanReviews: Object.keys(reviewDecisions).length + lowConfidence.length,
       status: farmerAccepted && graderAccepted ? "Completed" : "Completed",
@@ -93,7 +95,7 @@ export default function NewAssessment(){
       <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"center"}}>
         <div>
           <h1 className="h-display" style={{fontSize:28, margin:0}}>New assessment</h1>
-          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Farmer + Grader joint session · AI assists, human decides · Offline-capable</p>
+          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Farmer + Grader joint session · Human review when needed · Offline-capable</p>
         </div>
         <div style={{display:"flex", gap:8, alignItems:"center"}}>
           <span className="badge badge-maroon">{policy.version} · {policy.sizeBand.min}–{policy.sizeBand.max} mm</span>
@@ -137,7 +139,7 @@ export default function NewAssessment(){
         <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← Back</button>
         {step<11 && <button className="btn btn-primary" onClick={next}>Continue →</button>}
       </div>
-      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>OnionSetu.ai proprietary vision — on-device inference, lab 97.2%.</p>
+      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Prototype demo inference — YOLOv8 Nano + MobileNetV2 adapters ready for on-device TFLite.</p>
     </div>
   );
 }
@@ -331,7 +333,7 @@ function StepSize({onions,processing,onNext,onPrev}){
 function StepDefects({onions,processing,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#7A263A", fontSize:12}}>· OnionSetu.ai v1</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:11, border:"1px solid #EDE3DC", background:"#FBF6F0", borderRadius:6, padding:"2px 6px"}}>Prototype Demo Inference — MobileNetV2 adapter ready</span></h3>
       {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
         <>
           <div className="card" style={{padding:12}}>
@@ -349,7 +351,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
                 </div>
               ))}
             </div>
-            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>OnionSetu.ai proprietary vision — Healthy / Damaged / Rotten / Sprouted. Lab 97.2%.</p>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Prototype demo — Healthy / Damaged / Rotten / Sprouted. On-device MobileNetV2 + TFLite adapter ready; demo uses deterministic mock.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
             <button className="btn btn-secondary" onClick={onPrev}>Back</button>
@@ -462,14 +464,16 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
           </div>
         </div>
         <div className="card card-pad" style={{textAlign:"center"}}>
-          <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Lot result</div>
-          <div style={{fontFamily:"Fraunces, serif", fontSize:36, fontWeight:700, color:"#7A263A", marginTop:6}}>{grading.gradeA}% <span style={{fontSize:16, color:"#6B5A54"}}>GRADE A</span></div>
-          <div style={{fontFamily:"Fraunces, serif", fontSize:22, fontWeight:700, color:"#17110F"}}>{grading.urs}% URS</div>
+          <div style={{fontSize:11, letterSpacing:".08em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Lot result — Final grades</div>
+          <div style={{display:"flex", gap:8, justifyContent:"center", marginTop:8, flexWrap:"wrap", fontSize:13, fontWeight:700}}>
+            <span>A:{grading.gradeA}%</span><span>B:{grading.gradeB}%</span><span>C:{grading.gradeC}%</span><span>Reject:{grading.gradeReject}%</span>
+          </div>
+          <div style={{fontSize:12, color:"#6B5A54", marginTop:6}}>URS: {grading.urs}% — separate metric</div>
           <div style={{fontSize:12, color:"#6B5A54"}}>Total sample: {grading.total} onions · Policy {policy.version}</div>
           <div style={{display:"flex", gap:6, justifyContent:"center", marginTop:10, flexWrap:"wrap"}}>
-            <span className="badge badge-success">{grading.gradeA}% Grade A</span><span className="badge">{grading.urs}% URS</span>
+            <span className="badge badge-success">{grading.gradeA}% Grade A</span><span className="badge">{grading.gradeB}% Grade B</span><span className="badge">{grading.gradeC}% Grade C</span><span className="badge badge-error">{grading.gradeReject}% Reject</span>
           </div>
-          <p style={{fontSize:11, color:"#8a7a74", marginTop:10}}>Explanation: Grade A = in-size band + healthy; URS = out-of-size or visible defect (rotten/sprouted/damaged) per active policy + human review decisions.</p>
+          <p style={{fontSize:11, color:"#8a7a74", marginTop:10}}>Policy changes affect the A/B/C/Reject grading rules. URS is reported separately.</p>
         </div>
       </div>
       <div className="card" style={{padding:12}}>
@@ -477,7 +481,7 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
         <div style={{display:"grid", gap:6, marginTop:8}}>
           {grading.details.map(d=>(
             <div key={d.id} style={{display:"flex", gap:10, alignItems:"center", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background: d.grade==="Grade A" ? "#EDF5EF" : "#FEF3D8"}}>
-              <b style={{minWidth:28}}>{d.id}</b><span>{d.sizeMm} mm</span><span>·</span><span>{d.defect}</span><span>·</span><span>{d.confidence}%</span><span style={{marginLeft:"auto"}} className={`badge ${d.grade==="Grade A"?"badge-success":"badge-warning"}`} style={{fontSize:10}}>{d.grade}</span>
+              <b style={{minWidth:28}}>{d.id}</b><span>{d.sizeMm} mm</span><span>·</span><span>{d.defect}</span><span>·</span><span>{d.confidence}%</span><span style={{marginLeft:"auto"}} className={`badge ${d.grade==="Grade A"?"badge-success":d.grade==="Reject"?"badge-error":"badge-warning"}`} style={{fontSize:10}}>{d.grade}</span>
             </div>
           ))}
         </div>
@@ -494,7 +498,7 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Farmer / Grader Review</h3>
-      <p style={{margin:0, color:"#6B5A54", fontSize:13}}>The result is transparent to both parties. Never silently overwrite the original assessment — disputes create linked records.</p>
+      <p style={{margin:0, color:"#6B5A54", fontSize:13}}>The result is transparent to both parties. Never silently overwrite the original assessment — reviews create linked records.</p>
       <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
         <div className="card card-pad">
           <div style={{fontWeight:700}}>Grader</div>
@@ -514,13 +518,13 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
             <input type="checkbox" checked={farmerAccepted} onChange={e=>setFarmerAccepted(e.target.checked)} /> I have seen the report and evidence
           </label>
           <div style={{marginTop:10}}>
-            <button className="btn btn-ghost" style={{fontSize:12, color:"#B33A3A", borderColor:"#F5C2C2"}} onClick={()=> alert("Dispute flow: creates linked review record, preserves original. Demonstrated in Reports → Disputed.")}>Request Second Review</button>
+            <button className="btn btn-ghost" style={{fontSize:12, color:"#B33A3A", borderColor:"#F5C2C2"}} onClick={()=> alert("Review flow: creates linked review record, preserves original.")}>Request Second Review</button>
           </div>
         </div>
       </div>
       <div className="card" style={{padding:14, textAlign:"center", background:"#FBF6F0"}}>
-        <div style={{fontFamily:"Fraunces, serif", fontSize:22, fontWeight:700}}>{grading.gradeA}% GRADE A · {grading.urs}% URS</div>
-        <div style={{fontSize:12, color:"#6B5A54"}}>Lot {lot.lotId} · {lot.farmer} · {policy.version} · {grading.total} onions · Human reviews: {Object.keys(grading.details.filter(d=>d.confidence<60)).length}</div>
+        <div style={{fontFamily:"Fraunces, serif", fontSize:20, fontWeight:700}}>A:{grading.gradeA}% B:{grading.gradeB}% C:{grading.gradeC}% Reject:{grading.gradeReject}%</div>
+        <div style={{fontSize:12, color:"#6B5A54"}}>URS: {grading.urs}% separate · Lot {lot.lotId} · {policy.version} · {grading.total} onions</div>
       </div>
       <div style={{display:"flex", gap:8}}>
         <button className="btn btn-secondary" onClick={onPrev}>Back</button>
@@ -530,7 +534,7 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
   );
 }
 function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,graderAccepted,offline,setOffline,finalize,onPrev}){
-  const hash = sha256Placeholder(lot.lotId);
+  const hash = "computed on finalize — SHA-256 over canonical report content";
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Quality Report · Evidence · Sync</h3>
@@ -542,17 +546,16 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
           </div>
           <div style={{textAlign:"right", fontSize:11, color:"#6B5A54"}}>
             <div>Report ID: <span className="mono">{lot.lotId.replace("LOT","OG")}</span></div>
-            <div>Policy: {policy.version} · Model: OnionSetu.ai v1</div>
+            <div>Policy: {policy.version} · Model: Prototype Demo Inference</div>
             <div>{new Date().toLocaleString()}</div>
           </div>
         </div>
         <div className="divider" />
         <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px,1fr))", gap:10, fontSize:12}}>
-          <div><b>Lot ID:</b> {lot.lotId}</div><div><b>Farmer:</b> {lot.farmer}</div><div><b>Center:</b> {lot.center}</div><div><b>Sample:</b> {grading.total} onions</div><div><b>Grade A:</b> {grading.gradeA}%</div><div><b>URS:</b> {grading.urs}%</div>
+          <div><b>Lot ID:</b> {lot.lotId}</div><div><b>Farmer:</b> {lot.farmer}</div><div><b>Center:</b> {lot.center}</div><div><b>Sample:</b> {grading.total} onions</div><div><b>Grades:</b> A:{grading.gradeA}% B:{grading.gradeB}% C:{grading.gradeC}% Reject:{grading.gradeReject}%</div><div><b>URS:</b> {grading.urs}% separate</div>
         </div>
         <div style={{marginTop:10, display:"flex", gap:6, flexWrap:"wrap"}}>
-          <span className="badge badge-success">Grade A {grading.gradeA}%</span><span className="badge">URS {grading.urs}%</span><span className="badge badge-maroon">{policy.version}</span>
-          <span className="badge" style={{fontFamily:"JetBrains Mono, monospace", fontSize:10}}>SHA-256: {hash.slice(0,24)}…</span>
+          <span className="badge badge-success">A {grading.gradeA}%</span><span className="badge">B {grading.gradeB}%</span><span className="badge">C {grading.gradeC}%</span><span className="badge badge-error">Reject {grading.gradeReject}%</span><span className="badge">URS {grading.urs}% separate</span><span className="badge badge-maroon">{policy.version}</span>
         </div>
         <div style={{marginTop:12, background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:10, padding:12}}>
           <div style={{fontSize:12, fontWeight:700}}>Evidence included</div>

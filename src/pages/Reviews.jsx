@@ -15,7 +15,7 @@ export default function Reviews(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reviews", href:"/reviews"}]} />
       <div>
         <h1 className="h-display" style={{fontSize:28, margin:0}}>Review center</h1>
-        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Human-in-the-loop — uncertain results flagged by the {60}% confidence gate. AI assists, human decides.</p>
+        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Human-in-the-loop — uncertain results flagged by the {60}% confidence gate. Human review when needed.</p>
       </div>
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(260px,1fr))", gap:12}}>
         {uncertain.length===0 ? (

@@ -42,9 +42,12 @@ create table if not exists public.assessments (
   policy_version text not null references public.policies(version),
   model_version text not null default 'OnionSetu.ai v1',
   sample_size int not null,
-  grade_a int not null check (grade_a between 0 and 100),
-  urs int not null check (urs between 0 and 100),
-  status text not null default 'Completed' check (status in ('Draft','Processing','Human Review','Completed','Disputed','Sync Pending','Synced')),
+  grade_a int not null default 0 check (grade_a between 0 and 100),
+  grade_b int not null default 0 check (grade_b between 0 and 100),
+  grade_c int not null default 0 check (grade_c between 0 and 100),
+  grade_reject int not null default 0 check (grade_reject between 0 and 100),
+  urs int not null default 0 check (urs between 0 and 100),
+  status text not null default 'Completed' check (status in ('Draft','Processing','Human Review','Completed','Sync Pending','Synced')),
   sync_status text not null default 'Synced' check (sync_status in ('Synced','Offline','Pending','Sync Pending')),
   confidence int,
   human_reviews int default 0,
@@ -74,7 +77,7 @@ create table if not exists public.assessment_onions (
   size_mm numeric not null,
   defect text not null check (defect in ('Healthy','Damaged','Rotten','Sprouted')),
   confidence int not null check (confidence between 0 and 100),
-  grade text not null check (grade in ('Grade A','URS')),
+  grade text not null check (grade in ('Grade A','Grade B','Grade C','Reject')),
   created_at timestamptz default now()
 );
 create index if not exists idx_onions_assessment on public.assessment_onions(assessment_id);

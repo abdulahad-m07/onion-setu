@@ -1,12 +1,14 @@
 export const CONFIDENCE_THRESHOLD = 60;
 
+// Canonical grading: observation (size + defect + confidence) + policy → Grade A/B/C/Reject
+// URS is NOT a grade — it is a separate lot metric.
 export function classifyOnion(onion, policy){
-  // Kept for reference — overall grading now uses aggregate, not per-onion
   const { sizeMm, defect } = onion;
   const { min, max } = policy.sizeBand;
-  const isURS = sizeMm < min || defect === "Rotten" || defect === "Sprouted";
-  if (isURS) return "URS";
+  // Defect: Rotten/Sprouted are always Reject (not URS as grade)
+  if (defect === "Rotten" || defect === "Sprouted") return "Reject";
   if (defect === "Damaged") return "Reject";
+  // Size bands for A/B/C — per v2026.1 35-70: C 35-50, B 50-60, A 60-70; outside = Reject
   if (sizeMm < min || sizeMm > max) return "Reject";
   if (sizeMm >= 60) return "Grade A";
   if (sizeMm >= 50) return "Grade B";
@@ -15,42 +17,27 @@ export function classifyOnion(onion, policy){
 }
 
 export function gradeLot(onions, policy){
-  // Overall lot check — aggregate visible defect + size distribution, not per-onion table
-  if(!onions.length) return { total:0, gradeA:0, gradeB:0, gradeC:0, reject:0, urs:0, counts:{A:0,B:0,C:0,Reject:0,URS:0}, overallGrade:"URS", details:[] };
-  const avgSize = onions.reduce((s,o)=> s+o.sizeMm,0)/onions.length;
-  const avgConf = onions.reduce((s,o)=> s+o.confidence,0)/onions.length;
-  const defectCounts = { Healthy:0, Damaged:0, Rotten:0, Sprouted:0 };
-  onions.forEach(o=> defectCounts[o.defect] = (defectCounts[o.defect]||0)+1 );
-  const rottenPct = (defectCounts.Rotten/onions.length)*100;
-  const sproutedPct = (defectCounts.Sprouted/onions.length)*100;
-  const damagedPct = (defectCounts.Damaged/onions.length)*100;
-  // URS if rotten/sprouted exceed tolerance or avg size out of band
-  const { min, max } = policy.sizeBand;
-  const outOfBand = avgSize < min || avgSize > max;
-  const isURS = rottenPct > policy.tolerances.rotten || sproutedPct > policy.tolerances.sprouted || outOfBand;
-  let overallGrade = "Grade A";
-  if(isURS) overallGrade = "URS";
-  else if(damagedPct > policy.tolerances.damaged) overallGrade = "Reject";
-  else if(avgSize >= 60) overallGrade = "Grade A";
-  else if(avgSize >= 50) overallGrade = "Grade B";
-  else if(avgSize >= 35) overallGrade = "Grade C";
-  else overallGrade = "Reject";
-
-  // For display, map to percentages (overall, not per-onion breakdown)
-  const counts = { A:0, B:0, C:0, Reject:0, URS:0 };
-  if(overallGrade==="Grade A") counts.A = 100;
-  else if(overallGrade==="Grade B") counts.B = 100;
-  else if(overallGrade==="Grade C") counts.C = 100;
-  else if(overallGrade==="Reject") counts.Reject = 100;
-  else counts.URS = 100;
-
-  return {
-    total: onions.length,
-    gradeA: counts.A, gradeB: counts.B, gradeC: counts.C, reject: counts.Reject, urs: counts.URS,
-    counts, overallGrade, avgSize: Math.round(avgSize), avgConf: Math.round(avgConf),
-    // Keep details for audit but UI will show overall only
-    details: onions.map(o=> ({...o, grade: overallGrade })),
-  };
+  if(!onions.length) return { total:0, gradeA:0, gradeB:0, gradeC:0, gradeReject:0, urs:0, counts:{A:0,B:0,C:0,Reject:0}, details:[], overallGrade:"Reject" };
+  const counts = { A:0, B:0, C:0, Reject:0 };
+  const details = onions.map(o => {
+    const grade = classifyOnion(o, policy);
+    const key = grade === "Grade A" ? "A" : grade === "Grade B" ? "B" : grade === "Grade C" ? "C" : "Reject";
+    counts[key]++;
+    return { ...o, grade };
+  });
+  const total = onions.length;
+  const gradeA = Math.round((counts.A/total)*100);
+  const gradeB = Math.round((counts.B/total)*100);
+  const gradeC = Math.round((counts.C/total)*100);
+  const gradeReject = Math.round((counts.Reject/total)*100);
+  // URS is separate lot metric: % of undersized + rotten + sprouted (policy violation)
+  const ursCount = onions.filter(o=> o.sizeMm < policy.sizeBand.min || o.defect==="Rotten" || o.defect==="Sprouted").length;
+  const urs = Math.round((ursCount/total)*100);
+  // overallGrade for convenience (most frequent)
+  const overallGrade = counts.A >= counts.B && counts.A >= counts.C && counts.A >= counts.Reject ? "Grade A"
+    : counts.B >= counts.C && counts.B >= counts.Reject ? "Grade B"
+    : counts.C >= counts.Reject ? "Grade C" : "Reject";
+  return { details, gradeA, gradeB, gradeC, gradeReject, urs, counts, total, overallGrade };
 }
 
 export function needsHumanReview(onion){
@@ -60,6 +47,16 @@ export function needsHumanReview(onion){
 export function lotConfidence(onions){
   if (!onions.length) return 0;
   return Math.round(onions.reduce((a,b)=>a+b.confidence,0)/onions.length);
+}
+
+// Real SHA-256 where Web Crypto is available, fallback to placeholder for old environments
+export async function sha256(text){
+  if(typeof crypto !== "undefined" && crypto.subtle){
+    const enc = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(buf)).map(b=> b.toString(16).padStart(2,"0")).join("");
+  }
+  return sha256Placeholder(text);
 }
 
 export function sha256Placeholder(seed="photo-set"){

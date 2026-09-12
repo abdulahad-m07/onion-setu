@@ -7,7 +7,7 @@ import { useSeo, Breadcrumbs } from "../lib/seo";
 export default function Assessments(){
   const { user } = useAuth();
   const isFarmer = user?.role==="farmer";
-  useSeo({ title: isFarmer ? "My Assessments" : "Assessments", description: isFarmer ? "My assessments — view lots linked to your farmer account, with Grade A/URS and evidence reports." : "Browse all onion grading assessments — filter by status, search by lot or farmer, view Grade A vs URS and open tamper-evident reports.", canonical:"/assessments" });
+  useSeo({ title: isFarmer ? "My Assessments" : "Assessments", description: isFarmer ? "My assessments — view lots linked to your farmer account, with A/B/C/Reject grades and separate URS." : "Browse all onion grading assessments — filter by status, search by lot or farmer, view A/B/C/Reject grades with separate URS.", canonical:"/assessments" });
   const { assessments } = useStore();
   const [filter, setFilter] = useState("All");
   const [q, setQ] = useState("");
@@ -46,7 +46,7 @@ export default function Assessments(){
                 <td><span className="mono" style={{fontWeight:700, color:"#7A263A"}}>{a.id}</span><div style={{fontSize:11, color:"#8a7a74"}}>{a.lotId}</div></td>
                 <td><div style={{fontWeight:600, fontSize:13}}>{a.farmer}</div><div style={{fontSize:11, color:"#6B5A54"}}>{a.center}</div></td>
                 <td style={{fontSize:12}}>{new Date(a.date).toLocaleDateString()}<div style={{fontSize:11, color:"#8a7a74"}}>{a.assessor}</div></td>
-                <td><b>{a.gradeA}%</b> <span style={{color:"#8a7a74"}}>/ {a.urs}%</span><div style={{fontSize:11, color:"#6B5A54"}}>{a.sampleSize} onions</div></td>
+                <td><b>A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}%</b><div style={{fontSize:11, color:"#6B5A54"}}>URS: {a.urs}% separate · {a.sampleSize} onions</div></td>
                 <td><Status status={a.status} /></td>
                 <td><span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{fontSize:10}}>{a.acceptance || "Accepted"}</span></td>
                 <td><span className={`badge ${a.sync==="Offline"||a.sync==="Sync Pending" ? "badge-offline":"badge-success"}`} style={{fontSize:10}}>{a.sync}</span></td>

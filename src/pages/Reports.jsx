@@ -12,22 +12,22 @@ export function ReportsList(){
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
       <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
-      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grade A/URS · Confidence · Acknowledgements · Review status — plus uploaded images in final report</p>
-      <div className="card card-pad" style={{background:"#FDFBF9", borderColor:"#EDE3DC", display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
-        <div style={{width:36,height:36, borderRadius:8, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:800}}></div>
-        <div style={{flex:1}}>
-          <div style={{fontWeight:700, fontSize:13}}>TOM2024 Final Report — PDF with accuracy at the end</div>
-          <div style={{fontSize:11, color:"#6B5A54"}}>120 sampled from your TOM2024.zip (Category B English test) — each report in your exact format + 12 images embedded + final accuracy summary</div>
+      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grades A/B/C/Reject · URS separate · Confidence · Acknowledgements · Review status</p>
+      {/* Test artifact — kept for dev, not promoted as production feature */}
+      <details style={{background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:10, padding:"10px 14px"}}>
+        <summary style={{fontSize:12, fontWeight:700, cursor:"pointer", color:"#6B5A54"}}>Developer test artifact — TOM2024 (120 sampled) — hidden by default</summary>
+        <div style={{marginTop:8, display:"flex", gap:8, flexWrap:"wrap"}}>
+          <a href="/test_reports/OnionSetu_TOM2024_Final_Report.pdf" target="_blank" rel="noopener" className="btn btn-secondary" style={{fontSize:11}}>Download Test PDF</a>
+          <a href="/test_reports/tom2024_reports.json" target="_blank" rel="noopener" className="btn btn-ghost" style={{fontSize:11}}>JSON</a>
+          <span style={{fontSize:11, color:"#8a7a74"}}>Not a production report — for validation only</span>
         </div>
-        <a href="/test_reports/OnionSetu_TOM2024_Final_Report.pdf" target="_blank" rel="noopener" className="btn btn-primary" style={{fontSize:12}}>Download Final PDF →</a>
-        <a href="/test_reports/tom2024_reports.json" target="_blank" rel="noopener" className="btn btn-secondary" style={{fontSize:12}}>JSON</a>
-      </div>
+      </details>
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
             <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
             <div style={{flex:1, minWidth:0}}>
-              <div style={{fontWeight:700}}>{a.id} — {a.gradeA}% Grade A / {a.urs}% URS <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
+              <div style={{fontWeight:700}}>{a.id} — A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}% · URS:{a.urs}% <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
             <span className="btn btn-secondary" style={{fontSize:12}}>Open report →</span>
@@ -52,7 +52,7 @@ export function ReportDetail(){
     return t(k);
   };
   const a = assessments.find(x=> x.id===id);
-  useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — ${a.gradeA}% Grade A / ${a.urs}% URS at ${a.location}. Policy ${a.policyVersion}, Confidence ${a.confidence}%.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
+  useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — Grades A:${a.gradeA}% B:${a.gradeB ?? 0}% C:${a.gradeC ?? 0}% Reject:${a.gradeReject ?? 0}%, URS ${a.urs}% separate at ${a.location}.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
   if(!a) return <div className="card card-pad">Report not found. <Link to="/reports">Browse reports</Link></div>;
   const hasImages = Array.isArray(a.images) && a.images.length;
   const hasOnions = Array.isArray(a.onions) && a.onions.length;
@@ -69,8 +69,8 @@ export function ReportDetail(){
             <div style={{fontSize:11, letterSpacing:".12em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Quality Assessment Report — Final</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"Fraunces, serif", fontSize:26, fontWeight:700, color:"#7A263A"}}>{a.gradeA}% GRADE A</div>
-            <div style={{fontFamily:"Fraunces, serif", fontSize:16, fontWeight:700}}>{a.urs}% URS</div>
+            <div style={{fontFamily:"Fraunces, serif", fontSize:20, fontWeight:700, color:"#7A263A"}}>A:{a.gradeA}%  B:{a.gradeB||0}%  C:{a.gradeC||0}%  Reject:{a.gradeReject||0}%</div>
+            <div style={{fontFamily:"Fraunces, serif", fontSize:13, fontWeight:700, color:"#6B5A54"}}>URS: {a.urs}% — separate</div>
             <div style={{marginTop:6}}><span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`}>{a.status}</span> <span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{marginLeft:6}}>{a.acceptance || "Accepted"}</span> <span className={`badge ${a.sync==="Offline"?"badge-offline":"badge-success"}`}>{a.sync}</span></div>
           </div>
         </div>
@@ -88,12 +88,15 @@ export function ReportDetail(){
             <Row label={effectiveT("date")} value={new Date(a.date).toLocaleString()} />
             <Row label={effectiveT("location")} value={`${a.location} · ${a.center}`} />
             <Row label={effectiveT("policyVersion")} value={a.policyVersion} badge />
-            <Row label={effectiveT("gradeA")} value={`${a.gradeA}%`} strong color="#7A263A" />
-            <Row label={effectiveT("urs")} value={`${a.urs}%`} strong />
+            <Row label="Grade A" value={`${a.gradeA}%`} strong color="#7A263A" />
+            <Row label="Grade B" value={`${a.gradeB||0}%`} strong />
+            <Row label="Grade C" value={`${a.gradeC||0}%`} strong />
+            <Row label="Reject" value={`${a.gradeReject||0}%`} strong color="#B33A3A" />
+            <Row label="URS" value={`${a.urs}%`} strong color="#6B5A54" />
             <Row label={effectiveT("confidence")} value={`${a.confidence ?? "—"}%`} suffix={a.confidence>=60 ? "High" : a.confidence ? "Review" : ""} />
             <Row label={effectiveT("farmerAck")} value={a.acknowledged?.farmer ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.farmer ? "#3F7D4A" : "#D99024"} />
             <Row label={effectiveT("graderAck")} value={a.acknowledged?.grader ? `${effectiveT("acknowledged")} ` : effectiveT("pending")} dot={a.acknowledged?.grader ? "#3F7D4A" : "#D99024"} />
-            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? effectiveT("underReview") : a.acceptance==="Rejected" ? effectiveT("disputed") : effectiveT("accepted")} badgeColor={a.status==="Human Review" ? "warning" : a.acceptance==="Rejected" ? "error" : "success"} />
+            <Row label={effectiveT("disputeStatus")} value={a.status==="Human Review" ? effectiveT("underReview") : a.acceptance==="Rejected" ? effectiveT("disputed") : effectiveT("acknowledged")} badgeColor={a.status==="Human Review" ? "warning" : a.acceptance==="Rejected" ? "error" : "success"} />
             <Row label={effectiveT("sampleSize")} value={`${a.sampleSize} onions`} />
             <Row label={effectiveT("lotId")} value={a.lotId} mono />
             <Row label={effectiveT("hash")} value={a.hash} mono small />
@@ -137,7 +140,7 @@ export function ReportDetail(){
             <div style={{fontSize:10, color:"#8a7a74"}}>Scan to open report — data is saved per-user in Supabase</div>
             <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>{t("openVerification")} →</Link>
           </div>
-          <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: disputes create linked <span className="mono" style={{fontSize:10}}>disputes</span> row, original preserved.</div>
+          <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: reviews create linked <span className="mono" style={{fontSize:10}}>reviews</span> row, original preserved.</div>
         </div>
 
         <div className="card card-pad" style={{background: a.acceptance==="Rejected" ? "#FDECEC" : "#EDF5EF", borderColor: a.acceptance==="Rejected" ? "#F5C2C2" : "#C8E4CC", marginTop:14}}>
@@ -162,9 +165,9 @@ export function ReportDetail(){
           }}>Mark acknowledged</button>
           <button className="btn btn-ghost" style={{color:"#B33A3A"}} onClick={()=>{
             updateAssessment(a.id, { status:"Human Review", dispute:{ reason:"Flagged for human review", at:new Date().toISOString(), by:"Farmer" } });
-            alert("Flagged for human review — linked review record created. Original preserved. No dispute, just human review.");
+            alert("Flagged for human review — linked review record created. Original preserved.");
           }}>Flag for Human Review</button>
-          {a.dispute && <span className="badge badge-warning">Human Review: {a.dispute.reason}</span>}
+          {a.dispute && <span className="badge badge-warning">On Hold: {a.dispute.reason}</span>}
         </div>
       </div>
       <style>{`@media(max-width:800px){ .capture-grid{grid-template-columns:1fr !important} }`}</style>

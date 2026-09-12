@@ -11,7 +11,7 @@ export default function Policy(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Policy", href:"/policy"}]} />
       <div>
         <h1 className="h-display" style={{fontSize:28, margin:0}}>Grading policy</h1>
-        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Grading rules are configuration, not hardcoded app logic. {isGrader ? "Switching policy re-computes Grade A / URS without redeploy." : "Farmers can view the active policy; only graders can switch it."}</p>
+        <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Grading rules are configuration, not hardcoded app logic. {isGrader ? "Policy changes affect the A/B/C/Reject grading rules. URS is reported separately." : "Farmers can view the active policy; only graders can switch it."}</p>
         {!isGrader && <div className="badge badge-warning" style={{marginTop:8}}>You are logged in as Farmer — policy switching is grader-only</div>}
       </div>
       <div className="card" style={{overflow:"hidden"}}>
