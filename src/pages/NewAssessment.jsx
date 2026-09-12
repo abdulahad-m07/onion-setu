@@ -96,12 +96,13 @@ export default function NewAssessment(){
         const data = await resp.json();
         if(cancelled || !Array.isArray(data.results) || !data.results.length) return;
         const boxes = demoOnions.map(o=> o.box);
+        const validBox = b => b && [b.x,b.y,b.w,b.h].every(v=> Number.isFinite(Number(v)));
         const live = data.results.slice(0,10).map((r,i)=>({
           id: r.id || `O${i+1}`,
           sizeMm: Number(r.sizeMm) || 60,
           defect: ["Healthy","Damaged","Rotten","Sprouted"].includes(r.defect) ? r.defect : "Healthy",
           confidence: Math.max(0, Math.min(100, Number(r.confidence) || 70)),
-          box: boxes[i % boxes.length],
+          box: validBox(r.box) ? { x:Number(r.box.x), y:Number(r.box.y), w:Number(r.box.w), h:Number(r.box.h) } : boxes[i % boxes.length],
         }));
         setOnions(live);
       }catch{
@@ -335,7 +336,7 @@ function StepDetection({processing,onions,captures=[],onNext,onPrev}){
                 <span style={{position:"absolute", top:-8, left:8, background:"#F2B84B", color:"#17110F", fontSize:10, fontWeight:800, padding:"2px 6px", borderRadius:999}}>{o.id}</span>
               </div>
             ))}
-            <span style={{position:"absolute", bottom:10, left:10, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"5px 10px", fontSize:12, fontWeight:700}}>{onions.length} onions detected</span>
+            <span style={{position:"absolute", bottom:10, left:10, background:"white", border:"1px solid #EDE3DC", borderRadius:999, padding:"5px 10px", fontSize:12, fontWeight:700}}>{onions.length} onion{onions.length===1?"":"s"} detected</span>
           </div>
           <p style={{margin:0, fontSize:12, color:"#8a7a74"}}>Detector crops each onion for size + defect analysis.</p>
           <div style={{display:"flex", gap:8}}>

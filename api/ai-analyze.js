@@ -37,7 +37,7 @@ export default async function handler(req, res){
   const { images=[], policyVersion="v2026.1" } = body||{};
 
   // Demo prompt — observation only; final grade is decided by versioned policy in grading.js, not here
-  const prompt = `You are a demo onion observation adapter for Lasalgaon APMC. Use the 25mm reference for size calibration. Classes: Healthy, Damaged, Rotten, Sprouted. For each detected onion (O1..), return JSON array: [{id,sizeMm,defect,confidence(0-100),reasoning}]. Be specific about visible evidence (spots, sprout, soft patch). Confidence <60 triggers human review. Return ONLY JSON array, no markdown. Always return at least 1 observation, even if uncertain — low confidence is fine, it triggers human review. Never return an empty array. Policy ${policyVersion} is applied separately by the grading engine.`;
+  const prompt = `You are a demo onion observation adapter for Lasalgaon APMC. Use the 25mm reference for size calibration. Classes: Healthy, Damaged, Rotten, Sprouted. Count EVERY fully or partially visible onion in the image — do not stop at 1. For each detected onion (O1..), return JSON array: [{id,sizeMm,defect,confidence(0-100),reasoning,box}]. box is {x,y,w,h} as % of image dimensions (0-100, origin top-left) tightly around that onion. Be specific about visible evidence (spots, sprout, soft patch). Confidence <60 triggers human review. Return ONLY JSON array, no markdown. Always return at least 1 observation, even if uncertain — low confidence is fine, it triggers human review. Never return an empty array. Policy ${policyVersion} is applied separately by the grading engine.`;
 
   // Attach each captured image as real vision data (base64 inline_data part).
   const parts = [{text: prompt}];
@@ -83,14 +83,25 @@ export default async function handler(req, res){
         reasoning: ("Uncertain observation — flagged for human review. " + text).slice(0,300) }];
     }
     // Ensure grade per policy — Grades ONLY A/B/C/Reject; URS is separate lot metric, never a grade
-    results = results.map(r=>{
+    // Ensure every observation carries a usable box (clamped %), so the
+    // overlay draws where the model actually saw the onion.
+    const clampBox = (b, i) => {
+      const n = v => Math.max(0, Math.min(100, Number(v)));
+      if(b && [b.x,b.y,b.w,b.h].every(v=> Number.isFinite(Number(v)))){
+        const w = Math.max(5, n(b.w)), h = Math.max(5, n(b.h));
+        return { x: Math.min(95, n(b.x)), y: Math.min(95, n(b.y)), w: Math.min(100, w), h: Math.min(100, h) };
+      }
+      // Spread fallback so boxes never stack on one spot
+      return { x: 2 + (i%3)*32, y: 4 + Math.floor(i/3)*32, w: 28, h: 26 };
+    };
+    results = results.map((r,i)=>{
       let grade = "Reject";
       if(r.defect==="Rotten" || r.defect==="Sprouted" || r.defect==="Damaged") grade = "Reject";
       else if(r.sizeMm < 35 || r.sizeMm > 70) grade = "Reject";
       else if(r.sizeMm >= 60) grade = "Grade A";
       else if(r.sizeMm >= 50) grade = "Grade B";
       else if(r.sizeMm >= 35) grade = "Grade C";
-      return { ...r, grade };
+      return { ...r, grade, box: clampBox(r.box, i) };
     });
     return res.status(200).json({
       model: MODEL_LABEL,
