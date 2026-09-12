@@ -37,7 +37,7 @@ export default async function handler(req, res){
   const { images=[], policyVersion="v2026.1" } = body||{};
 
   // Demo prompt — observation only; final grade is decided by versioned policy in grading.js, not here
-  const prompt = `You are a demo onion observation adapter for Lasalgaon APMC. Use the 25mm reference for size calibration. Classes: Healthy, Damaged, Rotten, Sprouted. For each detected onion (O1..), return JSON array: [{id,sizeMm,defect,confidence(0-100),reasoning}]. Be specific about visible evidence (spots, sprout, soft patch). Confidence <60 triggers human review. Return ONLY JSON array, no markdown. Policy ${policyVersion} is applied separately by the grading engine.`;
+  const prompt = `You are a demo onion observation adapter for Lasalgaon APMC. Use the 25mm reference for size calibration. Classes: Healthy, Damaged, Rotten, Sprouted. For each detected onion (O1..), return JSON array: [{id,sizeMm,defect,confidence(0-100),reasoning}]. Be specific about visible evidence (spots, sprout, soft patch). Confidence <60 triggers human review. Return ONLY JSON array, no markdown. Always return at least 1 observation, even if uncertain — low confidence is fine, it triggers human review. Never return an empty array. Policy ${policyVersion} is applied separately by the grading engine.`;
 
   // Attach each captured image as real vision data (base64 inline_data part).
   const parts = [{text: prompt}];
@@ -75,6 +75,12 @@ export default async function handler(req, res){
       results = JSON.parse(m ? m[0] : text);
     }catch{
       results = [{ id:"O1", sizeMm:65, defect:"Healthy", confidence:85, reasoning: text.slice(0,300) }];
+    }
+    // Guard: never hand the wizard an empty set — an uncertain observation
+    // routes to human review instead of silently showing demo data.
+    if(!Array.isArray(results) || !results.length){
+      results = [{ id:"O1", sizeMm:60, defect:"Healthy", confidence:50,
+        reasoning: ("Uncertain observation — flagged for human review. " + text).slice(0,300) }];
     }
     // Ensure grade per policy — Grades ONLY A/B/C/Reject; URS is separate lot metric, never a grade
     results = results.map(r=>{
