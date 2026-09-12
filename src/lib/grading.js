@@ -4,25 +4,43 @@ export function classifyOnion(onion, policy){
   const { sizeMm, defect } = onion;
   const { min, max } = policy.sizeBand;
   const sizeOk = sizeMm >= min && sizeMm <= max;
-  const defectFail = defect === "Rotten" || defect === "Sprouted";
-  const damaged = defect === "Damaged";
-  // Damaged is tolerated up to policy, but for per-onion we mark URS if rotten/sprouted or out-of-size
-  // Damaged counts toward URS in aggregate via tolerances — simplified per-onion rule: out-of-size OR rotten/sprouted = URS
-  if (!sizeOk || defectFail) return "URS";
-  if (damaged) return "URS"; // conservative demo — policy tolerances shown in aggregate explanation
+  if (!sizeOk) return "URS";
+  if (defect === "Rotten" || defect === "Sprouted") return "URS";
+  if (defect === "Damaged") return "URS";
   return "Grade A";
 }
 
 export function gradeLot(onions, policy){
-  let gradeACount = 0;
+  const total = onions.length;
+  if(!total) return { details: [], gradeA: 0, urs: 0, total: 0,
+    rottenPct: 0, sproutedPct: 0, damagedPct: 0,
+    lotStatus: "No sample", toleranceBreaches: [] };
+  // Per-onion classification — each onion graded individually against the
+  // active policy size band + defect rules; percentages are the real
+  // distribution across the sample (e.g. 68% Grade A / 32% URS).
+  let gradeACount = 0, rotten = 0, sprouted = 0, damaged = 0;
   const details = onions.map(o => {
     const grade = classifyOnion(o, policy);
     if (grade === "Grade A") gradeACount++;
+    if (o.defect === "Rotten") rotten++;
+    if (o.defect === "Sprouted") sprouted++;
+    if (o.defect === "Damaged") damaged++;
     return { ...o, grade };
   });
-  const total = onions.length || 1;
-  const gradeAPct = Math.round((gradeACount/total)*100);
-  return { details, gradeA: gradeAPct, urs: 100-gradeAPct, total };
+  const pct = n => Math.round((n/total)*100);
+  const gradeA = pct(gradeACount);
+  const rottenPct = pct(rotten), sproutedPct = pct(sprouted), damagedPct = pct(damaged);
+  // Overall lot verdict from policy tolerances (defect rates vs allowed %).
+  const tol = policy.tolerances || {};
+  const toleranceBreaches = [];
+  if(rottenPct > (tol.rotten ?? 100)) toleranceBreaches.push(`rotten ${rottenPct}% > ${tol.rotten}% allowed`);
+  if(sproutedPct > (tol.sprouted ?? 100)) toleranceBreaches.push(`sprouted ${sproutedPct}% > ${tol.sprouted}% allowed`);
+  if(damagedPct > (tol.damaged ?? 100)) toleranceBreaches.push(`damaged ${damagedPct}% > ${tol.damaged}% allowed`);
+  let lotStatus = "Within tolerance";
+  if(rottenPct > (tol.rotten ?? 100) || sproutedPct > (tol.sprouted ?? 100)) lotStatus = "Reject";
+  else if(toleranceBreaches.length) lotStatus = "URS";
+  return { details, gradeA, urs: 100-gradeA, total,
+    rottenPct, sproutedPct, damagedPct, lotStatus, toleranceBreaches };
 }
 
 export function needsHumanReview(onion){

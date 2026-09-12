@@ -51,7 +51,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0241", lotId:"LOT-0241", farmer:"Ramesh Patil", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH",
     date:"2026-09-05T10:24:00", assessor:"S. Kulkarni (Grader)",
-    policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
+    policyVersion:"v2026.1", modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
     sampleSize:100, gradeA:68, urs:32, status:"Completed", sync:"Synced",
     humanReviews:3, confidence:84,
     onions: demoOnions,
@@ -61,7 +61,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0240", lotId:"LOT-0240", farmer:"Sunita Deshmukh", center:"Pimpalgaon APMC", location:"Nashik, MH",
     date:"2026-09-05T09:10:00", assessor:"A. Jadhav",
-    policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
+    policyVersion:"v2026.1", modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
     sampleSize:50, gradeA:52, urs:48, status:"Human Review", sync:"Synced",
     humanReviews:2, confidence:47,
     onions: demoOnions.slice(0,5),
@@ -71,7 +71,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0239", lotId:"LOT-0239", farmer:"Vijay Shinde", center:"Lasalgaon APMC — NCCF", location:"Nashik, MH",
     date:"2026-09-04T16:40:00", assessor:"S. Kulkarni",
-    policyVersion:"v2025.2", modelVersion:"OnionSetu.ai v1",
+    policyVersion:"v2025.2", modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
     sampleSize:50, gradeA:61, urs:39, status:"Completed", sync:"Synced",
     humanReviews:1, confidence:92,
     onions: demoOnions.slice(0,5),
@@ -81,7 +81,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0238", lotId:"LOT-0238", farmer:"Anil Pawar", center:"Manmad APMC", location:"Nashik, MH",
     date:"2026-09-04T11:02:00", assessor:"P. More",
-    policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
+    policyVersion:"v2026.1", modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
     sampleSize:50, gradeA:74, urs:26, status:"Disputed", sync:"Synced",
     humanReviews:4, confidence:55,
     onions: demoOnions.slice(0,5),
@@ -92,7 +92,7 @@ export const assessmentsSeed = [
   {
     id:"OG-2026-0237", lotId:"LOT-0237", farmer:"Kavita More", center:"Lasalgaon APMC — NAFED", location:"Nashik, MH",
     date:"2026-09-03T14:20:00", assessor:"S. Kulkarni",
-    policyVersion:"v2026.1", modelVersion:"OnionSetu.ai v1",
+    policyVersion:"v2026.1", modelVersion:"OnionSetu grading (Gemini-assisted, Phase 1)",
     sampleSize:30, gradeA:0, urs:100, status:"Sync Pending", sync:"Offline",
     humanReviews:0, confidence:91,
     onions: demoOnions.slice(0,3),

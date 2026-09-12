@@ -33,7 +33,7 @@ export default function Settings(){
         <h3 style={{margin:"0 0 10px", fontSize:14, fontWeight:700}}>{t("system")}</h3>
         <div style={{display:"grid", gap:8, fontSize:13}}>
           <div><b>Active policy:</b> {activePolicy.version} ({activePolicy.sizeBand.min}–{activePolicy.sizeBand.max} mm)</div>
-          <div><b>Model:</b> OnionSetu.ai v1 — proprietary vision (97.2% lab)</div>
+          <div><b>Model:</b> OnionSetu grading (Gemini-assisted, Phase 1)</div>
           <div><b>Confidence threshold:</b> 60%</div>
           <div><b>Backend:</b> Supabase — per-user RLS, Storage for images/reports, QR-linked verification</div>
           <div><b>Language:</b> {languages.find(l=>l.code===lang)?.native} · <span className="badge badge-maroon">{lang}</span></div>
