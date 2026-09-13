@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useI18n } from "../lib/i18n";
+import { OnionMark } from "./OnionMark";
 
 export default function LanguageGate(){
   const { languages, setLang, t } = useI18n();
@@ -11,7 +12,7 @@ export default function LanguageGate(){
   return (
     <div style={{minHeight:"100dvh", background:"#FDFBF9", display:"grid", placeItems:"center", padding:"24px 12px"}}>
       <div style={{width:"100%", maxWidth:520, display:"grid", gap:16, textAlign:"center", justifyItems:"center"}}>
-        <div style={{width:48,height:48, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:14, fontFamily:"Fraunces, serif", fontWeight:700, fontSize:20}}>O</div>
+        <OnionMark style={{display:"block", height:48, width:38}} />
         <div>
           <h1 className="h-display" style={{margin:0, fontSize:26}}>{t("selectLanguage")}</h1>
           <p style={{margin:"8px 0 0", color:"#6B5A54", fontSize:13}}>{t("langNoteAll")}</p>

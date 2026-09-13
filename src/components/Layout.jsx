@@ -4,6 +4,7 @@ import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { useI18n } from "../lib/i18n";
 import LanguageSelector from "./LanguageSelector";
+import { OnionMark } from "./OnionMark";
 
 const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
@@ -85,7 +86,7 @@ export default function Layout({ children }){
       >
         <div className="sidebar-brand">
           <div className="brand-mark">
-            <div className="brand-icon">O</div>
+            <OnionMark style={{display:"block", height:34, width:27}} />
             <div>
               <div className="brand-name">ONIONSETU</div>
               <div className="brand-sub">{t("appSubtitle")}</div>
@@ -149,7 +150,7 @@ export default function Layout({ children }){
               {menuOpen ? "X" : "Menu"}
             </button>
             <div style={{display:"flex",alignItems:"center",gap:10, minWidth:0}}>
-              <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>O</div>
+              <OnionMark style={{display:"block", height:30, width:24}} />
               <div className="topbar-brand-text" style={{minWidth:0}}>
                 <div className="brand-title">ONIONSETU</div>
                 <div className="brand-subtitle">{t("appSubtitle")}</div>

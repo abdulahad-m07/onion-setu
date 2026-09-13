@@ -4,6 +4,7 @@ import { useAuth, isSupabaseConfigured } from "../lib/auth";
 import { useSeo } from "../lib/seo";
 import { useI18n } from "../lib/i18n";
 import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
+import { OnionMark } from "../components/OnionMark";
 
 export default function Login(){
   const { t, lang, setLang, languages } = useI18n();
@@ -107,7 +108,7 @@ export default function Login(){
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
         <div style={{display:"grid", gap:14, alignContent:"center"}}>
           <div style={{display:"flex", gap:10, alignItems:"center"}}>
-            <div style={{width:36,height:36, background:"#7A263A", color:"white", display:"grid", placeItems:"center", borderRadius:10, fontFamily:"Fraunces, serif", fontWeight:700}}>O</div>
+            <OnionMark style={{display:"block", height:36, width:29}} />
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Onion Quality Assessment</div></div>
           </div>
           <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:8}}>
