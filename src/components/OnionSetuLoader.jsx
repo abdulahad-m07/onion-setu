@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
 import { OnionMark } from './OnionMark';
 
@@ -60,14 +60,21 @@ export function OnionSetuLoader({ loop = false, onRevealComplete }){
   );
 }
 
-// Full-screen overlay used on app startup — kept minimal, no flashy effect
+// Full-screen overlay used on app startup — stays mounted until the logo +
+// wordmark reveal finishes, then fades out (safety fallback: 6s)
 export function SplashScreen({ onDone }){
   const [fade, setFade] = useState(false);
-  useEffect(()=>{
-    const t1 = setTimeout(()=> setFade(true), 1200);
-    const t2 = setTimeout(()=> onDone?.(), 1600);
-    return ()=>{ clearTimeout(t1); clearTimeout(t2); };
+  const doneRef = useRef(false);
+  const finish = useCallback(()=>{
+    if(doneRef.current) return;
+    doneRef.current = true;
+    setFade(true);
+    setTimeout(()=> onDone?.(), 650);
   },[onDone]);
+  useEffect(()=>{
+    const fallback = setTimeout(finish, 6000);
+    return ()=> clearTimeout(fallback);
+  },[finish]);
   return (
     <motion.div
       initial={{opacity:1}}
@@ -75,7 +82,7 @@ export function SplashScreen({ onDone }){
       transition={{duration:0.6, ease:[0.16,1,0.3,1]}}
       style={{position:'fixed', inset:0, zIndex:9999, background:'white', display:'flex', alignItems:'center', justifyContent:'center', pointerEvents: fade ? 'none' : 'auto'}}
     >
-      <OnionSetuLoader loop={false} />
+      <OnionSetuLoader loop={false} onRevealComplete={finish} />
     </motion.div>
   );
 }
