@@ -54,7 +54,12 @@ function AppRoutes(){
     setLoading(false);
   }
   if(!hasChosen){
-    return <LanguageGate />;
+    return (
+      <>
+        {loading && <SplashScreen onDone={handleDone} />}
+        <LanguageGate />
+      </>
+    );
   }
   return (
     <>
