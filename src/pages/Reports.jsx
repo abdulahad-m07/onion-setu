@@ -6,13 +6,14 @@ import { useI18n } from "../lib/i18n";
 import { QRCodeSVG } from "qrcode.react";
 
 export function ReportsList(){
+  const { t: tList } = useI18n();
   useSeo({ title:"Reports", description:"Evidence-backed quality reports — open tamper-evident PDFs with QR verification, policy version and SHA-256 hash for every assessment.", canonical:"/reports" });
   const { assessments } = useStore();
   return (
     <div style={{display:"grid", gap:14}}>
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"Reports", href:"/reports"}]} />
-      <h1 className="h-display" style={{fontSize:28, margin:0}}>Quality reports</h1>
-      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>Stored as: Report ID · Date · Location · Policy · Grades A/B/C/Reject · URS separate · Confidence · Acknowledgements · Review status</p>
+      <h1 className="h-display" style={{fontSize:28, margin:0}}>{tList("qualityReports")}</h1>
+      <p style={{margin:"-6px 0 0", color:"#6B5A54", fontSize:12}}>{tList("storedAsText")}</p>
       {/* Test artifact — kept for dev, not promoted as production feature */}
       <details style={{background:"#FDFBF9", border:"1px solid #EDE3DC", borderRadius:10, padding:"10px 14px"}}>
         <summary style={{fontSize:12, fontWeight:700, cursor:"pointer", color:"#6B5A54"}}>Developer test artifact — TOM2024 (120 sampled) — hidden by default</summary>
@@ -30,7 +31,7 @@ export function ReportsList(){
               <div style={{fontWeight:700}}>{a.id} — A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}% · URS:{a.urs}% <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
-            <span className="btn btn-secondary" style={{fontSize:12}}>Open report →</span>
+            <span className="btn btn-secondary" style={{fontSize:12}}>{tList("openReport")} →</span>
           </Link>
         ))}
       </div>
@@ -53,7 +54,7 @@ export function ReportDetail(){
   };
   const a = assessments.find(x=> x.id===id);
   useSeo({ title: a ? `Report ${a.id}` : "Report", description: a ? `${a.id} — Grades A:${a.gradeA}% B:${a.gradeB ?? 0}% C:${a.gradeC ?? 0}% Reject:${a.gradeReject ?? 0}%, URS ${a.urs}% separate at ${a.location}.` : "Tamper-evident onion quality report with QR verification.", canonical: `/reports/${id}` });
-  if(!a) return <div className="card card-pad">Report not found. <Link to="/reports">Browse reports</Link></div>;
+  if(!a) return <div className="card card-pad">{t("verifyFail")}. <Link to="/reports">{t("browseReports")}</Link></div>;
   const hasImages = Array.isArray(a.images) && a.images.length;
   const hasOnions = Array.isArray(a.onions) && a.onions.length;
   const verifyUrl = `https://onion-setu.vercel.app/verify/${a.id}`;
@@ -106,9 +107,9 @@ export function ReportDetail(){
         {/* ——— UPLOADED IMAGES — part of final report ——— */}
         <div style={{marginTop:14}}>
           <div style={{fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:8}}>
-            Uploaded Images — Final Report
+            {t("uploadedImages")} — {t("finalReport")}
             <span className="badge" style={{fontSize:10}}>{hasImages ? `${a.images.length} views stored` : "Demo views"}</span>
-            <span className="badge badge-maroon" style={{fontSize:10}}>Stored in Supabase Storage</span>
+            <span className="badge badge-maroon" style={{fontSize:10}}>{t("storedIn")}</span>
           </div>
           <div style={{fontSize:11, color:"#6B5A54", marginTop:2}}>These are the exact 3 views captured (with 25mm reference). They are stored in <span className="mono" style={{fontSize:11}}>assessment-images</span> bucket: <span className="mono" style={{fontSize:10}}>{a.id}/view_0..2.jpg</span> — referenced by <span className="mono" style={{fontSize:10}}>assessment_images</span> table.</div>
           <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginTop:10}} className="capture-grid">
@@ -127,7 +128,7 @@ export function ReportDetail(){
               );
             })}
           </div>
-          <div style={{fontSize:11, color:"#8a7a74", marginTop:6}}>If real phone captures were uploaded, they appear here with signed URLs from Supabase Storage. Demo uses placeholder but storage path is still recorded.</div>
+          
         </div>
 
         <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10, padding:10, marginTop:14, display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
@@ -140,16 +141,16 @@ export function ReportDetail(){
             <div style={{fontSize:10, color:"#8a7a74"}}>Scan to open report — data is saved per-user in Supabase</div>
             <Link to={`/verify/${a.id}`} className="btn btn-secondary" style={{fontSize:11, padding:"5px 8px", marginTop:6}}>{t("openVerification")} →</Link>
           </div>
-          <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>Immutable: reviews create linked <span className="mono" style={{fontSize:10}}>reviews</span> row, original preserved.</div>
+          <div style={{marginLeft:"auto", fontSize:11, color:"#6B5A54"}}>{t("reviewFlow")}</div>
         </div>
 
         <div className="card card-pad" style={{background: a.acceptance==="Rejected" ? "#FDECEC" : "#EDF5EF", borderColor: a.acceptance==="Rejected" ? "#F5C2C2" : "#C8E4CC", marginTop:14}}>
           <div style={{display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
-            <div style={{fontWeight:700, fontSize:13}}>Lot Status: <span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{marginLeft:6}}>{a.acceptance || "Accepted"}</span></div>
-            <span style={{fontSize:11, color:"#6B5A54"}}>Grader updates manually — Accepted = lot accepted for procurement, Rejected = farmer refused / lot rejected / incident</span>
+            <div style={{fontWeight:700, fontSize:13}}>{t("lotStatusLbl")}: <span className={`badge ${a.acceptance==="Accepted"?"badge-success":"badge-error"}`} style={{marginLeft:6}}>{a.acceptance || "Accepted"}</span></div>
+            <span style={{fontSize:11, color:"#6B5A54"}}>{t("acceptedHint")}</span>
             <div style={{marginLeft:"auto", display:"flex", gap:8}}>
-              <button className={`btn ${a.acceptance==="Accepted"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px"}} onClick={()=> updateAssessment(a.id, { acceptance:"Accepted" })}>Mark Accepted</button>
-              <button className={`btn ${a.acceptance==="Rejected"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px", background: a.acceptance==="Rejected" ? "#B33A3A" : undefined, borderColor: a.acceptance==="Rejected" ? "#B33A3A" : undefined, color: a.acceptance==="Rejected" ? "white" : undefined}} onClick={()=> updateAssessment(a.id, { acceptance:"Rejected" })}>Mark Rejected</button>
+              <button className={`btn ${a.acceptance==="Accepted"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px"}} onClick={()=> updateAssessment(a.id, { acceptance:"Accepted" })}>{t("markAccepted")}</button>
+              <button className={`btn ${a.acceptance==="Rejected"?"btn-primary":"btn-secondary"}`} style={{fontSize:11, padding:"6px 10px", background: a.acceptance==="Rejected" ? "#B33A3A" : undefined, borderColor: a.acceptance==="Rejected" ? "#B33A3A" : undefined, color: a.acceptance==="Rejected" ? "white" : undefined}} onClick={()=> updateAssessment(a.id, { acceptance:"Rejected" })}>{t("markRejected")}</button>
             </div>
           </div>
         </div>
@@ -161,12 +162,12 @@ export function ReportDetail(){
           {printLang && <span className="badge badge-maroon" style={{fontSize:10}}>{printLang==="en" ? "English" : languages.find(l=>l.code===printLang)?.native} print mode — press Print again to switch</span>}
           <button className="btn btn-secondary" onClick={()=> {
             updateAssessment(a.id, { acknowledged:{ farmer:true, grader:true } });
-            alert("Acknowledged — both parties have seen the report.");
-          }}>Mark acknowledged</button>
+            alert(t("ackDoneAlert"));
+          }}>{t("markAckBtn")}</button>
           <button className="btn btn-ghost" style={{color:"#B33A3A"}} onClick={()=>{
             updateAssessment(a.id, { status:"Human Review", dispute:{ reason:"Flagged for human review", at:new Date().toISOString(), by:"Farmer" } });
-            alert("Flagged for human review — linked review record created. Original preserved.");
-          }}>Flag for Human Review</button>
+            alert(t("flagDoneAlert"));
+          }}>{t("flagHumanBtn")}</button>
           {a.dispute && <span className="badge badge-warning">On Hold: {a.dispute.reason}</span>}
         </div>
       </div>

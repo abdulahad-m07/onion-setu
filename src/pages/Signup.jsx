@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, isSupabaseConfigured } from "../lib/auth";
 import { useSeo } from "../lib/seo";
+import { useI18n } from "../lib/i18n";
 import { sendOtp, verifyOtp, channelFor, maskContact } from "../lib/otp";
 
 export default function Signup(){
   useSeo({ title:"Sign up", description:"Create a Farmer or Grader account on OnionSetu with Gmail or phone — real OTP via Supabase when configured.", canonical:"/signup" });
   const { signup, loginWithSupabaseOtp, verifySupabaseOtp } = useAuth();
+  const { t } = useI18n();
   const nav = useNavigate();
   const [role, setRole] = useState("farmer");
   const [name, setName] = useState("");
@@ -63,10 +65,10 @@ export default function Signup(){
   function submit(e){
     e.preventDefault();
     setErr("");
-    if(!name.trim() || !password) { setErr("Please fill name and password."); return; }
-    if(!email.trim() && !phone.trim()){ setErr("Enter a Gmail address or phone number."); return; }
-    if(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){ setErr("Enter a valid Gmail address (e.g., ramesh@gmail.com)."); return; }
-    if(phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())){ setErr("Enter a valid 10-digit phone number starting with 6-9."); return; }
+    if(!name.trim() || !password) { setErr(t("errFill")); return; }
+    if(!email.trim() && !phone.trim()){ setErr(t("errContact")); return; }
+    if(email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){ setErr(t("errEmail")); return; }
+    if(phone.trim() && !/^[6-9]\d{9}$/.test(phone.trim())){ setErr(t("errPhone")); return; }
     // choose OTP channel: prefer the identifier user will login with — if phone given, send SMS, else Gmail
     const identifier = phone.trim() || email.trim();
     const channel = channelFor(identifier);
@@ -78,7 +80,7 @@ export default function Signup(){
   async function verify(e){
     e.preventDefault();
     setErr("");
-    if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    if(otp.trim().length!==6){ setErr(t("errOtp")); return; }
     if(isSupabaseConfigured){
       setBusy(true);
       const isPhone = /^[6-9]\d{9}$/.test(String(otpInfo.identifier).trim());
@@ -125,7 +127,7 @@ export default function Signup(){
             <div style={{fontFamily:"JetBrains Mono, monospace", fontSize:20, letterSpacing:".14em", fontWeight:700}}>{otpInfo.code}</div>
             <div style={{fontSize:11, opacity:.7}}>For {otpInfo.identifier} — expires in 5m</div>
           </div>
-          <button className="btn btn-ghost" style={{color:"white", borderColor:"rgba(255,255,255,.2)", fontSize:11, padding:"6px 8px"}} onClick={()=> navigator.clipboard?.writeText(otpInfo.code)}>Copy</button>
+          <button className="btn btn-ghost" style={{color:"white", borderColor:"rgba(255,255,255,.2)", fontSize:11, padding:"6px 8px"}} onClick={()=> navigator.clipboard?.writeText(otpInfo.code)}>{t("copyBtn")}</button>
         </div>
       )}
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
@@ -135,38 +137,37 @@ export default function Signup(){
             <div><div style={{fontFamily:"Fraunces, serif", fontWeight:700, fontSize:18}}>ONIONSETU</div><div style={{fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color:"#8a7a74", fontWeight:700}}>Onion Quality Assessment</div></div>
           </div>
           <h1 className="h-display" style={{margin:0, fontSize:32, lineHeight:.95}}>Create your<br/><span style={{color:"#7A263A"}}>OnionSetu</span> account</h1>
-          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>One account, two roles. We’ll send an OTP to your Gmail or phone to verify you.</p>
+          <p style={{margin:0, color:"#6B5A54", fontSize:14}}>{t("oneAccountText")}</p>
           <div style={{background:"white", border:"1px solid #EDE3DC", borderRadius:12, padding:12, fontSize:12, color:"#6B5A54"}}>
-            <b>Farmer</b> can: view Dashboard (my lots), Assessments (my lots), Reports + QR verify, Policy (read-only).<br/>
-            <b>Grader</b> can: everything Farmer can + create assessments, human review queue, switch active policy.
+            {t("farmerCanText")}<br/>{t("graderCanText")}
           </div>
         </div>
 
         {step==="form" ? (
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
-          <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Sign up</h2>
+          <h2 style={{margin:0, fontSize:18, fontWeight:700}}>{t("signup")}</h2>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>
-            <button type="button" onClick={()=> setRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}> Farmer</button>
-            <button type="button" onClick={()=> setRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}> Grader</button>
+            <button type="button" onClick={()=> setRole("farmer")} className={role==="farmer" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}>{t("farmer")}</button>
+            <button type="button" onClick={()=> setRole("grader")} className={role==="grader" ? "btn btn-primary":"btn btn-ghost"} style={{flex:1, fontSize:13}}>{t("grader")}</button>
           </div>
 
-          <label style={{display:"grid", gap:6}}><span className="label">Full name *</span>
+          <label style={{display:"grid", gap:6}}><span className="label">{t("fullName")} *</span>
             <input className="input" required value={name} onChange={e=> setName(e.target.value)} placeholder={role==="grader" ? "S. Kulkarni" : "Ramesh Patil"} autoComplete="name" />
           </label>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="signup-grid">
-            <label style={{display:"grid", gap:6}}><span className="label">Gmail</span>
+            <label style={{display:"grid", gap:6}}><span className="label">{t("gmailLbl")}</span>
               <input className="input" type="email" value={email} onChange={e=> setEmail(e.target.value)} placeholder="ramesh@gmail.com" autoComplete="email" />
             </label>
-            <label style={{display:"grid", gap:6}}><span className="label">Phone</span>
+            <label style={{display:"grid", gap:6}}><span className="label">{t("phoneLbl")}</span>
               <input className="input" type="tel" inputMode="numeric" value={phone} onChange={e=> setPhone(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="9876543211" autoComplete="tel" />
             </label>
           </div>
-          <div style={{fontSize:11, color:"#8a7a74", marginTop:-8}}>Enter Gmail <b>or</b> phone (or both). At least one required — OTP will be sent there.</div>
-          <label style={{display:"grid", gap:6}}><span className="label">Password *</span>
-            <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder="At least 6 characters" autoComplete="new-password" />
+          <div style={{fontSize:11, color:"#8a7a74", marginTop:-8}}>{t("contactHint")}</div>
+          <label style={{display:"grid", gap:6}}><span className="label">{t("password")} *</span>
+            <input className="input" type="password" required value={password} onChange={e=> setPassword(e.target.value)} placeholder={t("pwdHint")} autoComplete="new-password" />
           </label>
-          <label style={{display:"grid", gap:6}}><span className="label">{role==="grader" ? "Procurement center" : "Village / Center"} <span style={{color:"#8a7a74", fontWeight:400}}>(optional)</span></span>
+          <label style={{display:"grid", gap:6}}><span className="label">{role==="grader" ? t("procCenter") : t("villageCenter")} <span style={{color:"#8a7a74", fontWeight:400}}>{t("centerOpt")}</span></span>
             <input className="input" value={center} onChange={e=> setCenter(e.target.value)} placeholder={role==="grader" ? "Lasalgaon APMC — NAFED" : "Lasalgaon"} />
           </label>
 
@@ -174,11 +175,11 @@ export default function Signup(){
 
           <button className="btn btn-primary" type="submit" disabled={busy} style={{width:"100%", minHeight:44}}>{busy ? "Sending OTP…" : `Send OTP →`}</button>
 
-          <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>Already have an account? <Link to="/login" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>Log in</Link></div>
+          <div style={{textAlign:"center", fontSize:13, color:"#6B5A54"}}>{t("haveAccount")} <Link to="/login" style={{color:"#7A263A", fontWeight:700, textDecoration:"underline"}}>{t("login")}</Link></div>
         </form>
         ) : (
         <form onSubmit={verify} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
-          <h2 style={{margin:0, fontSize:18, fontWeight:700}}>Verify OTP</h2>
+          <h2 style={{margin:0, fontSize:18, fontWeight:700}}>{t("verifyOtp")}</h2>
           <p style={{margin:0, color:"#6B5A54", fontSize:13}}>We sent a 6-digit code via <b>{otpInfo?.channel==="sms" ? "SMS" : "Gmail"}</b> to <b className="mono">{otpInfo?.masked}</b>.</p>
           {isSupabaseConfigured ? (
             <div style={{background:"#EDF5EF", border:"1px solid #C8E4CC", borderRadius:10, padding:10, fontSize:12}}>
@@ -191,14 +192,14 @@ export default function Signup(){
               <div style={{color:"#6B5A54", marginTop:4}}>Mock OTP — expires in 5 minutes. Add Supabase key to send real codes.</div>
             </div>
           )}
-          <label style={{display:"grid", gap:6}}><span className="label">Enter 6-digit OTP *</span>
+          <label style={{display:"grid", gap:6}}><span className="label">{t("enterOtp")} *</span>
             <input className="input" type="text" inputMode="numeric" maxLength={6} required value={otp} onChange={e=> setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="• • • • • •" style={{letterSpacing:".2em", textAlign:"center", fontSize:18}} autoFocus />
           </label>
           {err && <div style={{background:"#FDECEC", border:"1px solid #F5C2C2", color:"#B33A3A", borderRadius:10, padding:"10px 12px", fontSize:13}}>{err}</div>}
-          <button className="btn btn-primary" type="submit" style={{width:"100%", minHeight:44}}>Verify & create account →</button>
+          <button className="btn btn-primary" type="submit" style={{width:"100%", minHeight:44}}>{t("verifyCreateText")}</button>
           <div style={{display:"flex", gap:8}}>
-            <button type="button" className="btn btn-secondary" style={{flex:1, fontSize:12}} onClick={resend} disabled={cooldown>0}>{cooldown>0 ? `Resend in ${cooldown}s` : `Resend OTP`}</button>
-            <button type="button" className="btn btn-ghost" style={{fontSize:12}} onClick={()=>{ setStep("form"); setErr(""); }}>Back</button>
+            <button type="button" className="btn btn-secondary" style={{flex:1, fontSize:12}} onClick={resend} disabled={cooldown>0}>{cooldown>0 ? `${t("resendIn")} ${cooldown}s` : t("resendOtp")}</button>
+            <button type="button" className="btn btn-ghost" style={{fontSize:12}} onClick={()=>{ setStep("form"); setErr(""); }}>{t("back")}</button>
           </div>
         </form>
         )}

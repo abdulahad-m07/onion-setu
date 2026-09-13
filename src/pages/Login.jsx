@@ -26,7 +26,7 @@ export default function Login(){
   async function submit(e){
     e.preventDefault();
     setErr("");
-    if(!identifier.trim()){ setErr("Enter your Gmail or phone number."); return; }
+    if(!identifier.trim()){ setErr(t("errIdentifier")); return; }
     setBusy(true);
     if(isSupabaseConfigured){
       // Real OTP via Supabase — password not required for OTP flow
@@ -61,7 +61,7 @@ export default function Login(){
   async function verify(e){
     e.preventDefault();
     setErr("");
-    if(otp.trim().length!==6){ setErr("Enter the 6-digit OTP."); return; }
+    if(otp.trim().length!==6){ setErr(t("errOtp")); return; }
     if(isSupabaseConfigured){
       setBusy(true);
       const v = await verifySupabaseOtp(identifier.trim(), otp.trim());
@@ -101,7 +101,7 @@ export default function Login(){
             <div style={{fontFamily:"JetBrains Mono, monospace", fontSize:20, letterSpacing:".14em", fontWeight:700}}>{otpInfo.code}</div>
             <div style={{fontSize:11, opacity:.7}}>For {identifier.trim()} — expires in 5m</div>
           </div>
-          <button className="btn btn-ghost" style={{color:"white", borderColor:"rgba(255,255,255,.2)", fontSize:11, padding:"6px 8px"}} onClick={()=> navigator.clipboard?.writeText(otpInfo.code)}>Copy</button>
+          <button className="btn btn-ghost" style={{color:"white", borderColor:"rgba(255,255,255,.2)", fontSize:11, padding:"6px 8px"}} onClick={()=> navigator.clipboard?.writeText(otpInfo.code)}>{t("copyBtn")}</button>
         </div>
       )}
       <div style={{width:"100%", maxWidth:920, display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}} className="login-grid">
@@ -136,7 +136,7 @@ export default function Login(){
         <form onSubmit={submit} className="card card-pad" style={{display:"grid", gap:14, alignContent:"start"}}>
           <div>
             <h2 style={{margin:0, fontSize:18, fontWeight:700}}>{t("login")}</h2>
-            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>{t("gmailOrPhone")} — {t("selectLanguageDesc")}</p>
+            <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>{t("oneAccountText")}</p>
           </div>
 
           <div style={{display:"flex", gap:8, padding:4, background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:10}}>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,600;9..144,0,700;9..144,1,600&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,600;9..144,0,700;9..144,1,600&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
 
 :root{
   --white:#FFFFFF;
@@ -31,7 +31,7 @@
 html,body{margin:0;padding:0;overflow-x:hidden;max-width:100vw}
 html{ -webkit-text-size-adjust:100% }
 body{
-  font-family:"Instrument Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-family:"Instrument Sans","Noto Sans","Noto Sans Devanagari","Noto Sans Bengali","Noto Sans Tamil","Noto Sans Telugu","Noto Sans Gujarati","Noto Sans Kannada","Noto Sans Malayalam","Noto Sans Oriya","Noto Sans Gurmukhi","Noto Nastaliq Urdu",system-ui,-apple-system,Segoe UI,Roboto,"Mangal","Lohit Devanagari","Nirmala UI",sans-serif;
   color:var(--black);
   background:var(--white);
   -webkit-font-smoothing:antialiased;
@@ -356,3 +356,9 @@ tr:hover td{background:#FFFEFD}
 
 /* Prevent horizontal overflow on inline flex badges rows */
 .badge-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+
+/* Language selector — desktop + mobile */
+.topbar-lang{ display:inline-flex; align-items:center; }
+.topbar-lang .select{ max-width:150px; }
+select.select, input.input{ font-family:inherit; }
+@media(max-width:640px){ .topbar-lang .select{ max-width:110px; font-size:11px; padding:6px; } }

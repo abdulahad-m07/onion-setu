@@ -26,12 +26,13 @@ function Loader(){
 
 function Protected({ children, allow }){
   const { user } = useAuth();
+  const { t } = useI18n();
   const loc = useLocation();
   if(!user) return <Navigate to="/login" state={{ from: loc.pathname }} replace />;
   if(allow && !allow.includes(user.role)) return (
     <div style={{maxWidth:560, margin:"40px auto", textAlign:"center", display:"grid", gap:14, padding:20}}>
       <div style={{width:56,height:56, borderRadius:"50%", background:"#FDECEC", border:"2px solid #F5C2C2", display:"grid", placeItems:"center", margin:"0 auto", color:"#B33A3A", fontWeight:800}}>!</div>
-      <h2 style={{margin:0, fontFamily:"Fraunces, serif"}}>Not available for your role</h2>
+      <h2 style={{margin:0, fontFamily:"Fraunces, serif"}}>{t("roleNotAvailable")}</h2>
       <p style={{margin:0, color:"#6B5A54", fontSize:14}}>Your account is <b>{user.role}</b>. This section is for <b>{allow.join(" / ")}</b> only.</p>
       <p style={{margin:0, fontSize:13, color:"#8a7a74"}}>Farmer can: view Dashboard (my lots), Assessments (my lots), Reports, Policy (read), Verification. Grader can: all of the above + create assessments, human review, switch policy.</p>
       <Navigate to="/" />

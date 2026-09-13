@@ -4,14 +4,14 @@ import { useStore } from "../lib/store";
 import { gradeLot, CONFIDENCE_THRESHOLD, sha256 } from "../lib/grading";
 import { demoOnions } from "../lib/mockData";
 import { useSeo, Breadcrumbs } from "../lib/seo";
+import { useI18n } from "../lib/i18n";
 
 /* Guided 12-step wizard covering PRD §13-51 */
-const STEPS = [
-  "Lot Info","Sampling","Capture","Quality Gate","Detection","Size","Defects","Confidence","Human Review","Policy & Grading","Farmer Review","Report & Evidence"
-];
+const STEP_KEYS = ["stepLotInfo","stepSampling","stepCapture","stepQualityGate","stepDetection","stepSize","stepDefects","stepConfidence","stepHumanReview","stepPolicyGrading","stepFarmerReview","stepReportEvidence"];
 
 export default function NewAssessment(){
   useSeo({ title:"New Assessment", description:"Start a new onion grading session — enter lot details, capture 3 views with reference, run quality check and get Grade A/B/C/Reject with separate URS.", canonical:"/new" });
+  const { t } = useI18n();
   const { activePolicy, policies, addAssessment, offline, setOffline } = useStore();
   const nav = useNavigate();
   const [step, setStep] = useState(0);
@@ -32,7 +32,7 @@ export default function NewAssessment(){
   const [graderAccepted, setGraderAccepted] = useState(false);
   const fileRefs = [useRef(),useRef(),useRef()];
 
-  function next(){ setStep(s=> Math.min(STEPS.length-1, s+1)); }
+  function next(){ setStep(s=> Math.min(STEP_KEYS.length-1, s+1)); }
   function prev(){ setStep(s=> Math.max(0, s-1)); }
 
   // capture helpers
@@ -139,28 +139,28 @@ export default function NewAssessment(){
       <Breadcrumbs items={[{label:"Home", href:"/"},{label:"New Assessment", href:"/new"}]} />
       <div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between", gap:12, alignItems:"center"}}>
         <div>
-          <h1 className="h-display" style={{fontSize:28, margin:0}}>New assessment</h1>
-          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>Farmer + Grader joint session · Human review when needed · Offline-capable</p>
+          <h1 className="h-display" style={{fontSize:28, margin:0}}>{t("newAssessmentTitle")}</h1>
+          <p style={{margin:"4px 0 0", color:"#6B5A54", fontSize:13}}>{t("farmerGraderSession")}</p>
         </div>
         <div style={{display:"flex", gap:8, alignItems:"center"}}>
           <span className="badge badge-maroon">{policy.version} · {policy.sizeBand.min}–{policy.sizeBand.max} mm</span>
-          <span className={offline ? "badge badge-offline":"badge badge-success"}>{offline ? "Offline — queued" : "Online"}</span>
+          <span className={offline ? "badge badge-offline":"badge badge-success"}>{offline ? t("offlineQueued") : t("onlineLbl")}</span>
         </div>
       </div>
 
       {/* Stepper */}
       <div className="card card-pad" style={{overflow:"hidden"}}>
         <div className="steps steps-scroll" style={{minWidth:0}}>
-          {STEPS.map((s,i)=>(
-            <div key={s} style={{display:"flex", alignItems:"center", gap:6, flexShrink:0}}>
+          {STEP_KEYS.map((k,i)=>(
+            <div key={k} style={{display:"flex", alignItems:"center", gap:6, flexShrink:0}}>
               <div className={`step-dot ${i===step?"active": i<step?"done":""}`} >{i<step?"":i+1}</div>
-              <span className="step-label" style={{color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74"}}>{s}</span>
-              {i<STEPS.length-1 && <div className={`step-line ${i<step?"done":""}`} />}
+              <span className="step-label" style={{color: i===step?"#7A263A": i<step?"#3F7D4A":"#8a7a74"}}>{t(k)}</span>
+              {i<STEP_KEYS.length-1 && <div className={`step-line ${i<step?"done":""}`} />}
             </div>
           ))}
         </div>
         <div style={{marginTop:10, height:6, background:"#F3EAE2", borderRadius:999, overflow:"hidden"}}>
-          <div style={{width:`${((step+1)/STEPS.length)*100}%`, height:"100%", background:"#7A263A", transition:"width .3s"}} />
+          <div style={{width:`${((step+1)/STEP_KEYS.length)*100}%`, height:"100%", background:"#7A263A", transition:"width .3s"}} />
         </div>
       </div>
 
@@ -181,8 +181,8 @@ export default function NewAssessment(){
       </div>
 
       <div style={{display:"flex", justifyContent:"space-between", gap:10}}>
-        <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← Back</button>
-        {step<11 && <button className="btn btn-primary" onClick={next}>Continue →</button>}
+        <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← {t("back")}</button>
+        {step<11 && <button className="btn btn-primary" onClick={next}>{t("continue")} →</button>}
       </div>
       <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>OnionSetu grading (Gemini-assisted, Phase 1) — AI assists, human decides.</p>
     </div>
@@ -192,17 +192,17 @@ export default function NewAssessment(){
 function StepLot({lot,setLot,onNext}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 1 — Lot Information</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("lotInformation")}</h3>
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(220px,1fr))", gap:12}}>
-        <Field label="Lot ID"><input className="input" value={lot.lotId} onChange={e=>setLot({...lot, lotId:e.target.value})} placeholder="LOT-0245" /></Field>
-        <Field label="Farmer / Supplier"><input className="input" value={lot.farmer} onChange={e=>setLot({...lot, farmer:e.target.value})} /></Field>
-        <Field label="Procurement Center"><input className="input" value={lot.center} onChange={e=>setLot({...lot, center:e.target.value})} /></Field>
-        <Field label="Location"><input className="input" value={lot.location} onChange={e=>setLot({...lot, location:e.target.value})} /></Field>
-        <Field label="Date / Time"><input className="input" type="datetime-local" value={lot.date} onChange={e=>setLot({...lot, date:e.target.value})} /></Field>
-        <Field label="Assessor (Grader)"><input className="input" value={lot.assessor} onChange={e=>setLot({...lot, assessor:e.target.value})} /></Field>
+        <Field label={t("lotIdLbl")}><input className="input" value={lot.lotId} onChange={e=>setLot({...lot, lotId:e.target.value})} placeholder="LOT-0245" /></Field>
+        <Field label={t("farmerSupplierLbl")}><input className="input" value={lot.farmer} onChange={e=>setLot({...lot, farmer:e.target.value})} /></Field>
+        <Field label={t("procCenter")}><input className="input" value={lot.center} onChange={e=>setLot({...lot, center:e.target.value})} /></Field>
+        <Field label={t("locationLbl")}><input className="input" value={lot.location} onChange={e=>setLot({...lot, location:e.target.value})} /></Field>
+        <Field label={t("dateTimeLbl")}><input className="input" type="datetime-local" value={lot.date} onChange={e=>setLot({...lot, date:e.target.value})} /></Field>
+        <Field label={t("assessorLbl")}><input className="input" value={lot.assessor} onChange={e=>setLot({...lot, assessor:e.target.value})} /></Field>
       </div>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-primary" onClick={onNext}>Continue to sampling →</button>
+        <button className="btn btn-primary" onClick={onNext}>{t("continueToSampling")}</button>
       </div>
     </div>
   );
@@ -210,7 +210,7 @@ function StepLot({lot,setLot,onNext}){
 function StepSampling({onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Representative Sampling</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("representativeSampling")}</h3>
       <div style={{background:"#FBF6F0", border:"1px solid #EDE3DC", borderRadius:12, padding:16, display:"grid", gap:12}}>
         <div style={{display:"flex", flexWrap:"wrap", alignItems:"center", gap:12, justifyContent:"center", fontWeight:700}}>
           <span className="badge">LOT</span> <span>↓</span> <span className="badge badge-maroon">REPRESENTATIVE SAMPLE</span> <span>↓</span> <span className="badge badge-success">MULTI-VIEW CAPTURE</span>
@@ -221,11 +221,11 @@ function StepSampling({onNext,onPrev}){
           <div className="card card-pad" style={{padding:12}}><b>Step 2</b><br/>Place 25 mm reference</div>
           <div className="card card-pad" style={{padding:12}}><b>Step 3</b><br/>Capture 3 views</div>
         </div>
-        <p style={{margin:0, fontSize:12, color:"#8a7a74", textAlign:"center", fontStyle:"italic"}}>“Representative sampling makes the workflow practical for large-scale procurement.”</p>
+        <p style={{margin:0, fontSize:12, color:"#8a7a74", textAlign:"center", fontStyle:"italic"}}>{t("samplingQuote")}</p>
       </div>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
-        <button className="btn btn-primary" onClick={onNext}>Continue →</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
+        <button className="btn btn-primary" onClick={onNext}>{t("continue")} →</button>
       </div>
     </div>
   );
@@ -234,7 +234,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
   const filled = captures.filter(Boolean).length;
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 3 — Multi-View Capture <span style={{color:"#8a7a74", fontWeight:500, fontSize:12}}>· smartphone simulation</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("multiViewCapture")}</h3>
       <div className="capture-grid">
         {[0,1,2].map(i=>(
           <div key={i} className="card" style={{overflow:"hidden"}}>
@@ -268,7 +268,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
         </div>
       </div>
       <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-ghost" onClick={useDemo}>Use demo images</button>
         <button className="btn btn-primary" onClick={onNext} disabled={filled<1}>Check Quality →</button>
       </div>
@@ -279,7 +279,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
 function StepQuality({quality,processing,run,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Step 4 — Image Quality Gate</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("imageQualityGate")}</h3>
       <p style={{margin:0, color:"#6B5A54", fontSize:13}}>Prevents poor input from entering the analysis pipeline. Checks sharpness, lighting, reference visibility, occlusion, framing.</p>
       {!quality ? (
         <div style={{display:"grid", gap:10}}>
@@ -309,8 +309,8 @@ function StepQuality({quality,processing,run,onNext,onPrev}){
       )}
       {!quality?.pass && quality && null}
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
-        {quality?.pass && <button className="btn btn-primary" onClick={onNext}>Continue →</button>}
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
+        {quality?.pass && <button className="btn btn-primary" onClick={onNext}>{t("continue")} →</button>}
       </div>
     </div>
   );
@@ -321,7 +321,7 @@ function StepDetection({processing,onions,captures=[],onNext,onPrev}){
   const imgSrc = realCapture || "https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop";
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Onion Detection / Segmentation</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("onionDetection")}</h3>
       {processing ? (
         <div className="card" style={{padding:16, display:"grid", gap:10}}>
           <div className="shimmer" style={{height:180, borderRadius:12}} />
@@ -340,7 +340,7 @@ function StepDetection({processing,onions,captures=[],onNext,onPrev}){
           </div>
           <p style={{margin:0, fontSize:12, color:"#8a7a74"}}>Detector crops each onion for size + defect analysis.</p>
           <div style={{display:"flex", gap:8}}>
-            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
             <button className="btn btn-primary" onClick={onNext}>Continue to size →</button>
           </div>
         </>
@@ -351,7 +351,7 @@ function StepDetection({processing,onions,captures=[],onNext,onPrev}){
 function StepSize({onions,processing,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Size Analysis <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· OpenCV + 25 mm reference</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("sizeAnalysis")}</h3>
       {processing ? <div className="shimmer" style={{height:120, borderRadius:12}} /> : (
         <>
           <div className="card" style={{padding:14, background:"#FFFEFD"}}>
@@ -370,7 +370,7 @@ function StepSize({onions,processing,onNext,onPrev}){
             <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Example: O1 — 72 mm · O2 — 65 mm · O3 — 58 mm · O4 — 69 mm · O5 — 61 mm. No depth sensor used.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
-            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
             <button className="btn btn-primary" onClick={onNext}>Continue to defects →</button>
           </div>
         </>
@@ -381,7 +381,7 @@ function StepSize({onions,processing,onNext,onPrev}){
 function StepDefects({onions,processing,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Defect Analysis <span style={{fontWeight:500, color:"#7A263A", fontSize:12}}>· Gemini-assisted, Phase 1</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("defectAnalysis")}</h3>
       {processing ? <div className="shimmer" style={{height:140, borderRadius:12}} /> : (
         <>
           <div className="card" style={{padding:12}}>
@@ -402,7 +402,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
             <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Gemini-assisted defect review — Healthy / Damaged / Rotten / Sprouted. Human decides below 60%.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
-            <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+            <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
             <button className="btn btn-primary" onClick={onNext}>Confidence gate →</button>
           </div>
         </>
@@ -413,7 +413,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
 function StepConfidence({onions,low,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Confidence Gate <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· {CONFIDENCE_THRESHOLD}% threshold (configurable prototype)</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("confidenceGate")}</h3>
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(132px,1fr))", gap:8}}>
         {onions.slice(0,4).map(o=>(
           <div key={o.id} className="card" style={{padding:10, textAlign:"center", borderColor: o.confidence>=CONFIDENCE_THRESHOLD ? "#C8E4CC" : "#FBE2A8", background: o.confidence>=CONFIDENCE_THRESHOLD ? "#EDF5EF" : "#FEF3D8", minWidth:0}}>
@@ -435,7 +435,7 @@ function StepConfidence({onions,low,onNext,onPrev}){
         </div>
       )}
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-primary" onClick={onNext}>Go to human review →</button>
       </div>
     </div>
@@ -445,21 +445,21 @@ function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
   if(low.length===0){
     return (
       <div style={{display:"grid", gap:14}}>
-        <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Human Review</h3>
+        <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("humanReviewTitle")}</h3>
         <div className="card" style={{padding:16, background:"#EDF5EF", borderColor:"#C8E4CC"}}>
           <div style={{fontWeight:700, color:"#3F7D4A"}}>No low-confidence onions — review not required.</div>
           <p style={{margin:"6px 0 0", fontSize:13, color:"#6B5A54"}}>This is a human-in-the-loop system. High-confidence lots continue automatically; only uncertain cases are shown here.</p>
         </div>
         <div style={{display:"flex", gap:8}}>
-          <button className="btn btn-secondary" onClick={onPrev}>Back</button>
-          <button className="btn btn-primary" onClick={onNext}>Continue →</button>
+          <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
+          <button className="btn btn-primary" onClick={onNext}>{t("continue")} →</button>
         </div>
       </div>
     );
   }
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Human Review <span style={{fontWeight:500, color:"#8a7a74", fontSize:12}}>· low-confidence cases</span></h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("humanReviewTitle")}</h3>
       <div style={{display:"grid", gap:10}}>
         {low.map(o=>(
           <div key={o.id} className="card" style={{padding:14, display:"grid", gap:10}}>
@@ -486,7 +486,7 @@ function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
         ))}
       </div>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-primary" onClick={onNext}>Continue to policy →</button>
       </div>
     </div>
@@ -495,7 +495,7 @@ function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
 function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Versioned Policy & Grading</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("versionedPolicy")}</h3>
       <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
         <div className="card card-pad">
           <label className="label">Active policy version</label>
@@ -535,7 +535,7 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
         </div>
       </div>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-primary" onClick={onNext}>Farmer / Grader review →</button>
       </div>
       <style>{`@media(max-width:700px){ .policy-grid{grid-template-columns:1fr !important} }`}</style>
@@ -545,7 +545,7 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
 function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,graderAccepted,setGraderAccepted,onNext,onPrev}){
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Farmer / Grader Review</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("farmerGraderReview")}</h3>
       <p style={{margin:0, color:"#6B5A54", fontSize:13}}>The result is transparent to both parties. Never silently overwrite the original assessment — reviews create linked records.</p>
       <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
         <div className="card card-pad">
@@ -575,7 +575,7 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
         <div style={{fontSize:12, color:"#6B5A54"}}>URS: {grading.urs}% separate · Lot {lot.lotId} · {policy.version} · {grading.total} onions</div>
       </div>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-primary" onClick={onNext}>Generate report →</button>
       </div>
     </div>
@@ -585,7 +585,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
   const hash = "computed on finalize — SHA-256 over canonical report content";
   return (
     <div style={{display:"grid", gap:14}}>
-      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>Quality Report · Evidence · Sync</h3>
+      <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("qualityReportEvidence")}</h3>
       <div className="card card-pad" style={{border:"1px solid #EDE3DC"}}>
         <div style={{display:"flex", justifyContent:"space-between", alignItems:"start", gap:12, flexWrap:"wrap"}}>
           <div>
@@ -631,7 +631,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
       </div>
       <p style={{margin:0, fontSize:11, color:"#8a7a74"}}>Integrity: SHA-256 provides tamper evidence for the stored photo set. It does not prove physical sample representativeness — stated as a known limitation. No blockchain used.</p>
       <div style={{display:"flex", gap:8}}>
-        <button className="btn btn-secondary" onClick={onPrev}>Back</button>
+        <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
         <button className="btn btn-primary" onClick={finalize}>Finalize & Generate Report →</button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { useI18n } from "../lib/i18n";
+import LanguageSelector from "./LanguageSelector";
 
 const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
@@ -27,17 +28,14 @@ export default function Layout({ children }){
   const touchStartY = useRef(null);
   const sidebarRef = useRef(null);
 
-  // close on route change
   useEffect(()=>{ setMenuOpen(false); }, [loc.pathname]);
 
-  // close on window resize to desktop
   useEffect(()=>{
     const onResize = ()=>{ if(window.innerWidth > 900) setMenuOpen(false); };
     window.addEventListener("resize", onResize);
     return ()=> window.removeEventListener("resize", onResize);
   },[]);
 
-  // lock body scroll when menu open on mobile
   useEffect(()=>{
     if(menuOpen && window.innerWidth <= 900){
       document.body.style.overflow = "hidden";
@@ -47,25 +45,17 @@ export default function Layout({ children }){
     return ()=>{ document.body.style.overflow = ""; };
   },[menuOpen]);
 
-  // swipe to close: swipe left on sidebar or swipe from left edge
   function onTouchStart(e){
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
   }
   function onTouchMove(e){
     if(touchStartX.current === null) return;
-    const dx = e.touches[0].clientX - touchStartX.current;
-    const dy = e.touches[0].clientY - touchStartY.current;
-    // if horizontal swipe left is dominant, prevent scroll
-    if(menuOpen && dx < -10 && Math.abs(dx) > Math.abs(dy)){
-      // allow native scroll to be interrupted
-    }
   }
   function onTouchEnd(e){
     if(touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = e.changedTouches[0].clientY - touchStartY.current;
-    // swipe left to close (sidebar open) OR swipe right from edge to open
     if(menuOpen && dx < -60 && Math.abs(dx) > Math.abs(dy)){
       setMenuOpen(false);
     }
@@ -77,7 +67,6 @@ export default function Layout({ children }){
 
   return (
     <div className="app-shell" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-      {/* Backdrop */}
       {menuOpen && (
         <div
           aria-hidden="true"
@@ -98,53 +87,57 @@ export default function Layout({ children }){
             <div className="brand-icon">O</div>
             <div>
               <div className="brand-name">ONIONSETU</div>
-              <div className="brand-sub">Onion Quality Assessment</div>
+              <div className="brand-sub">{t("appSubtitle")}</div>
             </div>
           </div>
           <div style={{marginTop:10, fontSize:11, color:"#8a7a74", lineHeight:1.4}}>
-            Procurement-grade<br/>evidence ledger
+            {t("procLedger")}
           </div>
         </div>
         <nav className="nav" aria-label="Primary">
-          <div className="nav-group-label">Workspace</div>
+          <div className="nav-group-label">{t("workspace")}</div>
           {nav.map(item=>(
             <NavLink key={item.to} to={item.to} onClick={()=> setMenuOpen(false)} className={({isActive})=> isActive ? "nav-link active" : "nav-link"}>
               <item.icon />
               {t(item.key)}
             </NavLink>
           ))}
-          <div className="nav-group-label" style={{marginTop:14}}>System</div>
+          <div className="nav-group-label" style={{marginTop:14}}>{t("systemGroup")}</div>
           <div style={{padding:"8px 10px"}}>
-            <div style={{fontSize:12, fontWeight:600}}>Active policy</div>
+            <div style={{fontSize:12, fontWeight:600}}>{t("activePolicyLbl")}</div>
             <div style={{fontSize:13, color:"#7A263A", fontWeight:700}}>{activePolicy.version} · {activePolicy.sizeBand.min}–{activePolicy.sizeBand.max} mm</div>
             <div style={{fontSize:11, color:"#8a7a74", marginTop:2}}>{activePolicy.label}</div>
+          </div>
+          <div style={{padding:"8px 10px"}}>
+            <div style={{fontSize:12, fontWeight:600, marginBottom:6}}>{t("languageSettings")}</div>
+            <LanguageSelector variant="compact" style={{maxWidth:"100%"}} />
           </div>
         </nav>
         <div className="sidebar-foot">
           <div className="sync-card">
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <span className={offline ? "badge badge-offline" : "badge badge-success"} style={{fontSize:10}}>
-                <span className="dot" style={{background: offline ? "#D99024" : "#3F7D4A"}} /> {offline ? "Offline" : "Online"}
+                <span className="dot" style={{background: offline ? "#D99024" : "#3F7D4A"}} /> {offline ? t("offlineLbl") : t("onlineLbl")}
               </span>
-              <button className="btn btn-ghost" style={{padding:"4px 8px",fontSize:12}} onClick={()=> setOffline(v=>!v)}>{offline ? "Go online" : "Go offline"}</button>
+              <button className="btn btn-ghost" style={{padding:"4px 8px",fontSize:12}} onClick={()=> setOffline(v=>!v)}>{offline ? t("goOnline") : t("goOffline")}</button>
             </div>
             <div style={{fontSize:12, color:"#6B5A54"}}>
-              {offline ? `${pendingCount} assessment${pendingCount!==1?"s":""} saved offline.` : "All assessments synced."}
-              <br/>{offline ? "Will sync when you're back online." : "Up to date."}
+              {offline ? `${pendingCount} ${t("savedOfflineMsg")}` : t("syncedMsg")}
+              <br/>{offline ? t("willSyncMsg") : t("upToDateMsg")}
             </div>
             {offline && pendingCount>0 && (
-              <button className="btn btn-primary" style={{width:"100%",marginTop:10,fontSize:13}} onClick={syncAll}>Sync now</button>
+              <button className="btn btn-primary" style={{width:"100%",marginTop:10,fontSize:13}} onClick={syncAll}>{t("syncNow")}</button>
             )}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10, marginTop:12}}>
             <div style={{width:32,height:32, borderRadius:"50%", background:"#F8E9EC", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontFamily:"Fraunces, serif", fontWeight:700, color:"#7A263A", fontSize:12}}>{(user?.name || "G").split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase()}</div>
             <div style={{minWidth:0, flex:1}}>
               <div style={{fontSize:13,fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{user?.name || "Guest"}</div>
-              <div style={{fontSize:11,color:"#8a7a74"}}>{user?.role==="grader" ? "Grader" : "Farmer"} · {user?.center?.split("—")[0]?.trim() || "Lasalgaon"}</div>
+              <div style={{fontSize:11,color:"#8a7a74"}}>{user?.role==="grader" ? t("grader") : t("farmer")} · {user?.center?.split("—")[0]?.trim() || "Lasalgaon"}</div>
             </div>
             <span className={`badge ${user?.role==="grader" ? "badge-maroon":"badge-success"}`} style={{flexShrink:0, fontSize:10}}>{user?.role || "guest"}</span>
           </div>
-          <button className="btn btn-ghost" style={{width:"100%", marginTop:10, fontSize:12, justifyContent:"center"}} onClick={()=>{ logout(); nav2("/login"); }}>Logout</button>
+          <button className="btn btn-ghost" style={{width:"100%", marginTop:10, fontSize:12, justifyContent:"center"}} onClick={()=>{ logout(); nav2("/login"); }}>{t("logout")}</button>
         </div>
       </aside>
 
@@ -158,14 +151,15 @@ export default function Layout({ children }){
               <div className="brand-icon" style={{width:30,height:30,fontSize:13}}>O</div>
               <div className="topbar-brand-text" style={{minWidth:0}}>
                 <div className="brand-title">ONIONSETU</div>
-                <div className="brand-subtitle">Onion Quality Assessment</div>
+                <div className="brand-subtitle">{t("appSubtitle")}</div>
               </div>
             </div>
           </div>
           <div className="topbar-right">
             <span className="badge badge-maroon" style={{display:"none"}} id="top-policy">v2026.1</span>
-            <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>{ setMenuOpen(false); nav2("/policy"); }}>Policy {activePolicy.version}</button>
-            <button className="btn btn-primary" onClick={()=>{ setMenuOpen(false); nav2("/new"); }}><IconPlus/> <span>Start</span></button>
+            <span className="topbar-lang"><LanguageSelector variant="compact" /></span>
+            <button className="btn btn-ghost" style={{fontSize:13}} onClick={()=>{ setMenuOpen(false); nav2("/policy"); }}>{t("policy")} {activePolicy.version}</button>
+            <button className="btn btn-primary" onClick={()=>{ setMenuOpen(false); nav2("/new"); }}><IconPlus/> <span>{t("start")}</span></button>
           </div>
         </header>
         <div className="content">
@@ -173,19 +167,19 @@ export default function Layout({ children }){
           <footer style={{marginTop:32, padding:"18px 0 8px", borderTop:"1px solid #EDE3DC", display:"flex", flexWrap:"wrap", gap:12, justifyContent:"space-between", fontSize:12, color:"#6B5A54"}}>
             <div>
               <div style={{fontWeight:700, color:"#17110F"}}>OnionSetu — Lasalgaon APMC</div>
-              <div>Nashik, Maharashtra · Built for NAFED procurement</div>
+              <div>{t("footerLoc")}</div>
               <div style={{marginTop:6, display:"flex", gap:10, flexWrap:"wrap"}}>
-                <a href="/" style={{color:"#7A263A", fontWeight:600}}>Dashboard</a>
-                <a href="/new" style={{color:"#7A263A", fontWeight:600}}>New Assessment</a>
-                <a href="/assessments" style={{color:"#7A263A", fontWeight:600}}>Assessments</a>
-                <a href="/reports" style={{color:"#7A263A", fontWeight:600}}>Reports</a>
-                <a href="/policy" style={{color:"#7A263A", fontWeight:600}}>Policy</a>
+                <a href="/" style={{color:"#7A263A", fontWeight:600}}>{t("dashboard")}</a>
+                <a href="/new" style={{color:"#7A263A", fontWeight:600}}>{t("newAssessment")}</a>
+                <a href="/assessments" style={{color:"#7A263A", fontWeight:600}}>{t("assessments")}</a>
+                <a href="/reports" style={{color:"#7A263A", fontWeight:600}}>{t("reports")}</a>
+                <a href="/policy" style={{color:"#7A263A", fontWeight:600}}>{t("policy")}</a>
                 <a href="/sitemap.xml" style={{color:"#7A263A"}}>Sitemap</a>
               </div>
             </div>
             <div style={{textAlign:"right", minWidth:160}}>
-              <div style={{fontWeight:600, color:"#17110F"}}>Verification</div>
-              <a href="/verify/OG-2026-0241" style={{color:"#7A263A", fontWeight:600}}>Verify a report →</a>
+              <div style={{fontWeight:600, color:"#17110F"}}>{t("footerVerifyTitle")}</div>
+              <a href="/verify/OG-2026-0241" style={{color:"#7A263A", fontWeight:600}}>{t("verifyReportLink")}</a>
               <div style={{marginTop:6}}>© 2026 OnionSetu · <a href="/llms.txt" style={{color:"#7A263A"}}>llms.txt</a> · <a href="/robots.txt" style={{color:"#7A263A"}}>robots.txt</a></div>
             </div>
           </footer>
