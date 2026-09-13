@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमुना चरणमा जानुहोस् →", lotIdLbl: "लट ID", farmerSupplierLbl: "किसान / आपूर्तिकर्ता", locationLbl: "स्थान", dateTimeLbl: "मिति / समय", assessorLbl: "मूल्याङ्कनकर्ता (ग्रेडर)",
   roleNotAvailable: "तपाईंको भूमिकाका लागि उपलब्ध छैन", samplingQuote: "प्रतिनिधि नमुनाले ठूलो खरिद प्रक्रियालाई व्यावहारिक बनाउँछ।",
   notifSavedOffline: "मूल्याङ्कन अफलाइन सञ्चित।", needsJs: "OnionSetu का लागि JavaScript आवश्यक",
+  batchGrading: "ब्याच ग्रेडिङ",
 };

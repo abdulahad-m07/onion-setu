@@ -51,4 +51,5 @@ export default {
   continueToSampling: "সেম্পল থাক্তদা চৎলু →", lotIdLbl: "লট ID", farmerSupplierLbl: "লৌমী / পীজরিবা", locationLbl: "মফম", dateTimeLbl: "তারিখ / মতম", assessorLbl: "তাহৌবা মী (গ্রেডার)",
   roleNotAvailable: "নহাক্কী থৌদাংগীদমক ফংদে", samplingQuote: "মীৎয়েং সেম্পলনা চাউবা লৈবগী থবক ঙমহল্লি।",
   notifSavedOffline: "তাহৌবা অফলাইনদা তমজিনখ্রে।", needsJs: "OnionSetu গীদমক JavaScript দরকার",
+  batchGrading: "ব্যাচ গ্রেডিং",
 };

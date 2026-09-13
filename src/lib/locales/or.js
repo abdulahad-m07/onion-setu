@@ -51,4 +51,5 @@ export default {
   continueToSampling: "ନମୁନା ପର୍ଯ୍ୟାୟକୁ ଯାଆନ୍ତୁ →", lotIdLbl: "ଲଟ୍ ID", farmerSupplierLbl: "ଚାଷୀ / ଯୋଗାଣକାରୀ", locationLbl: "ସ୍ଥାନ", dateTimeLbl: "ତାରିଖ / ସମୟ", assessorLbl: "ମୂଲ୍ୟାଙ୍କନକାରୀ (ଗ୍ରେଡର)",
   roleNotAvailable: "ଆପଣଙ୍କ ଭୂମିକା ପାଇଁ ଉପଲବ୍ଧ ନାହିଁ", samplingQuote: "ପ୍ରତିନିଧି ନମୁନା ବଡ କିଣା ପ୍ରକ୍ରିୟାକୁ ବ୍ୟବହାରିକ କରେ।",
   notifSavedOffline: "ମୂଲ୍ୟାଙ୍କନ ଅଫଲାଇନ୍ ସଞ୍ଚିତ।", needsJs: "OnionSetu ପାଇଁ JavaScript ଦରକାର",
+  batchGrading: "ବ୍ୟାଚ୍ ଗ୍ରେଡିଂ",
 };

@@ -8,6 +8,7 @@ import LanguageSelector from "./LanguageSelector";
 const baseNav = [
   { to:"/", key:"dashboard", icon: IconDashboard, roles:["farmer","grader"] },
   { to:"/new", key:"newAssessment", icon: IconPlus, roles:["farmer","grader"] },
+  { to:"/batch", key:"batchGrading", icon: IconClipboard, roles:["farmer","grader"] },
   { to:"/assessments", key:"assessments", icon: IconClipboard, roles:["farmer","grader"] },
   { to:"/reviews", key:"reviews", icon: IconEye, roles:["grader"] },
   { to:"/reports", key:"reports", icon: IconFile, roles:["farmer","grader"] },

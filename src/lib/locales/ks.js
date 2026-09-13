@@ -51,4 +51,5 @@ export default {
   continueToSampling: "نمونے مرحلے پر جاؤ →", lotIdLbl: "لاٹ ID", farmerSupplierLbl: "کسان / فراہم کنندہ", locationLbl: "جگہ", dateTimeLbl: "تاریخ / وقت", assessorLbl: "جانچ کنندہ (گریڈر)",
   roleNotAvailable: "توہند کردار خاطر دستیاب نہیں", samplingQuote: "نمائندہ نمونہ بڑی خریداری عملی بناتا ہے۔",
   notifSavedOffline: "جانچ آف لائن محفوظ۔", needsJs: "OnionSetu خاطر JavaScript ضروری",
+  batchGrading: "بیچ گریڈنگ",
 };

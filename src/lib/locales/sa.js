@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमूना चरणं गच्छतु →", lotIdLbl: "लाट ID", farmerSupplierLbl: "कृषकः / प्रदाता", locationLbl: "स्थानम्", dateTimeLbl: "तिथिः / समयः", assessorLbl: "मूल्याङ्कनकर्ता (श्रेणीकारः)",
   roleNotAvailable: "भवतः भूमिकायै नोपलब्धम्", samplingQuote: "प्रतिनिधि नमूना बृहत् क्रयण प्रक्रियां व्यावहारिकां करोति।",
   notifSavedOffline: "मूल्याङ्कनानि अन्तर्जालं विना सञ्चितानि।", needsJs: "OnionSetu कृते JavaScript आवश्यकम्",
+  batchGrading: "समूह श्रेणी",
 };

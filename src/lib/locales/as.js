@@ -51,4 +51,5 @@ export default {
   continueToSampling: "নমুনা পৰ্যায়লৈ যাওক →", lotIdLbl: "লট ID", farmerSupplierLbl: "কৃষক / যোগানকাৰী", locationLbl: "স্থান", dateTimeLbl: "তাৰিখ / সময়", assessorLbl: "মূল্যায়নকাৰী (গ্ৰেডাৰ)",
   roleNotAvailable: "আপোনাৰ ভূমিকাৰ বাবে উপলব্ধ নহয়", samplingQuote: "প্ৰতিনিধি নমুনাই ডাঙৰ ক্ৰয় প্ৰক্ৰিয়াক ব্যৱহাৰযোগ্য কৰে।",
   notifSavedOffline: "মূল্যায়ন অফলাইনত সংৰক্ষিত।", needsJs: "OnionSetu ৰ বাবে JavaScript লাগে",
+  batchGrading: "ব্যাচ গ্ৰেডিং",
 };

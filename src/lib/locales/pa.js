@@ -51,4 +51,5 @@ export default {
   continueToSampling: "ਨਮੂਨਾ ਪੜਾਅ ਤੇ ਜਾਓ →", lotIdLbl: "ਲਾਟ ID", farmerSupplierLbl: "ਕਿਸਾਨ / ਸਪਲਾਇਰ", locationLbl: "ਸਥਾਨ", dateTimeLbl: "ਮਿਤੀ / ਸਮਾਂ", assessorLbl: "ਮੁਲਾਂਕਣਕਰਤਾ (ਗ੍ਰੇਡਰ)",
   roleNotAvailable: "ਤੁਹਾਡੀ ਭੂਮਿਕਾ ਲਈ ਉਪਲਬਧ ਨਹੀਂ", samplingQuote: "ਪ੍ਰਤੀਨਿਧ ਨਮੂਨਾ ਵੱਡੀ ਖਰੀਦ ਨੂੰ ਵਿਹਾਰਕ ਬਣਾਉਂਦਾ ਹੈ।",
   notifSavedOffline: "ਮੁਲਾਂਕਣ ਆਫਲਾਈਨ ਸੰਭਾਲੇ।", needsJs: "OnionSetu ਲਈ JavaScript ਜ਼ਰੂਰੀ",
+  batchGrading: "ਬੈਚ ਗ੍ਰੇਡਿੰਗ",
 };

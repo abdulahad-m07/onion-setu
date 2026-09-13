@@ -51,4 +51,5 @@ export default {
   continueToSampling: "نموني مرحلي تي وڃو →", lotIdLbl: "لاٽ ID", farmerSupplierLbl: "هاري / فراهم ڪندڙ", locationLbl: "جڳهه", dateTimeLbl: "تاريخ / وقت", assessorLbl: "جانچ ڪندڙ (گريڊر)",
   roleNotAvailable: "توهان جي ڪردار لاءِ دستياب ناهي", samplingQuote: "نمائندو نمونو وڏي خريداري عملي بڻائي ٿو۔",
   notifSavedOffline: "جانچ آف لائن محفوظ۔", needsJs: "OnionSetu لاءِ JavaScript ضروري",
+  batchGrading: "بيچ گريڊنگ",
 };

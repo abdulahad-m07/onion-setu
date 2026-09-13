@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमुना टप्प्यावर जा →", lotIdLbl: "लॉट आयडी", farmerSupplierLbl: "शेतकरी / पुरवठादार", locationLbl: "ठिकाण", dateTimeLbl: "तारीख / वेळ", assessorLbl: "मूल्यांकनकर्ता (ग्रेडर)",
   roleNotAvailable: "तुमच्या भूमिकेसाठी उपलब्ध नाही", samplingQuote: "प्रातिनिधिक नमुना मोठ्या खरेदी प्रक्रियेला व्यावहारिक बनवतो.",
   notifSavedOffline: "मूल्यांकने ऑफलाइन जतन केली.", needsJs: "OnionSetu साठी JavaScript आवश्यक आहे",
+  batchGrading: "बॅच ग्रेडिंग",
 };

@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमूना चरण गी जाओ →", lotIdLbl: "लाट ID", farmerSupplierLbl: "किसान / सप्लायर", locationLbl: "थां", dateTimeLbl: "तरीक / समां", assessorLbl: "मुल्यांकनकर्ता (ग्रेडर)",
   roleNotAvailable: "तुंदी भूमिका आस्ते उपलब्ध नेईं", samplingQuote: "प्रतिनिधि नमूना वड्डी खरीद प्रक्रिया गी व्यावहारिक बनांदा।",
   notifSavedOffline: "मुल्यांकन आफलाइन संजोए।", needsJs: "OnionSetu आस्ते JavaScript जरूरी",
+  batchGrading: "बैच ग्रेडिंग",
 };

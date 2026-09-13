@@ -51,4 +51,5 @@ export default {
   continueToSampling: "નમૂના તબક્કે જાઓ →", lotIdLbl: "લોટ ID", farmerSupplierLbl: "ખેડૂત / પુરવઠાદાર", locationLbl: "સ્થળ", dateTimeLbl: "તારીખ / સમય", assessorLbl: "મૂલ્યાંકનકર્તા (ગ્રેડર)",
   roleNotAvailable: "તમારી ભૂમિકા માટે ઉપલબ્ધ નથી", samplingQuote: "પ્રતિનિધિ નમૂનો મોટી ખરીદી પ્રક્રિયાને વ્યવહારુ બનાવે.",
   notifSavedOffline: "મૂલ્યાંકન ઓફલાઇન સંગ્રહિત.", needsJs: "OnionSetu માટે JavaScript જરૂરી",
+  batchGrading: "બેચ ગ્રેડિંગ",
 };

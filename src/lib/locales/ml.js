@@ -51,4 +51,5 @@ export default {
   continueToSampling: "സാമ്പിൾ ഘട്ടത്തിലേക്ക് പോകുക →", lotIdLbl: "ലോട്ട് ID", farmerSupplierLbl: "കർഷകൻ / വിതരണക്കാരൻ", locationLbl: "സ്ഥലം", dateTimeLbl: "തീയതി / സമയം", assessorLbl: "വിലയിരുത്തുന്നയാൾ (ഗ്രേഡർ)",
   roleNotAvailable: "നിങ്ങളുടെ റോളിന് ലഭ്യമല്ല", samplingQuote: "പ്രാതിനിധ്യ സാമ്പിൾ വലിയ സംഭരണ പ്രക്രിയയെ പ്രായോഗികമാക്കുന്നു.",
   notifSavedOffline: "മൂല്യനിർണയങ്ങൾ ഓഫ്‌ലൈനിൽ സംഭരിച്ചു.", needsJs: "OnionSetu-വിന് JavaScript വേണം",
+  batchGrading: "ബാച്ച് ഗ്രേഡിംഗ്",
 };

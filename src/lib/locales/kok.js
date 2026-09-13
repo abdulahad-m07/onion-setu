@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमुनो टप्प्यार वचात →", lotIdLbl: "लॉट आयडी", farmerSupplierLbl: "शेतकार / पुरवणदार", locationLbl: "सुवात", dateTimeLbl: "तारीक / वेळ", assessorLbl: "मूल्यांकन करपी (ग्रेडर)",
   roleNotAvailable: "तुमचे भुमिकेक उपलब्ध ना", samplingQuote: "प्रतिनिधीक नमुनो व्हड खरेदी प्रक्रियेक व्यावहारिक करता.",
   notifSavedOffline: "मूल्यांकना ऑफलाइन सांबाळिल्ली.", needsJs: "OnionSetu खातीर JavaScript जाय",
+  batchGrading: "बॅच ग्रेडिंग",
 };

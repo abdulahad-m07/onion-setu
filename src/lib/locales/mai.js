@@ -51,4 +51,5 @@ export default {
   continueToSampling: "नमूना चरणमे जाउ →", lotIdLbl: "लॉट आईडी", farmerSupplierLbl: "किसान / आपूर्तिकर्ता", locationLbl: "स्थान", dateTimeLbl: "तारीख / समय", assessorLbl: "मूल्यांकनकर्ता (ग्रेडर)",
   roleNotAvailable: "अहाँक भूमिकालेल उपलब्ध नहि", samplingQuote: "प्रतिनिधि नमूना पैघ खरीद प्रक्रियाकेँ व्यावहारिक बनबैत।",
   notifSavedOffline: "मूल्यांकन ऑफलाइन सहेजल।", needsJs: "OnionSetu लेल JavaScript जरूरी",
+  batchGrading: "बैच ग्रेडिंग",
 };

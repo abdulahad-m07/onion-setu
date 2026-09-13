@@ -51,4 +51,5 @@ export default {
   continueToSampling: "నమూనా దశకు వెళ్లండి →", lotIdLbl: "లాట్ ID", farmerSupplierLbl: "రైతు / సరఫరాదారు", locationLbl: "ప్రదేశం", dateTimeLbl: "తేదీ / సమయం", assessorLbl: "అంచనాదారు (గ్రేడర్)",
   roleNotAvailable: "మీ పాత్రకు అందుబాటులో లేదు", samplingQuote: "ప్రతినిధి నమూనా భారీ సేకరణ ప్రక్రియను ఆచరణీయం చేస్తుంది.",
   notifSavedOffline: "అంచనాలు ఆఫ్‌లైన్‌లో నిల్వ.", needsJs: "OnionSetuకు JavaScript అవసరం",
+  batchGrading: "బ్యాచ్ గ్రేడింగ్",
 };

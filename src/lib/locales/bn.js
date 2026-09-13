@@ -51,4 +51,5 @@ export default {
   continueToSampling: "নমুনা ধাপে যান →", lotIdLbl: "লট আইডি", farmerSupplierLbl: "কৃষক / সরবরাহকারী", locationLbl: "স্থান", dateTimeLbl: "তারিখ / সময়", assessorLbl: "মূল্যায়নকারী (গ্রেডার)",
   roleNotAvailable: "আপনার ভূমিকার জন্য উপলব্ধ নয়", samplingQuote: "প্রতিনিধি নমুনা বড় সংগ্রহ প্রক্রিয়াকে ব্যবহারযোগ্য করে।",
   notifSavedOffline: "মূল্যায়ন অফলাইনে সংরক্ষিত।", needsJs: "OnionSetu-এর জন্য JavaScript দরকার",
+  batchGrading: "ব্যাচ গ্রেডিং",
 };

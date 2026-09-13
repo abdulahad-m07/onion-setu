@@ -51,4 +51,5 @@ export default {
   continueToSampling: "जोखोन थारायाव थां →", lotIdLbl: "लट ID", farmerSupplierLbl: "बिरुवा गामि / होग्रा", locationLbl: "जायगा", dateTimeLbl: "अक्टो / सम", assessorLbl: "सानग्रा (ग्रेडर)",
   roleNotAvailable: "गावनि बिफाननि थाखाय मोननो गैया", samplingQuote: "थिन्था जोखोना देरसिन बायनाय राहाखौ बाहायथाव खालामो।",
   notifSavedOffline: "साननाय अफलाइनाव थिना।", needsJs: "OnionSetu नि थाखाय JavaScript नांगौ",
+  batchGrading: "बैच ग्रेडिंग",
 };

@@ -52,4 +52,5 @@ export default {
   continueToSampling: "Continue to sampling →", lotIdLbl: "Lot ID", farmerSupplierLbl: "Farmer / Supplier", locationLbl: "Location", dateTimeLbl: "Date / Time", assessorLbl: "Assessor (Grader)",
   roleNotAvailable: "Not available for your role", samplingQuote: "Representative sampling makes the workflow practical for large-scale procurement.",
   notifSavedOffline: "assessment(s) saved offline.", needsJs: "OnionSetu requires JavaScript",
+  batchGrading: "Batch Grading",
 };

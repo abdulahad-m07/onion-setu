@@ -51,4 +51,5 @@ export default {
   continueToSampling: "ಮಾದರಿ ಹಂತಕ್ಕೆ ಹೋಗಿ →", lotIdLbl: "ಲಾಟ್ ID", farmerSupplierLbl: "ರೈತ / ಪೂರೈಕೆದಾರ", locationLbl: "ಸ್ಥಳ", dateTimeLbl: "ದಿನಾಂಕ / ಸಮಯ", assessorLbl: "ಮೌಲ್ಯಮಾಪಕ (ಗ್ರೇಡರ್)",
   roleNotAvailable: "ನಿಮ್ಮ ಪಾತ್ರಕ್ಕೆ ಲಭ್ಯವಿಲ್ಲ", samplingQuote: "ಪ್ರಾತಿನಿಧಿಕ ಮಾದರಿ ದೊಡ್ಡ ಖರೀದಿ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪ್ರಾಯೋಗಿಕಗೊಳಿಸುತ್ತದೆ.",
   notifSavedOffline: "ಮೌಲ್ಯಮಾಪನ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.", needsJs: "OnionSetuಗೆ JavaScript ಅಗತ್ಯ",
+  batchGrading: "ಬ್ಯಾಚ್ ಗ್ರೇಡಿಂಗ್",
 };

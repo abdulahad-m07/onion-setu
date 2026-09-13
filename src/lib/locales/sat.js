@@ -51,4 +51,5 @@ export default {
   continueToSampling: "ᱱᱟᱢᱩᱱᱟ ᱛᱷᱚᱠᱛᱮ ᱪᱟᱞᱟᱜ →", lotIdLbl: "ᱞᱚᱴ ID", farmerSupplierLbl: "ᱪᱟᱹᱥᱤ / ᱮᱢᱚᱜᱤᱭᱟᱹ", locationLbl: "ᱡᱟᱭᱜᱟ", dateTimeLbl: "ᱢᱟᱹᱦᱤᱛ / ᱚᱠᱛᱚ", assessorLbl: "ᱢᱩᱞᱭᱟᱝᱠᱚᱱᱤᱭᱟᱹ (ᱜᱨᱮᱰᱟᱨ)",
   roleNotAvailable: "ᱟᱢᱟᱜ ᱦᱩᱫᱟᱹ ᱞᱟᱹᱜᱤᱫ ᱵᱟᱭ ᱧᱟᱢᱚᱜ", samplingQuote: "ᱩᱫᱩᱜ ᱱᱟᱢᱩᱱᱟ ᱢᱟᱨᱟᱝ ᱠᱤᱨᱤᱧ ᱨᱟᱦᱟ ᱵᱮᱵᱷᱟᱨᱤᱭᱟᱹᱜ ᱵᱮᱱᱟᱣᱟ᱾",
   notifSavedOffline: "ᱢᱩᱞᱭᱟᱝᱠᱚᱱ ᱚᱯᱷᱞᱟᱭᱤᱱ ᱥᱟᱺᱪᱟᱣ᱾", needsJs: "OnionSetu ᱞᱟᱹᱜᱤᱫ JavaScript ᱞᱟᱹᱠᱛᱤ",
+  batchGrading: "ᱵᱮᱪ ᱜᱨᱮᱰᱤᱝ",
 };

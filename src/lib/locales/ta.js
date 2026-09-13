@@ -51,4 +51,5 @@ export default {
   continueToSampling: "மாதிரி படிக்குச் செல் →", lotIdLbl: "லாட் ID", farmerSupplierLbl: "விவசாயி / வழங்குநர்", locationLbl: "இடம்", dateTimeLbl: "தேதி / நேரம்", assessorLbl: "மதிப்பீட்டாளர் (கிரேடர்)",
   roleNotAvailable: "உங்கள் பங்குக்கு இல்லை", samplingQuote: "பிரதிநிதி மாதிரி பெரும் கொள்முதலை நடைமுறையாக்கும்.",
   notifSavedOffline: "மதிப்பீடுகள் ஆஃப்லைனில் சேமிப்பு.", needsJs: "OnionSetu-க்கு JavaScript தேவை",
+  batchGrading: "தொகுதி தரம்",
 };
