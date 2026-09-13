@@ -8,6 +8,7 @@ import { SplashScreen } from "./components/OnionSetuLoader";
 import LanguageGate from "./components/LanguageGate";
 
 const Dashboard = lazy(()=> import("./pages/Dashboard"));
+const BatchGrading = lazy(()=> import("./pages/BatchGrading"));
 const NewAssessment = lazy(()=> import("./pages/NewAssessment"));
 const Assessments = lazy(()=> import("./pages/Assessments"));
 const Reviews = lazy(()=> import("./pages/Reviews"));
@@ -69,6 +70,7 @@ function AppRoutes(){
             <Suspense fallback={<Loader/>}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/batch" element={<BatchGrading />} />
               <Route path="/new" element={<NewAssessment />} />
               <Route path="/assessments" element={<Assessments />} />
               <Route path="/reviews" element={

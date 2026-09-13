@@ -24,8 +24,9 @@ export default function Dashboard(){
           <h1 className="h-display" style={{fontSize:32, margin:0}}>{isFarmer ? t("myFarm") : t("dashboard")}</h1>
           <p style={{margin:"6px 0 0", color:"#6B5A54", fontSize:14}}>{isFarmer ? <>{t("welcomeBack")}, <b style={{color:"#7A263A"}}>{user.name}</b> · {t("farmer")} · {user.center}</> : <>{t("procOverview")} — Lasalgaon APMC · <span style={{color:"#7A263A", fontWeight:600}}>NAFED / NCCF</span> — {t("grader")}: <b>{user?.role}</b></>}</p>
         </div>
-        <div style={{display:"flex", gap:8}}>
+        <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
           <Link to="/new" className="btn btn-primary">Start Assessment</Link>
+          <Link to="/batch" className="btn btn-secondary">Batch Grading (10–15 views)</Link>
           <Link to="/assessments" className="btn btn-secondary">View all</Link>
         </div>
       </div>

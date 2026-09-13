@@ -8,7 +8,7 @@ const en = {
   appName:"ONIONSETU", appSubtitle:"Onion Quality Assessment",
   selectLanguage:"Select Language", selectLanguageDesc:"Choose your preferred language — you can change it anytime in Settings.",
   continue:"Continue", back:"Back", next:"Next", save:"Save", loading:"Loading...", search:"Search", viewAll:"View all", openReport:"Open report", newAssessment:"New Assessment",
-  dashboard:"Dashboard", assessments:"Assessments", reviews:"Reviews", reports:"Reports", policy:"Policy", settings:"Settings",
+  dashboard:"Dashboard", assessments:"Assessments", reviews:"Reviews", reports:"Reports", policy:"Policy", settings:"Settings", batchGrading:"Batch Grading",
   farmer:"Farmer", grader:"Grader", farmerDesc:"View my lots, reports & QR verification", graderDesc:"Grade lots, human review, policy",
   login:"Login", signup:"Sign up", logout:"Logout", welcomeBack:"Welcome back to", welcomeCreate:"Create your", onionSetu:"OnionSetu",
   gmailOrPhone:"Gmail or Phone number", password:"Password", fullName:"Full name", villageCenter:"Village / Center",

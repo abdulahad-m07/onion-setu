@@ -56,6 +56,25 @@ export function gradeLot(onions, policy){
     rottenPct, sproutedPct, damagedPct, lotStatus, toleranceBreaches };
 }
 
+// Batch grading — OnionSetu provisional policy v0.2 (configurable thresholds).
+// URS% <= 5 → A, 5-10 → B, 10-20 → C, >20 → Reject. URS is a separate metric, never a grade.
+export const BATCH_POLICY_VERSION = "v0.2";
+export const BATCH_THRESHOLDS = { aMax: 5, bMax: 10, cMax: 20 };
+export function gradeBatchByURS(ursPercent, t = BATCH_THRESHOLDS){
+  const u = Number(ursPercent);
+  if(!Number.isFinite(u) || u < 0) return "Reject";
+  if(u <= (t.aMax ?? 5)) return "A";
+  if(u <= (t.bMax ?? 10)) return "B";
+  if(u <= (t.cMax ?? 20)) return "C";
+  return "Reject";
+}
+export function ursPercentFor(ursOnions, assessedOnions){
+  const u = Number(ursOnions), a = Number(assessedOnions);
+  if(!Number.isInteger(a) || a <= 0) return NaN;
+  if(!Number.isInteger(u) || u < 0 || u > a) return NaN;
+  return +((u / a) * 100).toFixed(2);
+}
+
 export function needsHumanReview(onion){
   return onion.confidence < CONFIDENCE_THRESHOLD;
 }
