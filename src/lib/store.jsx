@@ -26,8 +26,17 @@ export function StoreProvider({ children }){
   });
   const [loading, setLoading] = useState(false);
 
-  // Persist local cache
-  useEffect(()=>{ localStorage.setItem(LS_KEY, JSON.stringify({ assessments, activePolicy, pendingCount })); },[assessments, activePolicy, pendingCount]);
+  // Persist local cache (strip session-only blobs/Files — they can't survive reload)
+  useEffect(()=>{
+    try{
+      const clean = assessments.map(a=>({
+        ...a,
+        captures: undefined,
+        images: (a.images||[]).filter(im=> im && im.public_url && !String(im.public_url).startsWith("blob:")),
+      }));
+      localStorage.setItem(LS_KEY, JSON.stringify({ assessments: clean, activePolicy, pendingCount }));
+    }catch{}
+  },[assessments, activePolicy, pendingCount]);
 
   // Fetch policies from Supabase
   const fetchPolicies = useCallback(async()=>{
@@ -90,6 +99,18 @@ export function StoreProvider({ children }){
     const id = generateId();
     const lotId = data.lotId || generateLotId();
     const grading = gradeLot(data.onions || [], activePolicy);
+    // Instant local preview from captured Files (this session).
+    // data.captures is aligned to view_index and may contain nulls.
+    const localImages = [];
+    if(data.captures && Array.isArray(data.captures)){
+      data.captures.forEach((c,i)=>{
+        if(c instanceof File){
+          try{ localImages.push({ view_index:i, public_url: URL.createObjectURL(c), storage_path:null, local:true }); }catch{}
+        } else if(typeof c === "string" && c && !String(c).startsWith("demo")){
+          localImages.push({ view_index:i, public_url:c, storage_path:null, local:true });
+        }
+      });
+    }
     const entry = {
       id, lotId, farmer: data.farmer, center: data.center, location: data.location,
       date: new Date().toISOString(), assessor: data.assessor,
@@ -100,6 +121,7 @@ export function StoreProvider({ children }){
       confidence: data.confidence ?? Math.round((data.onions||[]).reduce((a,b)=>a+b.confidence,0)/Math.max(1,(data.onions||[]).length)),
       onions: grading.details, hash: data.hash || "a3f9c1e7 8b2d 4f0a 9e11 d6c3a5b8e902",
       acknowledged:{ farmer:false, grader:false }, ...data, id, lotId,
+      images: localImages,
     };
     // Optimistic local
     setAssessments(prev=>[entry, ...prev]);
@@ -127,7 +149,8 @@ export function StoreProvider({ children }){
               const rows = entry.onions.map(o=>({ assessment_id:id, onion_id:o.id, size_mm:o.sizeMm, defect:o.defect, confidence:o.confidence, grade:o.grade }));
               await supabase.from("assessment_onions").insert(rows);
             }
-            // Images: if data.captures are Files, upload to storage
+            // Images: if data.captures are Files, upload to storage (keep original view_index)
+            const uploaded = [];
             if(data.captures && Array.isArray(data.captures)){
               for(let i=0;i<data.captures.length;i++){
                 const c = data.captures[i];
@@ -137,8 +160,18 @@ export function StoreProvider({ children }){
                   if(!upErr){
                     const { data: urlData } = supabase.storage.from("assessment-images").getPublicUrl(path);
                     await supabase.from("assessment_images").insert({ assessment_id:id, view_index:i, storage_path:path, public_url:urlData.publicUrl });
+                    uploaded.push({ view_index:i, storage_path:path, public_url:urlData.publicUrl });
                   }
                 }
+              }
+              if(uploaded.length){
+                // Swap local blob previews for permanent stored URLs (merge by view_index)
+                setAssessments(prev=> prev.map(a=>{
+                  if(a.id!==id) return a;
+                  const byView = new Map((a.images||[]).map(im=>[im.view_index, im]));
+                  uploaded.forEach(u=> byView.set(u.view_index, u));
+                  return { ...a, images:[...byView.values()].sort((x,y)=>x.view_index-y.view_index) };
+                }));
               }
             }
             // Audit
@@ -193,6 +226,30 @@ export function StoreProvider({ children }){
           });
           if(!error && p.onions?.length){
             await supabase.from("assessment_onions").insert(p.onions.map(o=>({ assessment_id:p.id, onion_id:o.id, size_mm:o.sizeMm, defect:o.defect, confidence:o.confidence, grade:o.grade || "Grade A" })));
+          }
+          if(!error && p.captures && Array.isArray(p.captures)){
+            // Upload pending captures captured while offline (Files only survive in-session)
+            const uploaded = [];
+            for(let i=0;i<p.captures.length;i++){
+              const c = p.captures[i];
+              if(c instanceof File){
+                const path = `${uid}/${p.id}/view_${i}.jpg`;
+                const { error: upErr } = await supabase.storage.from("assessment-images").upload(path, c, { upsert:true });
+                if(!upErr){
+                  const { data: urlData } = supabase.storage.from("assessment-images").getPublicUrl(path);
+                  await supabase.from("assessment_images").insert({ assessment_id:p.id, view_index:i, storage_path:path, public_url:urlData.publicUrl });
+                  uploaded.push({ view_index:i, storage_path:path, public_url:urlData.publicUrl });
+                }
+              }
+            }
+            if(uploaded.length){
+              setAssessments(prev=> prev.map(a=>{
+                if(a.id!==p.id) return a;
+                const byView = new Map((a.images||[]).map(im=>[im.view_index, im]));
+                uploaded.forEach(u=> byView.set(u.view_index, u));
+                return { ...a, images:[...byView.values()].sort((x,y)=>x.view_index-y.view_index) };
+              }));
+            }
           }
         }catch(e){ console.warn("sync failed", e); continue; }
       }

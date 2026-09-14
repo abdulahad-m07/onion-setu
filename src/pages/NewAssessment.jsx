@@ -116,8 +116,7 @@ export default function NewAssessment(){
   },[step]);
 
   async function finalize(){
-    // collect real files for Storage (filter nulls)
-    const files = captureFiles.filter(Boolean);
+    // keep sparse array so view_index is preserved (store skips nulls)
     const tmpId = lot.lotId.replace("LOT","OG");
     const canonical = JSON.stringify({ reportId: tmpId, lotId: lot.lotId, farmer: lot.farmer, center: lot.center, policyVersion: policy.version, gradeA: grading.gradeA, gradeB: grading.gradeB, gradeC: grading.gradeC, gradeReject: grading.gradeReject, urs: grading.urs, sampleSize: grading.total, onions: grading.details.map(d=>({id:d.id,sizeMm:d.sizeMm,defect:d.defect,confidence:d.confidence,grade:d.grade})) });
     const hash = await sha256(canonical);
@@ -129,7 +128,7 @@ export default function NewAssessment(){
       humanReviews: Object.keys(reviewDecisions).length + lowConfidence.length,
       status: farmerAccepted && graderAccepted ? "Completed" : "Completed",
       sync: offline ? "Offline" : "Synced",
-      captures: files,
+      captures: captureFiles,
     });
     nav(`/reports/${entry.id}`, { replace:true });
   }

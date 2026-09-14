@@ -108,21 +108,22 @@ export function ReportDetail(){
         <div style={{marginTop:14}}>
           <div style={{fontWeight:700, fontSize:13, display:"flex", alignItems:"center", gap:8}}>
             {t("uploadedImages")} — {t("finalReport")}
-            <span className="badge" style={{fontSize:10}}>{hasImages ? `${a.images.length} views stored` : "Demo views"}</span>
+            <span className="badge" style={{fontSize:10}}>{hasImages ? `${a.images.length} captured views` : "Demo views"}</span>
             <span className="badge badge-maroon" style={{fontSize:10}}>{t("storedIn")}</span>
           </div>
           <div style={{fontSize:11, color:"#6B5A54", marginTop:2}}>These are the exact 3 views captured (with 25mm reference). They are stored in <span className="mono" style={{fontSize:11}}>assessment-images</span> bucket: <span className="mono" style={{fontSize:10}}>{a.id}/view_0..2.jpg</span> — referenced by <span className="mono" style={{fontSize:10}}>assessment_images</span> table.</div>
           <div className="capture-grid" style={{display:"grid", gap:10, marginTop:10}}>
             {[0,1,2].map(i=>{
               const stored = hasImages ? a.images.find(im=> im.view_index===i) : null;
-              const src = stored?.public_url || "https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop";
+              const demoSrc = "https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop";
+              const src = stored?.public_url || demoSrc;
               const label = `View ${i+1} of 3${i===0 ? " · 25mm ref" : ""}`;
               return (
                 <div key={i} style={{border:"1px solid #EDE3DC", borderRadius:10, overflow:"hidden", background:"white"}}>
-                  <img src={src} alt={`Report ${a.id} uploaded image ${label} captured at ${a.location} on ${new Date(a.date).toLocaleDateString()}`} width="600" height="400" loading="lazy" style={{width:"100%", height:140, objectFit:"cover"}} />
+                  <img src={src} onError={(e)=>{ if(e.currentTarget.src !== demoSrc) e.currentTarget.src = demoSrc; }} alt={`Report ${a.id} uploaded image ${label} captured at ${a.location} on ${new Date(a.date).toLocaleDateString()}`} width="600" height="400" loading="lazy" style={{width:"100%", height:140, objectFit:"cover"}} />
                   <div style={{padding:"8px 10px", fontSize:11, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                     <span style={{fontWeight:700}}>{label}</span>
-                    <span className="badge" style={{fontSize:9}}>{stored ? "Stored" : "Demo placeholder"}</span>
+                    <span className="badge" style={{fontSize:9}}>{stored ? (stored.local ? "Local preview" : "Stored") : "Demo placeholder"}</span>
                   </div>
                 </div>
               );
