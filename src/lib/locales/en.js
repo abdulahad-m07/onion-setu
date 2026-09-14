@@ -36,7 +36,7 @@ export default {
   timestampLbl: "Timestamp", gradesLbl: "Grades", syncLbl: "Sync", statusLbl: "Status", centerLbl: "Center", lotLbl: "Lot",
   pageNotFound: "Page not found", notFoundDesc: "The link you followed may be broken or the page has moved. OnionSetu reports are still accessible from your dashboard.", goDashboard: "Go to dashboard", viewAssessmentsBtn: "View assessments", startNewBtn: "Start new assessment",
   flaggedByGate: "Flagged by gate", recentTitle: "Recent assessments",
-  howDesc1: "Capture · Validate · Detect (YOLOv8) · Measure (OpenCV) · Classify (MobileNetV2) · Grade A/B/C/Reject · URS separate · Human review when needed · Report with QR + SHA-256.", howDesc2: "If confidence is low, it is flagged for human review — the original record is preserved and URS is reported separately from grades.",
+  howDesc1: "Capture · Validate · Detect (Roboflow) · Assess (Qwen) · Grade A/B/C/Reject · URS separate · Human review when needed · Report with QR + SHA-256.", howDesc2: "If confidence is low, it is flagged for human review — the original record is preserved and URS is reported separately from grades.",
   farmerCanText: "Farmer can: view Dashboard (my lots), Assessments (my lots), Reports + QR verify, Policy (read-only).", graderCanText: "Grader can: everything Farmer can + create assessments, human review queue, switch active policy.",
   oneAccountText: "One account, two roles. We will send an OTP to your Gmail or phone to verify you.",
   gmailLbl: "Gmail", phoneLbl: "Phone", contactHint: "Enter Gmail or phone (or both). At least one required — OTP will be sent there.", pwdHint: "At least 6 characters", centerOpt: "(optional)", resendIn: "Resend in", copyBtn: "Copy", forTxt: "For", expiresIn: "expires in 5m",
