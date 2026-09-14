@@ -190,6 +190,7 @@ export default function NewAssessment(){
 }
 
 function StepLot({lot,setLot,onNext}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("lotInformation")}</h3>
@@ -208,6 +209,7 @@ function StepLot({lot,setLot,onNext}){
   );
 }
 function StepSampling({onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("representativeSampling")}</h3>
@@ -231,6 +233,7 @@ function StepSampling({onNext,onPrev}){
   );
 }
 function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
+  const { t } = useI18n();
   const filled = captures.filter(Boolean).length;
   return (
     <div style={{display:"grid", gap:14}}>
@@ -277,6 +280,7 @@ function StepCapture({captures,fileRefs,handleFile,useDemo,onNext,onPrev}){
   );
 }
 function StepQuality({quality,processing,run,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("imageQualityGate")}</h3>
@@ -316,6 +320,7 @@ function StepQuality({quality,processing,run,onNext,onPrev}){
   );
 }
 function StepDetection({processing,onions,captures=[],onNext,onPrev}){
+  const { t } = useI18n();
   // Show the user's own capture; stock photo only in demo mode (no real capture).
   const realCapture = captures.find(c=> c && !String(c).startsWith("demo"));
   const imgSrc = realCapture || "https://images.unsplash.com/photo-1508747703725-719777637510?w=900&h=500&fit=crop";
@@ -349,6 +354,7 @@ function StepDetection({processing,onions,captures=[],onNext,onPrev}){
   );
 }
 function StepSize({onions,processing,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("sizeAnalysis")}</h3>
@@ -379,6 +385,7 @@ function StepSize({onions,processing,onNext,onPrev}){
   );
 }
 function StepDefects({onions,processing,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("defectAnalysis")}</h3>
@@ -411,6 +418,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
   );
 }
 function StepConfidence({onions,low,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("confidenceGate")}</h3>
@@ -442,6 +450,7 @@ function StepConfidence({onions,low,onNext,onPrev}){
   );
 }
 function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
+  const { t } = useI18n();
   if(low.length===0){
     return (
       <div style={{display:"grid", gap:14}}>
@@ -493,6 +502,7 @@ function StepHumanReview({onions,low,decisions,setDecisions,onNext,onPrev}){
   );
 }
 function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("versionedPolicy")}</h3>
@@ -543,6 +553,7 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
   );
 }
 function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,graderAccepted,setGraderAccepted,onNext,onPrev}){
+  const { t } = useI18n();
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("farmerGraderReview")}</h3>
@@ -582,6 +593,7 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
   );
 }
 function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,graderAccepted,offline,setOffline,finalize,onPrev}){
+  const { t } = useI18n();
   const hash = "computed on finalize — SHA-256 over canonical report content";
   return (
     <div style={{display:"grid", gap:14}}>
