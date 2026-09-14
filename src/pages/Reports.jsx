@@ -26,7 +26,7 @@ export function ReportsList(){
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
           <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad report-list-card" style={{display:"flex", gap:14, alignItems:"center", flexWrap:"wrap"}}>
-            <div style={{width:48,height:48, flexShrink:0, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
+            <div style={{width:48,height:48, flexShrink:0, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700, fontFamily:"Fraunces, serif", fontSize:16}}>{a.id.slice(-2)}</div>
             <div style={{flex:"1 1 200px", minWidth:0}}>
               <div className="report-list-title" style={{fontWeight:700, overflowWrap:"anywhere"}}>{a.id} — A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}% · URS:{a.urs}% <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
               <div style={{fontSize:12, color:"#6B5A54", overflowWrap:"anywhere"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
