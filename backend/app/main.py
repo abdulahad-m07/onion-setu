@@ -17,4 +17,4 @@ app.include_router(sync.router, prefix="/sync", tags=["sync"])
 def root(): return {"service":"OnionSetu FastAPI Gateway → Supabase (Postgres + Storage)", "docs":"/docs"}
 
 @app.get("/health")
-def health(): return {"status":"ok", "stack":"Flutter + YOLOv8 Nano + MobileNetV2 + OpenCV + FastAPI + Supabase"}
+def health(): return {"status":"ok", "stack":"Roboflow detection + Qwen assessment + FastAPI + Supabase"}

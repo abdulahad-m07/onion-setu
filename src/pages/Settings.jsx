@@ -32,7 +32,7 @@ export default function Settings(){
         <h3 style={{margin:"0 0 10px", fontSize:14, fontWeight:700}}>{t("system")}</h3>
         <div style={{display:"grid", gap:8, fontSize:13}}>
           <div><b>{t("activePolicyLbl")}:</b> {activePolicy.version} ({activePolicy.sizeBand.min}–{activePolicy.sizeBand.max} mm)</div>
-          <div><b>Detection:</b> YOLOv8n prototype · <b>Defect:</b> MobileNetV2 prototype · <b>Size:</b> OpenCV + 25mm ref</div>
+          <div><b>Detection:</b> Roboflow · <b>Assessment:</b> Qwen (batch) / Gemini-assisted (single) · <b>Size ref:</b> 25mm</div>
           <div><b>Model:</b> OnionSetu grading (Gemini-assisted, Phase 1) — live when API key is set, demo otherwise</div>
           <div><b>{t("confidence")}:</b> 60%</div>
           <div><b>Backend:</b> Supabase — per-user RLS, Storage for images/reports, {t("qrVerify")}</div>

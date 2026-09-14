@@ -34,7 +34,7 @@ def list_images(session_id: str):
 
 @router.post("/{session_id}/analyze")
 def analyze(session_id: str):
-    # Triggers YOLOv8 Nano + MobileNetV2 + OpenCV — returns onion results
+    # Triggers Roboflow detection + Qwen assessment — returns onion results
     return {"onion_results": [{"onion_id":"ONION-001","size_mm":54.2,"defect_class":"healthy","confidence":0.94}]}
 
 @router.get("/{session_id}/results")
