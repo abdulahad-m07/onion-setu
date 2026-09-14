@@ -166,8 +166,8 @@ export default function Layout({ children }){
         </header>
         <div className="content">
           {children}
-          <footer style={{marginTop:32, padding:"18px 0 8px", borderTop:"1px solid #EDE3DC", display:"flex", flexWrap:"wrap", gap:12, justifyContent:"space-between", fontSize:12, color:"#6B5A54"}}>
-            <div>
+          <footer className="app-footer" style={{marginTop:32, padding:"18px 0 8px", borderTop:"1px solid #EDE3DC", display:"flex", flexWrap:"wrap", gap:12, justifyContent:"space-between", fontSize:12, color:"#6B5A54"}}>
+            <div style={{minWidth:0, flex:"1 1 220px"}}>
               <div style={{fontWeight:700, color:"#17110F"}}>OnionSetu — Lasalgaon APMC</div>
               <div>{t("footerLoc")}</div>
               <div style={{marginTop:6, display:"flex", gap:10, flexWrap:"wrap"}}>
@@ -179,7 +179,7 @@ export default function Layout({ children }){
                 <a href="/sitemap.xml" style={{color:"#7A263A"}}>Sitemap</a>
               </div>
             </div>
-            <div style={{textAlign:"right", minWidth:160}}>
+            <div className="app-footer-right" style={{minWidth:0, flex:"1 1 180px"}}>
               <div style={{fontWeight:600, color:"#17110F"}}>{t("footerVerifyTitle")}</div>
               <a href="/verify/OG-2026-0241" style={{color:"#7A263A", fontWeight:600}}>{t("verifyReportLink")}</a>
               <div style={{marginTop:6}}>© 2026 OnionSetu · <a href="/llms.txt" style={{color:"#7A263A"}}>llms.txt</a> · <a href="/robots.txt" style={{color:"#7A263A"}}>robots.txt</a></div>

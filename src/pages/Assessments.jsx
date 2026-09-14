@@ -34,7 +34,7 @@ export default function Assessments(){
         <Link to="/new" className="btn btn-primary">{t("newAssessment")}</Link>
       </div>
       <div className="card card-pad" style={{display:"flex", gap:8, flexWrap:"wrap", alignItems:"center"}}>
-        <input className="input" placeholder={t("searchPh")} value={q} onChange={e=>setQ(e.target.value)} style={{maxWidth:320}} aria-label={t("search")} />
+        <input className="input" placeholder={t("searchPh")} value={q} onChange={e=>setQ(e.target.value)} style={{flex:"1 1 200px", minWidth:0, maxWidth:320}} aria-label={t("search")} />
         <div style={{display:"flex", gap:6, flexWrap:"wrap"}}>
           {statuses.map(s=>(
             <button key={s} className={filter===s ? "btn btn-primary":"btn btn-secondary"} style={{fontSize:12, padding:"7px 10px"}} onClick={()=>setFilter(s)}>{s==="All" ? t("viewAll") : s}</button>

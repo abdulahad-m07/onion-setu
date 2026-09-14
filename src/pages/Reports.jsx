@@ -25,13 +25,13 @@ export function ReportsList(){
       </details>
       <div style={{display:"grid", gap:10}}>
         {assessments.map(a=>(
-          <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad" style={{display:"flex", gap:14, alignItems:"center"}}>
-            <div style={{width:48,height:48, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
-            <div style={{flex:1, minWidth:0}}>
-              <div style={{fontWeight:700}}>{a.id} — A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}% · URS:{a.urs}% <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
-              <div style={{fontSize:12, color:"#6B5A54"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
+          <Link key={a.id} to={`/reports/${a.id}`} className="card card-pad report-list-card" style={{display:"flex", gap:14, alignItems:"center", flexWrap:"wrap"}}>
+            <div style={{width:48,height:48, flexShrink:0, borderRadius:10, background:"#7A263A", color:"white", display:"grid", placeItems:"center", fontWeight:700}}></div>
+            <div style={{flex:"1 1 200px", minWidth:0}}>
+              <div className="report-list-title" style={{fontWeight:700, overflowWrap:"anywhere"}}>{a.id} — A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}% · URS:{a.urs}% <span className={`badge ${a.status==="Human Review"?"badge-warning":"badge-success"}`} style={{marginLeft:8}}>{a.status}</span></div>
+              <div style={{fontSize:12, color:"#6B5A54", overflowWrap:"anywhere"}}>{a.lotId} · {a.farmer} · {a.center} · Policy {a.policyVersion} · {new Date(a.date).toLocaleDateString()}</div>
             </div>
-            <span className="btn btn-secondary" style={{fontSize:12}}>{tList("openReport")} →</span>
+            <span className="btn btn-secondary report-list-btn" style={{fontSize:12}}>{tList("openReport")} →</span>
           </Link>
         ))}
       </div>
@@ -112,7 +112,7 @@ export function ReportDetail(){
             <span className="badge badge-maroon" style={{fontSize:10}}>{t("storedIn")}</span>
           </div>
           <div style={{fontSize:11, color:"#6B5A54", marginTop:2}}>These are the exact 3 views captured (with 25mm reference). They are stored in <span className="mono" style={{fontSize:11}}>assessment-images</span> bucket: <span className="mono" style={{fontSize:10}}>{a.id}/view_0..2.jpg</span> — referenced by <span className="mono" style={{fontSize:10}}>assessment_images</span> table.</div>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginTop:10}} className="capture-grid">
+          <div className="capture-grid" style={{display:"grid", gap:10, marginTop:10}}>
             {[0,1,2].map(i=>{
               const stored = hasImages ? a.images.find(im=> im.view_index===i) : null;
               const src = stored?.public_url || "https://images.unsplash.com/photo-1508747703725-719777637510?w=600&h=400&fit=crop";

@@ -362,3 +362,45 @@ tr:hover td{background:#FFFEFD}
 .topbar-lang .select{ max-width:150px; }
 select.select, input.input{ font-family:inherit; }
 @media(max-width:640px){ .topbar-lang .select{ max-width:110px; font-size:11px; padding:6px; } }
+
+/* Loader — fluid, never overflows the viewport */
+.loader-root{ max-width:100dvw; }
+.loader-inner{ min-width:0; }
+.loader-mark{ max-width:22vw; }
+.loader-word{ max-width:100%; }
+@media(max-width:400px){
+  .loader-root{ padding:16px 12px !important; }
+  .loader-mark{ max-width:20vw; }
+}
+
+/* Capture grid — CSS owns the columns (no inline override) */
+.capture-grid{ grid-template-columns:repeat(3,1fr); }
+@media(max-width:640px){
+  .capture-grid{ grid-template-columns:1fr !important; }
+}
+
+/* Reports list card — wraps cleanly on narrow screens */
+@media(max-width:560px){
+  .report-list-card{ align-items:flex-start !important; }
+  .report-list-title{ font-size:13px; line-height:1.45; }
+  .report-list-btn{ width:100%; }
+}
+
+/* Footer — stacks left-aligned on mobile instead of right-aligned squeeze */
+.app-footer-right{ text-align:right; }
+@media(max-width:640px){
+  .app-footer{ flex-direction:column; }
+  .app-footer-right{ text-align:left; }
+}
+
+/* Dashboard recent rows + topbar tightening for 360px devices */
+@media(max-width:560px){
+  .topbar{ gap:8px; }
+  .topbar-left{ gap:8px; }
+  .mobile-menu-btn{ padding:8px !important; font-size:12px; }
+  .topbar-brand-text .brand-title{ font-size:13px; }
+}
+@media(max-width:360px){
+  .topbar-lang .select{ max-width:92px; }
+  .topbar-right .btn-primary{ padding:8px 10px; }
+}

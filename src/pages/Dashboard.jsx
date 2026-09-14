@@ -38,7 +38,7 @@ export default function Dashboard(){
         <Metric label={t("pendingDisputes")} value={pending} sub={t("activity")} warn={pending>0} />
       </div>
 
-      <div style={{display:"grid", gridTemplateColumns:"1.2fr .8fr", gap:12}} className="dash-grid">
+      <div className="dash-grid" style={{display:"grid", gap:12}}>
         <div className="card">
           <div style={{padding:"16px 18px", borderBottom:"1px solid #EDE3DC", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
             <h3 style={{margin:0, fontSize:14, fontWeight:700}}>{t("recentTitle")}</h3>
@@ -46,13 +46,13 @@ export default function Dashboard(){
           </div>
           <div>
             {visible.slice(0,4).map(a=>(
-              <div key={a.id} style={{display:"flex", alignItems:"center", gap:14, padding:"14px 18px", borderBottom:"1px solid #F3EAE2"}}>
-                <div style={{width:42,height:42, borderRadius:10, background:"#FBF6F0", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontFamily:"Fraunces, serif", fontWeight:700, color:"#7A263A"}}>{a.id.slice(-2)}</div>
-                <div style={{flex:1, minWidth:0}}>
-                  <div style={{fontWeight:700, fontSize:13.5}}>{a.id} <span style={{color:"#8a7a74", fontWeight:500}}>· {a.lotId}</span></div>
-                  <div style={{fontSize:12, color:"#6B5A54"}}>{a.farmer} · {a.center}</div>
+              <div key={a.id} className="recent-row" style={{display:"flex", alignItems:"center", flexWrap:"wrap", gap:10, padding:"14px 18px", borderBottom:"1px solid #F3EAE2"}}>
+                <div style={{width:42,height:42, flexShrink:0, borderRadius:10, background:"#FBF6F0", border:"1px solid #EDE3DC", display:"grid", placeItems:"center", fontFamily:"Fraunces, serif", fontWeight:700, color:"#7A263A"}}>{a.id.slice(-2)}</div>
+                <div style={{flex:"1 1 160px", minWidth:0}}>
+                  <div style={{fontWeight:700, fontSize:13.5, overflowWrap:"anywhere"}}>{a.id} <span style={{color:"#8a7a74", fontWeight:500}}>· {a.lotId}</span></div>
+                  <div style={{fontSize:12, color:"#6B5A54", overflowWrap:"anywhere"}}>{a.farmer} · {a.center}</div>
                 </div>
-                <div style={{textAlign:"right"}}>
+                <div style={{textAlign:"right", flexShrink:0}}>
                   <div style={{fontWeight:700, fontSize:13}}>A:{a.gradeA}% B:{a.gradeB ?? 0}% C:{a.gradeC ?? 0}% R:{a.gradeReject ?? a.reject ?? 0}%</div>
                   <div style={{fontSize:11, color:"#8a7a74"}}>{t("urs")}: {a.urs}%</div>
                   <div><StatusBadge status={a.status} /></div>

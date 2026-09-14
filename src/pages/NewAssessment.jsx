@@ -216,7 +216,7 @@ function StepSampling({onNext,onPrev}){
           <span className="badge">LOT</span> <span>↓</span> <span className="badge badge-maroon">REPRESENTATIVE SAMPLE</span> <span>↓</span> <span className="badge badge-success">MULTI-VIEW CAPTURE</span>
         </div>
         <p style={{margin:0, textAlign:"center", color:"#6B5A54", fontSize:13}}>The system does not need to inspect every onion individually. A defined sample from the lot is jointly selected by farmer + grader to reduce bias.</p>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, fontSize:12, textAlign:"center"}}>
+        <div className="sampling-steps" style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(140px,1fr))", gap:10, fontSize:12, textAlign:"center"}}>
           <div className="card card-pad" style={{padding:12}}><b>Step 1</b><br/>Spread sample on mat</div>
           <div className="card card-pad" style={{padding:12}}><b>Step 2</b><br/>Place 25 mm reference</div>
           <div className="card card-pad" style={{padding:12}}><b>Step 3</b><br/>Capture 3 views</div>
@@ -496,7 +496,7 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
   return (
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("versionedPolicy")}</h3>
-      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
+      <div className="policy-grid" style={{display:"grid", gap:12}}>
         <div className="card card-pad">
           <label className="label">Active policy version</label>
           <select className="select" value={policyVersion} onChange={e=> setPolicyVersion(e.target.value)}>
@@ -528,8 +528,8 @@ function StepPolicy({policy,policies,policyVersion,setPolicyVersion,grading,onNe
         <div style={{fontSize:12, fontWeight:700}}>Per-onion grading (policy {policy.version})</div>
         <div style={{display:"grid", gap:6, marginTop:8}}>
           {grading.details.map(d=>(
-            <div key={d.id} style={{display:"flex", gap:10, alignItems:"center", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background: d.grade==="Grade A" ? "#EDF5EF" : "#FEF3D8"}}>
-              <b style={{minWidth:28}}>{d.id}</b><span>{d.sizeMm} mm</span><span>·</span><span>{d.defect}</span><span>·</span><span>{d.confidence}%</span><span style={{marginLeft:"auto"}} className={`badge ${d.grade==="Grade A"?"badge-success":d.grade==="Reject"?"badge-error":"badge-warning"}`} style={{fontSize:10}}>{d.grade}</span>
+            <div key={d.id} className="grading-row" style={{display:"flex", gap:8, alignItems:"center", flexWrap:"wrap", fontSize:12, padding:"6px 8px", border:"1px solid #F3EAE2", borderRadius:8, background: d.grade==="Grade A" ? "#EDF5EF" : "#FEF3D8"}}>
+              <b style={{minWidth:28}}>{d.id}</b><span>{d.sizeMm} mm</span><span>·</span><span>{d.defect}</span><span>·</span><span>{d.confidence}%</span><span className={`badge ${d.grade==="Grade A"?"badge-success":d.grade==="Reject"?"badge-error":"badge-warning"}`} style={{fontSize:10, marginLeft:"auto"}}>{d.grade}</span>
             </div>
           ))}
         </div>
@@ -547,7 +547,7 @@ function StepFarmerReview({grading,lot,policy,farmerAccepted,setFarmerAccepted,g
     <div style={{display:"grid", gap:14}}>
       <h3 style={{margin:0, fontSize:16, fontWeight:700}}>{t("farmerGraderReview")}</h3>
       <p style={{margin:0, color:"#6B5A54", fontSize:13}}>The result is transparent to both parties. Never silently overwrite the original assessment — reviews create linked records.</p>
-      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}} className="policy-grid">
+      <div className="policy-grid" style={{display:"grid", gap:12}}>
         <div className="card card-pad">
           <div style={{fontWeight:700}}>Grader</div>
           <div style={{fontSize:13, color:"#6B5A54"}}>{lot.assessor} · Review · Confirm · Finalize</div>
