@@ -22,4 +22,4 @@ FastAPI: lightweight API gateway/business logic. Supabase: PostgreSQL (structure
 OTP+JWT: primary auth (no passwords), role-based (FARMER/GRADER/REVIEWER/ADMIN), RLS. SHA-256: per-photo-set hash + append-only audit hash chain (`prev_hash+event→SHA256`) for tamper evidence, not blockchain. Reports immutable; disputes create linked records.
 
 ## Web Prototype Note
-The Vite React app at `/` faithfully represents the Flutter workflow for judging (same 12-step pipeline, same policy engine, same offline queue simulation). It uses `OnionSetu.ai v1` (wrapped EfficientNet-B7/Gemini, 97.2% lab) behind the same `AIEngine` interface — swappable to real TFLite without UI change.
+The Vite React app at `/` faithfully represents the Flutter workflow for judging (same 12-step pipeline, same policy engine, same offline queue simulation). Single assessment runs Prototype Demo Inference (deterministic mock); batch grading runs live Roboflow detection + Qwen assessment.

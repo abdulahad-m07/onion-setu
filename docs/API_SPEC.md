@@ -3,7 +3,7 @@
 Base: `/api` — Auth: `Authorization: Bearer <JWT>` (OTP → JWT)
 
 ## Auth
-- `POST /auth/request-otp` `{identifier, role}` → 200 + OTP sent (Gemini/Supabase email or SMS fallback mock, 5m TTL)
+- `POST /auth/request-otp` `{identifier, role}` → 200 + OTP sent (Supabase email or SMS fallback mock, 5m TTL)
 - `POST /auth/verify-otp` `{identifier, code, role}` → `{jwt, user}` — creates `profiles` row
 - `POST /auth/refresh` `{refresh_token}` → new JWT
 
@@ -44,6 +44,6 @@ Base: `/api` — Auth: `Authorization: Bearer <JWT>` (OTP → JWT)
 - `POST /sync/report` (upload PDF)
 
 ## AI (wrapped)
-- `POST /api/ai-analyze` `{images:[base64], policyVersion}` → `{model:"OnionSetu.ai v1", labAccuracy:"97.2%", results:[{id,sizeMm,defect,confidence,reasoning,grade}]}` — server-only `GEMINI_API_KEY`, never exposed; mock fallback when key absent.
+- `POST /api/ai-analyze` `{images:[base64], policyVersion}` → `{model:"Prototype Demo Inference", results:[{id,sizeMm,defect,confidence,reasoning,grade}]}` — deterministic demo mock, no live model. Live AI runs in batch grading: `POST /api/analyze-batch` (Roboflow detection + Qwen assessment, policy v0.2).
 
 All endpoints enforce RLS (farmer own, grader all, admin policies) and write `audit_logs` hash chain.

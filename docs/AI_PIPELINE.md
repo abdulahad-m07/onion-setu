@@ -17,7 +17,7 @@ class DemoAIEngine implements AIEngine { /* deterministic mock, lab 97.2% style,
 
 ## Defect — MobileNetV2 (TFLite)
 - **Input:** Crop per detection
-- **Training:** Transfer learning, 4 classes, augmentation (blur, lighting, overlap), TFLite quantize. Web demo uses `OnionSetu.ai v1` (wrapped EfficientNet-B7/Gemini, 97.2% lab, mock) behind same interface — swappable.
+- **Training:** Transfer learning, 4 classes, augmentation (blur, lighting, overlap), TFLite quantize. Web single-assessment runs Prototype Demo Inference (deterministic mock). Live AI runs in batch grading (Roboflow detection + Qwen assessment).
 - **Output:** `{onion_id, defect_class, confidence}` + reasoning. UI shows confidence bar, 60% gate.
 
 ## Size — OpenCV

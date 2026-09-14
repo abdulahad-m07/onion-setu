@@ -184,7 +184,7 @@ export default function NewAssessment(){
         <button className="btn btn-secondary" onClick={prev} disabled={step===0}>← {t("back")}</button>
         {step<11 && <button className="btn btn-primary" onClick={next}>{t("continue")} →</button>}
       </div>
-      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>OnionSetu grading (Gemini-assisted, Phase 1) — AI assists, human decides.</p>
+      <p style={{fontSize:11, color:"#8a7a74", textAlign:"center"}}>Demo inference (single) · Roboflow + Qwen (batch) — AI assists, human decides.</p>
     </div>
   );
 }
@@ -406,7 +406,7 @@ function StepDefects({onions,processing,onNext,onPrev}){
                 </div>
               ))}
             </div>
-            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Gemini-assisted defect review — Healthy / Damaged / Rotten / Sprouted. Human decides below 60%.</p>
+            <p style={{margin:"10px 0 0", fontSize:11, color:"#8a7a74"}}>Demo defect review — Healthy / Damaged / Rotten / Sprouted. Human decides below 60%.</p>
           </div>
           <div style={{display:"flex", gap:8}}>
             <button className="btn btn-secondary" onClick={onPrev}>{t("back")}</button>
@@ -606,7 +606,7 @@ function StepReport({grading,lot,policy,onions,reviewDecisions,farmerAccepted,gr
           </div>
           <div style={{textAlign:"right", fontSize:11, color:"#6B5A54"}}>
             <div>Report ID: <span className="mono">{lot.lotId.replace("LOT","OG")}</span></div>
-            <div>Policy: {policy.version} · Model: OnionSetu grading (Gemini-assisted, Phase 1)</div>
+            <div>Policy: {policy.version} · Model: Prototype Demo Inference</div>
             <div>{new Date().toLocaleString()}</div>
           </div>
         </div>

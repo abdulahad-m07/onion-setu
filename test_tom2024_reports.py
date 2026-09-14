@@ -3,7 +3,7 @@
 TOM2024 Test Harness — generates reports in your exact format:
 Report ID, Date, Location, Policy version, Grade A %, URS %, Confidence,
 Farmer/grader acknowledgement, Dispute status + uploaded images
-Uses OnionSetu.ai mock (since GEMINI key removed) — swap to real by adding key and setting MOCK=False in api/ai-analyze.js
+Uses Prototype Demo Inference mock. Live AI runs only in batch grading via /api/analyze-batch (Roboflow + Qwen).
 """
 import zipfile, random, json, pathlib, datetime, os, base64, collections
 
@@ -132,7 +132,7 @@ summary = {
     "confusion": {f"{k[0]}->{k[1]}":v for k,v in confusion.items()},
     "by_class": {k: len(v) for k,v in by_class.items()},
     "sampled": len(sampled),
-    "note": "Mock OnionSetu.ai (lab 97.2% claim). Real Gemini would be called via /api/ai-analyze when GEMINI_API_KEY set. This is demo with 85% simulated field accuracy to show format."
+    "note": "Prototype Demo Inference mock. Live AI runs only in batch grading via /api/analyze-batch (Roboflow + Qwen). This is demo with 85% simulated field accuracy to show format."
 }
 with open(OUT / "summary.json", "w", encoding="utf-8") as f:
     json.dump(summary, f, indent=2)

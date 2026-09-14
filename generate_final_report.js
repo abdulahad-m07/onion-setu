@@ -54,7 +54,7 @@ doc.moveDown(1);
 doc.fillColor(MAROON).fontSize(10).font("Helvetica-Bold").text("Dataset: TOM2024 — Category B onion with data augmentation (English test)", 40, doc.y);
 doc.fontSize(9).font("Helvetica").fillColor(BLACK).text("• Test: 4,814 images (caterpillars 1,358 / fusarium 1,076 / Healthy 958 / alternaria 630 / virosis 412 / Bulb_blight 380)  • Train: 19,556  • Total onion files: 42,597", 40, doc.y, { width:515 });
 doc.moveDown(0.8);
-doc.fillColor(BLACK).fontSize(9).text("• This report samples 120 (20/class balanced, seed 42) and generates 120 individual reports in your exact format, plus a final accuracy summary. Real Gemini key removed — current run is mock 85% field (simulated drop from lab 97.2%). Re-add GEMINI_API_KEY for true field accuracy.", 40, doc.y, { width:515 });
+doc.fillColor(BLACK).fontSize(9).text("• This report samples 120 (20/class balanced, seed 42) and generates 120 individual reports in your exact format, plus a final accuracy summary. Prototype Demo Inference mock 85% field (simulated). Live AI runs in batch grading (Roboflow + Qwen).", 40, doc.y, { width:515 });
 
 // SUMMARY FIRST (overview)
 section("Executive Summary — Accuracy at a Glance");
@@ -63,7 +63,7 @@ doc.moveDown(0.3);
 doc.fillColor(MAROON).fontSize(14).font("Helvetica-Bold").text(`Defect Accuracy (Healthy/Damaged/Rotten/Sprouted): ${summary.defect_accuracy}%  (${Math.round(summary.defect_accuracy*summary.total_tested/100)}/${summary.total_tested})`, 40, doc.y);
 doc.fillColor(BLACK).fontSize(14).font("Helvetica-Bold").text(`Grade Accuracy (Grade A vs URS per v2026.1): ${summary.grade_accuracy}%`, 40, doc.y);
 doc.moveDown(0.4);
-doc.fillColor(MUTED).fontSize(9).font("Helvetica").text("Note: Mock OnionSetu.ai — lab 97.2% claim, simulated field 85% to show domain shift. Real Gemini with field fine-tuning would be ~88% defect / ~92% grade on this dataset. Effective lot with 60% confidence gate + human review: ~94%.", 40, doc.y, { width:515 });
+doc.fillColor(MUTED).fontSize(9).font("Helvetica").text("Note: Prototype Demo Inference mock, simulated field 85% to show domain shift. Live AI runs in batch grading (Roboflow + Qwen). Effective lot with 60% confidence gate + human review: ~94%.", 40, doc.y, { width:515 });
 doc.moveDown(0.8);
 doc.fillColor(BLACK).fontSize(9).font("Helvetica-Bold").text("Confusion (ground truth → prediction):", 40, doc.y);
 doc.moveDown(0.3);

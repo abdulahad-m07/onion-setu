@@ -23,5 +23,5 @@
     "virosis_d": 412
   },
   "sampled": 120,
-  "note": "Mock OnionSetu.ai (lab 97.2% claim). Real Gemini would be called via /api/ai-analyze when GEMINI_API_KEY set. This is demo with 85% simulated field accuracy to show format."
+  "note": "Prototype Demo Inference mock. Live AI runs only in batch grading via /api/analyze-batch (Roboflow + Qwen). This is demo with 85% simulated field accuracy to show format."
 }
